@@ -1,0 +1,62 @@
+[
+  {
+    "account_key": "standard_user",
+    "username": "standard_user",
+    "items_to_add": 3,
+    "checkout_profile": {
+      "first_name": "Standard",
+      "last_name": "User",
+      "postal_code": "10001"
+    }
+  },
+  {
+    "account_key": "locked_out_user",
+    "username": "locked_out_user",
+    "items_to_add": 3,
+    "checkout_profile": {
+      "first_name": "Locked",
+      "last_name": "Out",
+      "postal_code": "10002"
+    }
+  },
+  {
+    "account_key": "problem_user",
+    "username": "problem_user",
+    "items_to_add": 3,
+    "checkout_profile": {
+      "first_name": "Problem",
+      "last_name": "User",
+      "postal_code": "10003"
+    }
+  },
+  {
+    "account_key": "performance_glitch_user",
+    "username": "performance_glitch_user",
+    "items_to_add": 3,
+    "checkout_profile": {
+      "first_name": "Performance",
+      "last_name": "Glitch",
+      "postal_code": "10004"
+    }
+  },
+  {
+    "account_key": "error_user",
+    "username": "error_user",
+    "items_to_add": 3,
+    "checkout_profile": {
+      "first_name": "Error",
+      "last_name": "User",
+      "postal_code": "10005"
+    }
+  },
+  {
+    "account_key": "visual_user",
+    "username": "visual_user",
+    "items_to_add": 3,
+    "checkout_profile": {
+      "first_name": "Visual",
+      "last_name": "User",
+      "postal_code": "10006"
+    }
+  }
+]

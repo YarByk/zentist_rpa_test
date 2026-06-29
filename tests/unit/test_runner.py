@@ -1,0 +1,449 @@
+from dataclasses import dataclass
+from datetime import date
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from portal_automation.core.models import (
+    ItemResult,
+    ItemStatus,
+    ReasonCode,
+    RunContext,
+    RunResult,
+    RunStatus,
+)
+from portal_automation.core.retries import PortalError
+from portal_automation.core.runner import BasePortalRunnerZX
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+@dataclass
+class ObjectItem:
+    item_key: str
+
+
+class FakeLogger:
+    def __init__(self) -> None:
+        self.errors: list[tuple[str, dict[str, str]]] = []
+
+    def error(self, event: str, **kwargs: str) -> None:
+        self.errors.append((event, kwargs))
+
+
+class FakePersistence:
+    def __init__(
+        self,
+        events: list[str],
+        committed_items: set[str] | None = None,
+        existing_results: list[ItemResult] | None = None,
+        fail_on_mark: bool = False,
+        fail_on_upsert: bool = False,
+    ) -> None:
+        self.events = events
+        self.committed_items = committed_items or set()
+        self.results = list(existing_results or [])
+        self.fail_on_mark = fail_on_mark
+        self.fail_on_upsert = fail_on_upsert
+        self.finished: tuple[str, RunStatus, dict[str, int]] | None = None
+
+    def create_run(self, run_id: str, portal_name: str, business_date: date) -> None:
+        self.events.append(f"create_run:{run_id}:{portal_name}:{business_date.isoformat()}")
+
+    def finish_run(self, run_id: str, status: RunStatus, summary: dict[str, int]) -> None:
+        self.events.append(f"finish_run:{status.value}")
+        self.finished = (run_id, status, summary)
+
+    def mark_item_in_progress(
+        self,
+        run_id: str,
+        portal_name: str,
+        business_date: date,
+        item_key: str,
+        operation: str,
+    ) -> None:
+        self.events.append(f"mark_item_in_progress:{item_key}")
+        if self.fail_on_mark:
+            raise RuntimeError("mark failed")
+
+    def upsert_item_result(
+        self,
+        result: ItemResult,
+        run_id: str,
+        portal_name: str,
+        business_date: date,
+    ) -> None:
+        self.events.append(f"upsert_item_result:{result.item_key}:{result.status.value}")
+        if self.fail_on_upsert:
+            raise RuntimeError("upsert failed")
+        self.results = [old for old in self.results if old.item_key != result.item_key]
+        self.results.append(result)
+
+    def list_results_by_business_date(
+        self,
+        portal_name: str,
+        business_date: date,
+    ) -> list[ItemResult]:
+        self.events.append("list_results_by_business_date")
+        return list(self.results)
+
+    def get_committed_items(self, portal_name: str, business_date: date) -> set[str]:
+        self.events.append("get_committed_items")
+        return set(self.committed_items)
+
+
+class FakeRunner(BasePortalRunnerZX):
+    portal_name = "fakeportal"
+    operation_name = "fake_operation"
+
+    def __init__(
+        self,
+        items: list[Any],
+        behavior: dict[str, str] | None = None,
+        load_error: Exception | None = None,
+        preflight_error: Exception | None = None,
+    ) -> None:
+        self.items = items
+        self.behavior = behavior or {}
+        self.load_error = load_error
+        self.preflight_error = preflight_error
+        self.events: list[str] = []
+        self.finalized_result: RunResult | None = None
+
+    def preflight_check(self, context: RunContext) -> None:
+        self.events.append("preflight_check")
+        context.persistence.events.append("preflight_check")
+        if self.preflight_error is not None:
+            raise self.preflight_error
+
+    def load_items(self, context: RunContext) -> list[Any]:
+        self.events.append("load_items")
+        context.persistence.events.append("load_items")
+        if self.load_error is not None:
+            raise self.load_error
+        return self.items
+
+    def process_item(self, context: RunContext, item: Any) -> ItemResult:
+        key = self.item_key(item)
+        self.events.append(f"process_item:{key}")
+        context.persistence.events.append(f"process_item:{key}")
+        behavior = self.behavior.get(key, "success")
+        if behavior == "portal_error":
+            raise PortalError(ReasonCode.PORTAL_TIMEOUT, "temporary failure", attempts=2)
+        if behavior == "unexpected":
+            raise ValueError("unexpected failure")
+        return ItemResult(
+            item_key=key,
+            operation=self.operation_name,
+            status=ItemStatus.SUCCESS,
+            reason_code=None,
+            error_detail=None,
+            artifact_path=None,
+            attempts=1,
+            details={},
+        )
+
+    def finalize(self, context: RunContext, result: RunResult) -> None:
+        self.events.append("finalize")
+        context.persistence.events.append(f"finalize:{result.status.value}")
+        self.finalized_result = result
+
+
+def make_context(
+    persistence: FakePersistence,
+    logger: FakeLogger | None = None,
+    dry_run: bool = False,
+) -> RunContext:
+    return RunContext(
+        run_id="run-1",
+        business_date=date(2026, 6, 29),
+        dry_run=dry_run,
+        stale_item_timeout_seconds=300,
+        config={},
+        persistence=persistence,
+        reporter={},
+        logger=logger or FakeLogger(),
+        metrics={},
+        artifacts={},
+        email={},
+    )
+
+
+def test_base_portal_runner_zx_exists_and_run_is_concrete() -> None:
+    assert BasePortalRunnerZX.__name__ == "BasePortalRunnerZX"
+    assert hasattr(BasePortalRunnerZX, "run")
+    assert not getattr(BasePortalRunnerZX.run, "__isabstractmethod__", False)
+
+
+def test_fake_runner_implements_hooks_and_does_not_override_run() -> None:
+    assert "run" not in FakeRunner.__dict__
+    assert FakeRunner.run is BasePortalRunnerZX.run
+
+
+def test_dry_run_uses_safe_lifecycle_and_returns_empty_success_result() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(items=[{"item_key": "a"}])
+    context = make_context(persistence, dry_run=True)
+
+    result = runner.run(context)
+
+    assert result == RunResult(
+        run_id="run-1",
+        portal_name="fakeportal",
+        business_date=date(2026, 6, 29),
+        status=RunStatus.SUCCESS,
+        results=[],
+    )
+    assert events == [
+        "create_run:run-1:fakeportal:2026-06-29",
+        "load_items",
+        "finalize:success",
+        "finish_run:success",
+    ]
+    assert runner.events == ["load_items", "finalize"]
+    assert persistence.finished == (
+        "run-1",
+        RunStatus.SUCCESS,
+        {"total": 0, "success": 0, "failed": 0, "skipped": 0},
+    )
+
+
+def test_load_items_portal_error_finishes_failed_run_and_reraises() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(
+        items=[],
+        load_error=PortalError(ReasonCode.INPUT_VALIDATION_FAILED, "bad input"),
+    )
+
+    with pytest.raises(PortalError) as error:
+        runner.run(make_context(persistence))
+
+    assert error.value.reason is ReasonCode.INPUT_VALIDATION_FAILED
+    assert runner.finalized_result is not None
+    assert runner.finalized_result.status is RunStatus.FAILED
+    assert runner.finalized_result.results[0].item_key == "__load_items__"
+    assert runner.finalized_result.results[0].reason_code is ReasonCode.INPUT_VALIDATION_FAILED
+    assert events == [
+        "create_run:run-1:fakeportal:2026-06-29",
+        "load_items",
+        "finalize:failed",
+        "finish_run:failed",
+    ]
+    assert persistence.finished == (
+        "run-1",
+        RunStatus.FAILED,
+        {"total": 1, "success": 0, "failed": 1, "skipped": 0},
+    )
+
+
+def test_preflight_portal_error_finishes_failed_run_and_reraises() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(
+        items=[{"item_key": "a"}],
+        preflight_error=PortalError(ReasonCode.CREDENTIAL_EXPIRED, "missing password"),
+    )
+
+    with pytest.raises(PortalError) as error:
+        runner.run(make_context(persistence))
+
+    assert error.value.reason is ReasonCode.CREDENTIAL_EXPIRED
+    assert runner.finalized_result is not None
+    assert runner.finalized_result.status is RunStatus.FAILED
+    assert runner.finalized_result.results[0].item_key == "__preflight__"
+    assert runner.finalized_result.results[0].reason_code is ReasonCode.CREDENTIAL_EXPIRED
+    assert events == [
+        "create_run:run-1:fakeportal:2026-06-29",
+        "load_items",
+        "preflight_check",
+        "finalize:failed",
+        "finish_run:failed",
+    ]
+    assert "get_committed_items" not in events
+    assert not any(event.startswith("mark_item_in_progress") for event in events)
+
+
+def test_real_run_preflight_and_committed_lookup_happen_before_processing() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(items=[{"item_key": "a"}])
+
+    runner.run(make_context(persistence))
+
+    assert events[:5] == [
+        "create_run:run-1:fakeportal:2026-06-29",
+        "load_items",
+        "preflight_check",
+        "get_committed_items",
+        "mark_item_in_progress:a",
+    ]
+
+
+def test_committed_items_are_skipped_without_writes_or_processing() -> None:
+    committed = ItemResult(
+        item_key="a",
+        operation="fake_operation",
+        status=ItemStatus.SUCCESS,
+        reason_code=None,
+        error_detail=None,
+        artifact_path=None,
+        attempts=1,
+        details={},
+    )
+    events: list[str] = []
+    persistence = FakePersistence(events, committed_items={"a"}, existing_results=[committed])
+    runner = FakeRunner(items=[{"item_key": "a"}, {"item_key": "b"}])
+
+    result = runner.run(make_context(persistence))
+
+    assert "mark_item_in_progress:a" not in events
+    assert "process_item:a" not in events
+    assert not any(event == "upsert_item_result:a:skipped" for event in events)
+    assert "mark_item_in_progress:b" in events
+    assert [item.item_key for item in result.results] == ["a", "b"]
+
+
+def test_mark_item_in_progress_is_immediately_before_process_item() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(items=[{"item_key": "a"}])
+
+    runner.run(make_context(persistence))
+
+    mark_index = events.index("mark_item_in_progress:a")
+    assert events[mark_index + 1] == "process_item:a"
+
+
+def test_successful_item_results_are_persisted_immediately() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(items=[{"item_key": "a"}])
+
+    result = runner.run(make_context(persistence))
+
+    assert result.status is RunStatus.SUCCESS
+    assert events.index("process_item:a") < events.index("upsert_item_result:a:success")
+    assert persistence.results == result.results
+
+
+def test_portal_error_becomes_failed_item_result_and_batch_continues() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(
+        items=[{"item_key": "a"}, {"item_key": "b"}],
+        behavior={"a": "portal_error"},
+    )
+
+    result = runner.run(make_context(persistence))
+
+    failed = result.results[0]
+    assert failed.item_key == "a"
+    assert failed.status is ItemStatus.FAILED
+    assert failed.reason_code is ReasonCode.PORTAL_TIMEOUT
+    assert failed.error_detail == "temporary failure"
+    assert failed.attempts == 2
+    assert result.results[1].item_key == "b"
+    assert result.status is RunStatus.PARTIAL_SUCCESS
+    assert "process_item:b" in events
+
+
+def test_unexpected_item_error_becomes_unexpected_error_result() -> None:
+    persistence = FakePersistence([])
+    runner = FakeRunner(items=[{"item_key": "a"}], behavior={"a": "unexpected"})
+
+    result = runner.run(make_context(persistence))
+
+    assert result.status is RunStatus.FAILED
+    assert result.results[0].reason_code is ReasonCode.UNEXPECTED_ERROR
+    assert result.results[0].error_detail == "unexpected failure"
+    assert result.results[0].attempts == 1
+
+
+def test_all_item_level_failures_still_finalize_and_finish_run() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(
+        items=[{"item_key": "a"}, {"item_key": "b"}],
+        behavior={"a": "portal_error", "b": "unexpected"},
+    )
+
+    result = runner.run(make_context(persistence))
+
+    assert result.status is RunStatus.FAILED
+    assert runner.finalized_result is result
+    assert events[-2:] == ["finalize:failed", "finish_run:failed"]
+    assert persistence.finished == (
+        "run-1",
+        RunStatus.FAILED,
+        {"total": 2, "success": 0, "failed": 2, "skipped": 0},
+    )
+
+
+def test_all_successes_status_is_success_and_summary_counts_successes() -> None:
+    events: list[str] = []
+    persistence = FakePersistence(events)
+    runner = FakeRunner(items=[{"item_key": "a"}, {"item_key": "b"}])
+
+    result = runner.run(make_context(persistence))
+
+    assert result.status is RunStatus.SUCCESS
+    assert persistence.finished == (
+        "run-1",
+        RunStatus.SUCCESS,
+        {"total": 2, "success": 2, "failed": 0, "skipped": 0},
+    )
+
+
+def test_persistence_failure_in_mark_item_in_progress_is_logged_and_raised() -> None:
+    events: list[str] = []
+    logger = FakeLogger()
+    persistence = FakePersistence(events, fail_on_mark=True)
+    runner = FakeRunner(items=[{"item_key": "a"}])
+
+    with pytest.raises(RuntimeError, match="mark failed"):
+        runner.run(make_context(persistence, logger=logger))
+
+    assert logger.errors == [("persistence_failure", {"error": "mark failed"})]
+    assert "finalize" not in runner.events
+    assert not any(event.startswith("finish_run") for event in events)
+
+
+def test_persistence_failure_in_upsert_item_result_is_logged_and_raised() -> None:
+    events: list[str] = []
+    logger = FakeLogger()
+    persistence = FakePersistence(events, fail_on_upsert=True)
+    runner = FakeRunner(items=[{"item_key": "a"}])
+
+    with pytest.raises(RuntimeError, match="upsert failed"):
+        runner.run(make_context(persistence, logger=logger))
+
+    assert logger.errors == [("persistence_failure", {"error": "upsert failed"})]
+    assert "finalize" not in runner.events
+    assert not any(event.startswith("finish_run") for event in events)
+
+
+def test_item_key_default_supports_dict_attribute_and_string_fallback() -> None:
+    runner = FakeRunner(items=[])
+
+    assert runner.item_key({"item_key": 123}) == "123"
+    assert runner.item_key(ObjectItem(item_key="abc")) == "abc"
+    assert runner.item_key("plain-item") == "plain-item"
+
+
+def test_runner_source_does_not_reference_browser_automation_symbols() -> None:
+    source = (ROOT / "src/portal_automation/core/runner.py").read_text(encoding="utf-8").lower()
+
+    assert "playwright" not in source
+    assert "browser" not in source
+    assert "page" not in source
+
+
+def test_forbidden_modules_were_not_created() -> None:
+    forbidden_paths = [
+        "src/portal_automation/core/logging.py",
+    ]
+
+    assert [path for path in forbidden_paths if (ROOT / path).exists()] == []

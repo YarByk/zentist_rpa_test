@@ -1,25 +1,31 @@
 __pycache__/
 *.pyc
 
+_local/
+
 .venv/
 venv/
 
 .env
 .env.*
+!.env.example
 
 playwright-report/
 test-results/
 
-artifacts/
+artifacts/*
+!artifacts/.gitkeep
 logs/
 
 .pytest_cache/
+.ruff_cache/
 
 .idea/
 .vscode/
 
 dist/
 build/
+*.egg-info/
 
 *.sqlite
 *.db

@@ -1,0 +1,493 @@
+import json
+from dataclasses import dataclass
+from datetime import date
+from pathlib import Path
+
+import pytest
+
+from portal_automation.core.artifact_store import ArtifactStore
+from portal_automation.core.models import (
+    ItemResult,
+    ItemStatus,
+    ReasonCode,
+    RunContext,
+    RunResult,
+    RunStatus,
+)
+from portal_automation.core.retries import PortalError
+from portal_automation.core.runner import BasePortalRunnerZX
+from portal_automation.portals.saucedemo import runner as runner_module
+from portal_automation.portals.saucedemo.input_schema import CheckoutProfile, SauceDemoAccount
+from portal_automation.portals.saucedemo.pages import SauceDemoPages
+from portal_automation.portals.saucedemo.runner import SauceDemoRunner
+from portal_automation.portals.saucedemo.workflow import LoginResult, LoginStatus, OrderSummary
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+@dataclass
+class ConfigStub:
+    saucedemo_input_path: str
+    saucedemo_password: str | None = "pw"
+    saucedemo_base_url: str = "https://www.saucedemo.com"
+
+
+@dataclass
+class ContextStub:
+    config: object
+    reporter: object
+
+
+class FakePersistence:
+    def __init__(self) -> None:
+        self.created_runs = []
+        self.finished_runs = []
+        self.real_run_methods = []
+
+    def create_run(self, run_id: str, portal_name: str, business_date: date) -> None:
+        self.created_runs.append((run_id, portal_name, business_date))
+
+    def finish_run(self, run_id: str, status: RunStatus, summary: dict[str, int]) -> None:
+        self.finished_runs.append((run_id, status, summary))
+
+    def get_committed_items(self, portal_name: str, business_date: date) -> set[str]:
+        self.real_run_methods.append("get_committed_items")
+        return set()
+
+    def mark_item_in_progress(
+        self,
+        run_id: str,
+        portal_name: str,
+        business_date: date,
+        item_key: str,
+        operation: str,
+    ) -> None:
+        self.real_run_methods.append("mark_item_in_progress")
+
+    def upsert_item_result(self, *args: object) -> None:
+        self.real_run_methods.append("upsert_item_result")
+
+    def list_results_by_business_date(self, portal_name: str, business_date: date) -> list[object]:
+        self.real_run_methods.append("list_results_by_business_date")
+        return []
+
+
+class ReporterStub:
+    def __init__(self) -> None:
+        self.written_results: list[RunResult] = []
+
+    def write_report(self, result: RunResult) -> None:
+        self.written_results.append(result)
+
+
+class FakeTarget:
+    def __init__(self, page: "FakePage", kind: str, name: str) -> None:
+        self.page = page
+        self.kind = kind
+        self.name = name
+
+    def fill(self, value: str) -> None:
+        self.page.calls.append((self.kind, self.name, "fill", value))
+
+    def click(self) -> None:
+        self.page.calls.append((self.kind, self.name, "click"))
+
+    def first(self) -> "FakeTarget":
+        self.page.calls.append((self.kind, self.name, "first"))
+        return self
+
+    def text_content(self) -> str:
+        self.page.calls.append((self.kind, self.name, "text_content"))
+        return self.page.text_values.get(self.name, "")
+
+
+class FakePage:
+    def __init__(self) -> None:
+        self.calls: list[tuple] = []
+        self.text_values: dict[str, str] = {}
+        self.login_locked_out = False
+        self.login_succeeded = True
+        self.cart_count = 3
+        self.order_summary = OrderSummary(item_count=3, confirmation_text="Checkout: Overview")
+        self.confirmation = OrderSummary(
+            item_count=3,
+            confirmation_text="Thank you for your order!",
+        )
+        self.order_details = {"order_id": "ord-001", "total": "$14.99"}
+
+    def goto(self, url: str) -> None:
+        self.calls.append(("goto", url))
+
+    def locator(self, selector: str) -> FakeTarget:
+        self.calls.append(("locator", selector))
+        return FakeTarget(self, "locator", selector)
+
+
+def account() -> SauceDemoAccount:
+    return SauceDemoAccount(
+        account_key="standard_user",
+        username="standard_user",
+        items_to_add=3,
+        checkout_profile=CheckoutProfile(
+            first_name="Standard",
+            last_name="User",
+            postal_code="10001",
+        ),
+    )
+
+
+def write_saucedemo_input(tmp_path) -> str:
+    path = tmp_path / "accounts.json"
+    path.write_text(
+        json.dumps(
+            [
+                {
+                    "account_key": "standard_user",
+                    "username": "standard_user",
+                    "items_to_add": 3,
+                    "checkout_profile": {
+                        "first_name": "Standard",
+                        "last_name": "User",
+                        "postal_code": "10001",
+                    },
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return str(path)
+
+
+def make_run_context(tmp_path, *, reporter=None) -> RunContext:
+    return RunContext(
+        run_id="run-sd-1",
+        business_date=date(2026, 6, 29),
+        dry_run=True,
+        stale_item_timeout_seconds=300,
+        config=ConfigStub(saucedemo_input_path=write_saucedemo_input(tmp_path)),
+        persistence=FakePersistence(),
+        reporter=reporter if reporter is not None else object(),
+        logger=object(),
+        metrics=object(),
+        artifacts=ArtifactStore(str(tmp_path / "artifacts")),
+        email=object(),
+    )
+
+
+def make_process_context(tmp_path, *, reporter=None) -> ContextStub:
+    return ContextStub(
+        config=ConfigStub(saucedemo_input_path=write_saucedemo_input(tmp_path)),
+        reporter=reporter if reporter is not None else object(),
+    )
+
+
+def test_runner_contract_constants_are_correct() -> None:
+    assert SauceDemoRunner.portal_name == "saucedemo"
+    assert SauceDemoRunner.operation_name == "checkout"
+    assert SauceDemoRunner.max_sessions_per_account == 1
+
+
+def test_runner_inherits_base_and_does_not_override_run() -> None:
+    assert issubclass(SauceDemoRunner, BasePortalRunnerZX)
+    assert "run" not in SauceDemoRunner.__dict__
+    assert SauceDemoRunner.run is BasePortalRunnerZX.run
+
+
+def test_runner_item_key_uses_account_key() -> None:
+    assert SauceDemoRunner().item_key(account()) == "standard_user"
+
+
+def test_dry_run_does_not_call_page_factory_or_process_item(tmp_path) -> None:
+    factory_calls = []
+
+    def pages_factory(context: RunContext) -> object:
+        factory_calls.append(context)
+        raise AssertionError("page factory must not be called in dry-run")
+
+    runner = SauceDemoRunner(pages_factory=pages_factory)
+    context = make_run_context(tmp_path)
+
+    result = runner.run(context)
+
+    assert result.status is RunStatus.SUCCESS
+    assert factory_calls == []
+    assert context.persistence.real_run_methods == []
+
+
+def test_process_item_uses_injected_page_factory_and_workflow(tmp_path, monkeypatch) -> None:
+    pages = object()
+    calls = []
+
+    def pages_factory(context: ContextStub) -> object:
+        calls.append(("factory", context))
+        return pages
+
+    def fake_process_account(record, page_objects, context):
+        calls.append(("workflow", record, page_objects, context))
+        return ItemResult(
+            item_key=record.account_key,
+            operation="checkout",
+            status=ItemStatus.SUCCESS,
+            reason_code=None,
+            error_detail=None,
+            artifact_path=None,
+            details={},
+        )
+
+    monkeypatch.setattr(runner_module, "process_account", fake_process_account)
+    context = make_process_context(tmp_path)
+
+    result = SauceDemoRunner(pages_factory=pages_factory).process_item(context, account())
+
+    assert result.status is ItemStatus.SUCCESS
+    assert calls == [
+        ("factory", context),
+        ("workflow", account(), pages, context),
+    ]
+
+
+def test_process_item_without_page_factory_raises_portal_unavailable(tmp_path) -> None:
+    with pytest.raises(PortalError) as error:
+        SauceDemoRunner().process_item(make_process_context(tmp_path), account())
+
+    assert error.value.reason is ReasonCode.PORTAL_UNAVAILABLE
+    assert "page factory" in error.value.detail
+
+
+@pytest.mark.parametrize("password", [None, "", "   "])
+def test_preflight_raises_credential_expired_when_password_missing_or_blank(
+    tmp_path,
+    password,
+) -> None:
+    context = make_process_context(tmp_path)
+    context.config.saucedemo_password = password
+
+    with pytest.raises(PortalError) as error:
+        SauceDemoRunner().preflight_check(context)
+
+    assert error.value.reason is ReasonCode.CREDENTIAL_EXPIRED
+
+
+def test_preflight_passes_with_required_non_browser_config(tmp_path) -> None:
+    SauceDemoRunner().preflight_check(make_process_context(tmp_path))
+
+
+def test_preflight_does_not_call_page_factory(tmp_path) -> None:
+    factory_calls = []
+    runner = SauceDemoRunner(pages_factory=lambda context: factory_calls.append(context))
+
+    runner.preflight_check(make_process_context(tmp_path))
+
+    assert factory_calls == []
+
+
+def test_load_items_still_reads_validated_input_records(tmp_path) -> None:
+    context = make_process_context(tmp_path)
+
+    items = SauceDemoRunner().load_items(context)
+
+    assert items == [account()]
+
+
+def test_finalize_writes_report_when_reporter_supports_write_report(tmp_path) -> None:
+    reporter = ReporterStub()
+    context = make_process_context(tmp_path, reporter=reporter)
+    result = RunResult(
+        run_id="run-sd-1",
+        portal_name="saucedemo",
+        business_date=date(2026, 6, 29),
+        status=RunStatus.SUCCESS,
+        results=[],
+    )
+
+    SauceDemoRunner().finalize(context, result)
+
+    assert reporter.written_results == [result]
+
+
+def test_finalize_returns_without_error_when_reporter_has_no_write_report(tmp_path) -> None:
+    result = RunResult(
+        run_id="run-sd-1",
+        portal_name="saucedemo",
+        business_date=date(2026, 6, 29),
+        status=RunStatus.SUCCESS,
+        results=[],
+    )
+
+    SauceDemoRunner().finalize(make_process_context(tmp_path), result)
+
+
+def test_saucedemo_pages_login_uses_arguments_config_values_and_page_calls() -> None:
+    page = FakePage()
+    config = ConfigStub(
+        saucedemo_input_path="accounts.json",
+        saucedemo_base_url="https://sauce.example",
+    )
+
+    result = SauceDemoPages(page, config).login("standard_user", "pw")
+
+    assert result == LoginResult.success()
+    assert ("goto", "https://sauce.example") in page.calls
+    assert ("locator", SauceDemoPages.USERNAME_INPUT, "fill", "standard_user") in page.calls
+    assert ("locator", SauceDemoPages.PASSWORD_INPUT, "fill", "pw") in page.calls
+    assert ("locator", SauceDemoPages.LOGIN_BUTTON, "click") in page.calls
+
+
+def test_saucedemo_pages_login_returns_locked_out_result() -> None:
+    page = FakePage()
+    page.login_locked_out = True
+
+    result = SauceDemoPages(page, ConfigStub("accounts.json")).login("locked_out_user", "pw")
+
+    assert result.status is LoginStatus.LOCKED_OUT
+    assert "locked out" in result.detail
+
+
+def test_saucedemo_pages_login_returns_failed_result() -> None:
+    page = FakePage()
+    page.login_succeeded = False
+
+    result = SauceDemoPages(page, ConfigStub("accounts.json")).login("standard_user", "pw")
+
+    assert result.status is LoginStatus.FAILED
+    assert "login failed" in result.detail
+
+
+def test_add_inventory_items_records_exactly_requested_clicks() -> None:
+    page = FakePage()
+
+    SauceDemoPages(page, ConfigStub("accounts.json")).add_inventory_items(2)
+
+    assert page.calls.count(("locator", SauceDemoPages.ADD_TO_CART_BUTTON, "click")) == 2
+    assert page.calls.count(("locator", SauceDemoPages.ADD_TO_CART_BUTTON, "first")) == 2
+
+
+def test_add_inventory_items_selects_first_matching_button_for_strict_locators() -> None:
+    class StrictTarget:
+        def __init__(self, selected_first: bool = False) -> None:
+            self.selected_first = selected_first
+
+        def first(self) -> "StrictTarget":
+            return StrictTarget(selected_first=True)
+
+        def click(self) -> None:
+            if not self.selected_first:
+                raise AssertionError("strict multi locator requires first()")
+
+    class StrictPage:
+        def locator(self, selector: str) -> StrictTarget:
+            assert selector == SauceDemoPages.ADD_TO_CART_BUTTON
+            return StrictTarget()
+
+    SauceDemoPages(StrictPage(), ConfigStub("accounts.json")).add_inventory_items(2)
+
+
+def test_read_cart_count_returns_fake_attribute_when_present() -> None:
+    page = FakePage()
+    page.cart_count = 4
+
+    assert SauceDemoPages(page, ConfigStub("accounts.json")).read_cart_count() == 4
+
+
+def test_read_cart_count_reads_numeric_badge_text() -> None:
+    page = FakePage()
+    delattr(page, "cart_count")
+    page.text_values[SauceDemoPages.CART_BADGE] = "5"
+
+    assert SauceDemoPages(page, ConfigStub("accounts.json")).read_cart_count() == 5
+
+
+def test_read_cart_count_returns_zero_for_blank_badge_text() -> None:
+    page = FakePage()
+    delattr(page, "cart_count")
+
+    assert SauceDemoPages(page, ConfigStub("accounts.json")).read_cart_count() == 0
+
+
+def test_page_methods_operate_against_fake_page_and_record_expected_calls() -> None:
+    page = FakePage()
+    pages = SauceDemoPages(page, ConfigStub("accounts.json"))
+
+    pages.open_cart()
+    pages.checkout(account().checkout_profile)
+    assert pages.read_order_summary() == page.order_summary
+    pages.finish_order()
+    assert pages.read_confirmation() == page.confirmation
+    assert pages.capture_order_details() == page.order_details
+
+    assert ("locator", SauceDemoPages.CART_LINK, "click") in page.calls
+    assert ("locator", SauceDemoPages.CHECKOUT_BUTTON, "click") in page.calls
+    assert ("locator", SauceDemoPages.FIRST_NAME_INPUT, "fill", "Standard") in page.calls
+    assert ("locator", SauceDemoPages.LAST_NAME_INPUT, "fill", "User") in page.calls
+    assert ("locator", SauceDemoPages.POSTAL_CODE_INPUT, "fill", "10001") in page.calls
+    assert ("locator", SauceDemoPages.CONTINUE_BUTTON, "click") in page.calls
+    assert ("locator", SauceDemoPages.FINISH_BUTTON, "click") in page.calls
+
+
+def test_checkout_uses_current_sauce_demo_postal_code_selector() -> None:
+    assert SauceDemoPages.POSTAL_CODE_INPUT == "#postal-code"
+
+
+def test_capture_order_details_excludes_secret_like_fields() -> None:
+    page = FakePage()
+    page.order_details = {
+        "order_id": "ord-001",
+        "total": "$14.99",
+        "password_hint": "hidden",
+        "api_secret": "hidden",
+        "access_token": "hidden",
+        "credential_id": "hidden",
+    }
+
+    details = SauceDemoPages(page, ConfigStub("accounts.json")).capture_order_details()
+
+    assert details == {"order_id": "ord-001", "total": "$14.99"}
+
+
+def test_page_objects_do_not_import_persistence_or_sqlite_modules() -> None:
+    source = (ROOT / "src/portal_automation/portals/saucedemo/pages.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "persistence" not in source
+    assert "sqlite" not in source
+
+
+def test_page_objects_and_runner_do_not_contain_demo_credentials() -> None:
+    paths = [
+        ROOT / "src/portal_automation/portals/saucedemo/pages.py",
+        ROOT / "src/portal_automation/portals/saucedemo/runner.py",
+    ]
+
+    for path in paths:
+        source = path.read_text(encoding="utf-8")
+        assert "secret_sauce" not in source
+        assert "admin123" not in source
+
+
+def test_runner_and_page_source_do_not_import_playwright_directly() -> None:
+    paths = [
+        ROOT / "src/portal_automation/portals/saucedemo/pages.py",
+        ROOT / "src/portal_automation/portals/saucedemo/runner.py",
+    ]
+
+    for path in paths:
+        source = path.read_text(encoding="utf-8").lower()
+        for forbidden in (
+            "import playwright",
+            "from playwright",
+            "sync_playwright",
+            "async_playwright",
+            "chromium.launch",
+            "firefox.launch",
+            "webkit.launch",
+        ):
+            assert forbidden not in source
+
+
+def test_forbidden_modules_were_not_created() -> None:
+    forbidden_paths = [
+        "src/portal_automation/core/logging.py",
+    ]
+
+    assert [path for path in forbidden_paths if (ROOT / path).exists()] == []
