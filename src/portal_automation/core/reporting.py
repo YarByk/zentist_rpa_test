@@ -7,8 +7,9 @@ from portal_automation.core.models import ItemStatus, RunResult, RunStatus
 
 
 class ReportGenerator:
-    def __init__(self, artifacts: ArtifactStore) -> None:
+    def __init__(self, artifacts: ArtifactStore, logger: Any | None = None) -> None:
         self.artifacts = artifacts
+        self.logger = logger
 
     def render(self, result: RunResult) -> str:
         success_count = sum(1 for item in result.results if item.status is ItemStatus.SUCCESS)
@@ -28,7 +29,10 @@ class ReportGenerator:
 
     def write_report(self, result: RunResult) -> Path:
         path = self.artifacts.report_path(result.run_id)
-        return self.artifacts.write_text(path, self.render(result))
+        written_path = self.artifacts.write_text(path, self.render(result))
+        if self.logger is not None and hasattr(self.logger, "info"):
+            self.logger.info("report_generated", path=str(written_path))
+        return written_path
 
     def generate_from_persistence(
         self,

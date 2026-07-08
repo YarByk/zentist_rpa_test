@@ -30,6 +30,7 @@ class ConfigStub:
     saucedemo_input_path: str
     saucedemo_password: str | None = "pw"
     saucedemo_base_url: str = "https://www.saucedemo.com"
+    report_email_to: str | None = "reviewer@example.com"
 
 
 @dataclass
@@ -78,6 +79,17 @@ class ReporterStub:
 
     def write_report(self, result: RunResult) -> None:
         self.written_results.append(result)
+
+    def render(self, result: RunResult) -> str:
+        return f"rendered-report:{result.run_id}:{result.status.value}"
+
+
+class EmailStub:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, object]] = []
+
+    def send_report(self, **kwargs: object) -> None:
+        self.calls.append(kwargs)
 
 
 class FakeTarget:
@@ -292,6 +304,7 @@ def test_load_items_still_reads_validated_input_records(tmp_path) -> None:
 def test_finalize_writes_report_when_reporter_supports_write_report(tmp_path) -> None:
     reporter = ReporterStub()
     context = make_process_context(tmp_path, reporter=reporter)
+    context.email = object()
     result = RunResult(
         run_id="run-sd-1",
         portal_name="saucedemo",
@@ -303,6 +316,33 @@ def test_finalize_writes_report_when_reporter_supports_write_report(tmp_path) ->
     SauceDemoRunner().finalize(context, result)
 
     assert reporter.written_results == [result]
+
+
+def test_finalize_calls_email_send_report_with_written_report(tmp_path) -> None:
+    reporter = ReporterStub()
+    email = EmailStub()
+    context = make_process_context(tmp_path, reporter=reporter)
+    context.email = email
+    result = RunResult(
+        run_id="run-sd-1",
+        portal_name="saucedemo",
+        business_date=date(2026, 6, 29),
+        status=RunStatus.SUCCESS,
+        results=[],
+    )
+
+    SauceDemoRunner().finalize(context, result)
+
+    assert reporter.written_results == [result]
+    assert email.calls == [
+        {
+            "run_id": "run-sd-1",
+            "to": "reviewer@example.com",
+            "subject": "SauceDemo run report: run-sd-1",
+            "body": "rendered-report:run-sd-1:success",
+            "report_path": None,
+        }
+    ]
 
 
 def test_finalize_returns_without_error_when_reporter_has_no_write_report(tmp_path) -> None:

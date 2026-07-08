@@ -22,13 +22,16 @@ class FakePages:
         self,
         login_result: LoginResult | None = None,
         cart_count: int | None = None,
+        cart_counts: list[int] | None = None,
         order_summary: OrderSummary | None = None,
         confirmation: OrderSummary | None = None,
         captured_details: dict[str, Any] | None = None,
         raise_on: str | None = None,
+        failures: dict[str, list[Exception]] | None = None,
     ) -> None:
         self.login_result = login_result or LoginResult.success()
-        self.cart_count = cart_count
+        self.cart_count = 0 if cart_count is None else cart_count
+        self.cart_counts = list(cart_counts) if cart_counts is not None else None
         self.order_summary = order_summary
         self.confirmation = confirmation
         self.captured_details = captured_details or {
@@ -36,6 +39,10 @@ class FakePages:
             "total": "$49.99",
         }
         self.raise_on = raise_on
+        self.failures = {
+            key: list(value)
+            for key, value in (failures or {}).items()
+        }
         self.calls: list[tuple[str, Any]] = []
         self.login_password: str | None = None
 
@@ -48,11 +55,14 @@ class FakePages:
     def add_inventory_items(self, count: int) -> None:
         self.calls.append(("add_inventory_items", count))
         self._raise_if_configured("add_inventory_items")
+        self.cart_count += count
 
     def read_cart_count(self) -> int:
         self.calls.append(("read_cart_count", None))
         self._raise_if_configured("read_cart_count")
-        return self.cart_count if self.cart_count is not None else account().items_to_add
+        if self.cart_counts:
+            self.cart_count = self.cart_counts.pop(0)
+        return self.cart_count
 
     def open_cart(self) -> None:
         self.calls.append(("open_cart", None))
@@ -90,6 +100,10 @@ class FakePages:
         return self.captured_details
 
     def _raise_if_configured(self, method_name: str) -> None:
+        queued = self.failures.get(method_name)
+        if queued:
+            error = queued.pop(0)
+            raise error
         if self.raise_on == method_name:
             raise PortalError(ReasonCode.PORTAL_TIMEOUT, f"{method_name} timed out")
 
@@ -108,7 +122,7 @@ def account(items_to_add: int = 3) -> SauceDemoAccount:
 
 
 def make_context(password: str | None = "test_pw") -> SimpleNamespace:
-    return SimpleNamespace(config=SimpleNamespace(saucedemo_password=password))
+    return SimpleNamespace(config=SimpleNamespace(saucedemo_password=password, max_retries=2))
 
 
 def assert_portal_error(reason: ReasonCode, func) -> PortalError:
@@ -133,6 +147,7 @@ def test_successful_account_workflow_calls_page_methods_in_required_order() -> N
 
     assert pages.calls == [
         ("login", "standard_user"),
+        ("read_cart_count", None),
         ("add_inventory_items", 3),
         ("read_cart_count", None),
         ("open_cart", None),
@@ -147,7 +162,7 @@ def test_successful_account_workflow_calls_page_methods_in_required_order() -> N
 def test_successful_workflow_adds_account_items_to_add() -> None:
     test_account = account(items_to_add=2)
     pages = FakePages(
-        cart_count=2,
+        cart_count=0,
         order_summary=OrderSummary(item_count=2, confirmation_text="Ready"),
         confirmation=OrderSummary(item_count=2, confirmation_text="Complete"),
     )
@@ -161,7 +176,7 @@ def test_successful_workflow_adds_account_items_to_add() -> None:
 def test_successful_workflow_validates_cart_count() -> None:
     error = assert_portal_error(
         ReasonCode.VALIDATION_FAILED,
-        lambda: process_account(account(), FakePages(cart_count=2), make_context()),
+        lambda: process_account(account(), FakePages(cart_count=4), make_context()),
     )
 
     assert "Cart count mismatch" in error.detail
@@ -251,12 +266,13 @@ def test_failed_login_maps_to_login_failed() -> None:
     )
 
     assert error.detail == "bad credentials"
+    assert pages.calls == [("login", "standard_user")]
 
 
 def test_cart_mismatch_maps_to_validation_failed() -> None:
     assert_portal_error(
         ReasonCode.VALIDATION_FAILED,
-        lambda: process_account(account(), FakePages(cart_count=1), make_context()),
+        lambda: process_account(account(), FakePages(cart_count=4), make_context()),
     )
 
 
@@ -296,6 +312,88 @@ def test_portal_error_raised_by_page_method_propagates_unchanged() -> None:
     )
 
     assert error.detail == "add_inventory_items timed out"
+
+
+def test_retryable_login_failure_is_retried_and_eventually_succeeds() -> None:
+    pages = FakePages(
+        failures={
+            "login": [PortalError(ReasonCode.PORTAL_TIMEOUT, "temporary login timeout")]
+        }
+    )
+
+    result = process_account(account(), pages, make_context())
+
+    assert result.status is ItemStatus.SUCCESS
+    assert result.attempts == 2
+    assert [call for call in pages.calls if call[0] == "login"] == [
+        ("login", "standard_user"),
+        ("login", "standard_user"),
+    ]
+
+
+def test_exhausted_retryable_read_step_raises_final_portal_error_with_attempts() -> None:
+    pages = FakePages(
+        failures={
+            "open_cart": [
+                PortalError(ReasonCode.PORTAL_TIMEOUT, "cart timeout 1"),
+                PortalError(ReasonCode.PORTAL_TIMEOUT, "cart timeout 2"),
+                PortalError(ReasonCode.PORTAL_TIMEOUT, "cart timeout 3"),
+            ]
+        }
+    )
+    context = make_context()
+    context.config.max_retries = 2
+
+    error = assert_portal_error(
+        ReasonCode.PORTAL_TIMEOUT,
+        lambda: process_account(account(), pages, context),
+    )
+
+    assert error.attempts == 3
+
+
+def test_finish_order_retryable_failure_is_not_retried_blindly_when_confirmation_missing() -> None:
+    pages = FakePages(
+        confirmation=OrderSummary(item_count=0, confirmation_text=""),
+        failures={
+            "finish_order": [PortalError(ReasonCode.PORTAL_TIMEOUT, "finish timed out")]
+        },
+    )
+
+    error = assert_portal_error(
+        ReasonCode.PORTAL_TIMEOUT,
+        lambda: process_account(account(), pages, make_context()),
+    )
+
+    assert error.detail == "finish timed out"
+    assert [call for call in pages.calls if call[0] == "finish_order"] == [
+        ("finish_order", None)
+    ]
+    assert [call for call in pages.calls if call[0] == "read_confirmation"] == [
+        ("read_confirmation", None)
+    ]
+
+
+def test_runtime_workflow_uses_retry_policy_execute() -> None:
+    pages = FakePages()
+    execute_calls = []
+
+    from portal_automation.core.retries import RetryPolicy
+
+    original_execute = RetryPolicy.execute
+
+    def tracked_execute(self, operation, logger=None):
+        execute_calls.append(self.max_retries)
+        return original_execute(self, operation, logger=logger)
+
+    RetryPolicy.execute = tracked_execute
+    try:
+        result = process_account(account(), pages, make_context())
+    finally:
+        RetryPolicy.execute = original_execute
+
+    assert result.status is ItemStatus.SUCCESS
+    assert execute_calls != []
 
 
 def test_sample_account_created_from_p16_shape_works_with_workflow() -> None:

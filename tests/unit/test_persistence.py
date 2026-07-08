@@ -541,6 +541,93 @@ def test_mark_run_stale_returns_false_for_fresh_finished_or_missing_runs(
     assert finished["status"] == RunStatus.SUCCESS.value
 
 
+def test_mark_stale_item_failed_marks_only_old_in_progress_item(tmp_path: Path) -> None:
+    db = connector(tmp_path)
+    business_date = date(2026, 6, 29)
+    old_stamp = utc_stamp(-600)
+    fresh_stamp = utc_stamp(0)
+    db.mark_item_in_progress(
+        "run-old",
+        "orangehrm",
+        business_date,
+        "old-in-progress",
+        "sync_employee_state",
+    )
+    db.mark_item_in_progress(
+        "run-fresh",
+        "orangehrm",
+        business_date,
+        "fresh-in-progress",
+        "sync_employee_state",
+    )
+    db.upsert_item_result(
+        successful_item(item_key="success-1"),
+        "run-success",
+        "orangehrm",
+        business_date,
+    )
+    set_item_updated_at(db, "old-in-progress", old_stamp)
+    set_item_updated_at(db, "fresh-in-progress", fresh_stamp)
+    set_item_updated_at(db, "success-1", old_stamp)
+
+    assert (
+        db.mark_stale_item_failed(
+            "run-old",
+            "orangehrm",
+            business_date,
+            "old-in-progress",
+            "sync_employee_state",
+            timeout_seconds=300,
+        )
+        is True
+    )
+    assert (
+        db.mark_stale_item_failed(
+            "run-fresh",
+            "orangehrm",
+            business_date,
+            "fresh-in-progress",
+            "sync_employee_state",
+            timeout_seconds=300,
+        )
+        is False
+    )
+    assert (
+        db.mark_stale_item_failed(
+            "run-success",
+            "orangehrm",
+            business_date,
+            "success-1",
+            "sync_employee_state",
+            timeout_seconds=300,
+        )
+        is False
+    )
+
+    stale_row = fetch_one(
+        db,
+        "SELECT status, reason_code, error_detail FROM item_results WHERE item_key = ?",
+        ("old-in-progress",),
+    )
+    fresh_row = fetch_one(
+        db,
+        "SELECT status, reason_code FROM item_results WHERE item_key = ?",
+        ("fresh-in-progress",),
+    )
+    success_row = fetch_one(
+        db,
+        "SELECT status, reason_code FROM item_results WHERE item_key = ?",
+        ("success-1",),
+    )
+    assert stale_row["status"] == ItemStatus.FAILED.value
+    assert stale_row["reason_code"] == ReasonCode.SESSION_DROPPED.value
+    assert "Recovered stale in-progress item" in stale_row["error_detail"]
+    assert fresh_row["status"] == ItemStatus.IN_PROGRESS.value
+    assert fresh_row["reason_code"] is None
+    assert success_row["status"] == ItemStatus.SUCCESS.value
+    assert success_row["reason_code"] is None
+
+
 def test_insert_or_replace_does_not_appear_in_src() -> None:
     offenders = [
         path.relative_to(ROOT).as_posix()

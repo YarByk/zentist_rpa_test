@@ -16,10 +16,20 @@ class ConfigStub:
     artifacts_dir: str
     business_date: str | None = None
     headless: bool = True
+    orangehrm_password: str | None = None
+    saucedemo_password: str | None = None
     email_backend: str = "dry_run"
+    report_email_to: str | None = None
     stale_item_timeout_seconds: int = 300
     orangehrm_input_path: str = "data/orangehrm_employees.json"
     saucedemo_input_path: str = "data/saucedemo_accounts.json"
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_from: str | None = None
+    smtp_to: str | None = None
+    smtp_use_tls: bool = True
 
 
 class RunnerStub:
@@ -69,7 +79,7 @@ def test_top_level_help_exits_zero(capsys) -> None:
     assert "usage:" in captured.out
 
 
-@pytest.mark.parametrize("portal_name", ["orangehrm", "saucedemo", "all"])
+@pytest.mark.parametrize("portal_name", ["orangehrm", "saucedemo", "all", "recover"])
 def test_subcommand_help_exits_zero(portal_name, capsys) -> None:
     exit_code = cli.main([portal_name, "--help"])
 
@@ -116,12 +126,26 @@ def test_headless_argument_overrides_config(monkeypatch, tmp_path) -> None:
 
 
 def test_email_backend_argument_overrides_config(monkeypatch, tmp_path) -> None:
-    configure_cli(monkeypatch, tmp_path)
+    config = configure_cli(monkeypatch, tmp_path)
+    config.smtp_host = "smtp.example.com"
+    config.smtp_from = "reports@example.com"
+    config.report_email_to = "reviewer@example.com"
 
     exit_code = cli.main(["orangehrm", "--dry-run", "--email-backend", "smtp"])
 
     assert exit_code == 0
     assert OrangeRunnerStub.calls[0].config.email_backend == "smtp"
+
+
+def test_smtp_backend_missing_required_config_fails_fast(monkeypatch, tmp_path, capsys) -> None:
+    config = configure_cli(monkeypatch, tmp_path)
+    config.email_backend = "smtp"
+
+    exit_code = cli.main(["orangehrm", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "SMTP backend is selected" in captured.err
 
 
 def test_single_portal_run_uses_only_selected_registry_runner(monkeypatch, tmp_path) -> None:
@@ -132,6 +156,50 @@ def test_single_portal_run_uses_only_selected_registry_runner(monkeypatch, tmp_p
     assert exit_code == 0
     assert len(OrangeRunnerStub.calls) == 1
     assert SauceRunnerStub.calls == []
+
+
+def test_runtime_path_uses_secrets_loader_for_selected_portal(monkeypatch, tmp_path) -> None:
+    configure_cli(monkeypatch, tmp_path)
+    calls = []
+
+    class LoaderStub:
+        def __init__(self, config) -> None:
+            self.config = config
+
+        def get(self, key: str):
+            calls.append(("get", key))
+            if key == "ORANGEHRM_PASSWORD":
+                return "loaded-orange-secret"
+            return None
+
+        def require(self, key: str):
+            calls.append(("require", key))
+            if key == "ORANGEHRM_PASSWORD":
+                return "loaded-orange-secret"
+            raise AssertionError(f"unexpected secret lookup: {key}")
+
+    monkeypatch.setattr(cli, "SecretsLoader", LoaderStub)
+
+    exit_code = cli.main(["orangehrm"])
+
+    assert exit_code == 0
+    assert OrangeRunnerStub.calls[0].config.orangehrm_password == "loaded-orange-secret"
+    assert ("get", "ORANGEHRM_PASSWORD") in calls
+    assert ("require", "ORANGEHRM_PASSWORD") in calls
+
+
+def test_non_dry_run_missing_selected_portal_secret_fails_fast(
+    monkeypatch,
+    tmp_path,
+    capsys,
+) -> None:
+    configure_cli(monkeypatch, tmp_path)
+
+    exit_code = cli.main(["orangehrm"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "ORANGEHRM_PASSWORD is required for this runtime path." in captured.err
 
 
 def test_all_executes_both_portals_in_sorted_order(monkeypatch, tmp_path) -> None:

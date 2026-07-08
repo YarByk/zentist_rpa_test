@@ -1,4 +1,6 @@
 import sqlite3
+import subprocess
+import sys
 import uuid
 from datetime import date
 from pathlib import Path
@@ -143,6 +145,22 @@ def count_item_rows(db_path: Path) -> int:
         (FAKE_PORTAL,),
     )
     return int(rows[0]["count"])
+
+
+def run_recover_cli(tmp_path: Path, *args: str):
+    env = {
+        **__import__("os").environ,
+        "DB_PATH": str(tmp_path / "db.sqlite"),
+        "ARTIFACTS_DIR": str(tmp_path / "artifacts"),
+        "EMAIL_BACKEND": "dry_run",
+    }
+    return subprocess.run(
+        [sys.executable, "-m", "portal_automation", "recover", *args],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
 
 
 def test_same_day_rerun_skips_committed_items_and_keeps_report_complete(
@@ -312,3 +330,106 @@ def test_stale_run_detection_uses_finished_at_and_timeout(tmp_path: Path) -> Non
     assert [run["run_id"] for run in stale_runs] == ["run-hanging"]
     assert persistence.mark_run_stale("run-hanging", timeout_seconds=1) is True
     assert persistence.mark_run_stale("run-hanging", timeout_seconds=300) is False
+
+
+def test_recover_dry_run_reports_stale_rows_without_modifying_database(tmp_path: Path) -> None:
+    db_path = tmp_path / "db.sqlite"
+    persistence = PersistenceConnector(str(db_path))
+    persistence.create_run("run-stale", FAKE_PORTAL, BUSINESS_DATE)
+    persistence.mark_item_in_progress(
+        "run-stale",
+        FAKE_PORTAL,
+        BUSINESS_DATE,
+        "item-stale",
+        FAKE_OPERATION,
+    )
+    set_run_updated_at(db_path, "run-stale", OLD_TIMESTAMP)
+    set_item_updated_at(db_path, "item-stale", OLD_TIMESTAMP)
+
+    result = run_recover_cli(
+        tmp_path,
+        "--business-date",
+        BUSINESS_DATE.isoformat(),
+        "--dry-run",
+    )
+
+    assert result.returncode == 0
+    assert "stale_runs_found=1" in result.stdout
+    assert "stale_items_found=1" in result.stdout
+    assert "dry_run=true database_unchanged=true" in result.stdout
+    run_row = fetch_rows(db_path, "SELECT status FROM runs WHERE run_id = ?", ("run-stale",))[0]
+    item_row = fetch_rows(
+        db_path,
+        "SELECT status, reason_code FROM item_results WHERE item_key = ?",
+        ("item-stale",),
+    )[0]
+    assert run_row["status"] == RunStatus.RUNNING.value
+    assert item_row["status"] == ItemStatus.IN_PROGRESS.value
+    assert item_row["reason_code"] is None
+    recover_dirs = list((tmp_path / "artifacts" / "runs").iterdir())
+    assert len(recover_dirs) == 1
+    assert (recover_dirs[0] / "events.jsonl").is_file()
+    assert (recover_dirs[0] / "metrics.json").is_file()
+
+
+def test_recover_marks_only_safe_stale_rows_and_keeps_success_items_untouched(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "db.sqlite"
+    persistence = PersistenceConnector(str(db_path))
+    persistence.create_run("run-stale", FAKE_PORTAL, BUSINESS_DATE)
+    persistence.create_run("run-fresh", FAKE_PORTAL, BUSINESS_DATE)
+    persistence.mark_item_in_progress(
+        "run-stale",
+        FAKE_PORTAL,
+        BUSINESS_DATE,
+        "item-stale",
+        FAKE_OPERATION,
+    )
+    persistence.mark_item_in_progress(
+        "run-fresh",
+        FAKE_PORTAL,
+        BUSINESS_DATE,
+        "item-fresh",
+        FAKE_OPERATION,
+    )
+    persistence.upsert_item_result(
+        ItemResult(
+            item_key="item-success",
+            operation=FAKE_OPERATION,
+            status=ItemStatus.SUCCESS,
+            reason_code=None,
+            error_detail=None,
+            artifact_path=None,
+            details={},
+        ),
+        "run-success",
+        FAKE_PORTAL,
+        BUSINESS_DATE,
+    )
+    set_run_updated_at(db_path, "run-stale", OLD_TIMESTAMP)
+    set_item_updated_at(db_path, "item-stale", OLD_TIMESTAMP)
+
+    result = run_recover_cli(tmp_path, "--business-date", BUSINESS_DATE.isoformat())
+
+    assert result.returncode == 0
+    assert "stale_runs_marked=1" in result.stdout
+    assert "stale_items_marked_failed=1" in result.stdout
+    run_rows = fetch_rows(
+        db_path,
+        "SELECT run_id, status FROM runs ORDER BY run_id",
+    )
+    item_rows = fetch_rows(
+        db_path,
+        "SELECT item_key, status, reason_code FROM item_results ORDER BY item_key",
+    )
+    run_status_by_id = {row["run_id"]: row["status"] for row in run_rows}
+    assert run_status_by_id["run-stale"] == RunStatus.STALE.value
+    assert run_status_by_id["run-fresh"] == RunStatus.RUNNING.value
+    item_by_key = {row["item_key"]: row for row in item_rows}
+    assert item_by_key["item-stale"]["status"] == ItemStatus.FAILED.value
+    assert item_by_key["item-stale"]["reason_code"] == ReasonCode.SESSION_DROPPED.value
+    assert item_by_key["item-fresh"]["status"] == ItemStatus.IN_PROGRESS.value
+    assert item_by_key["item-fresh"]["reason_code"] is None
+    assert item_by_key["item-success"]["status"] == ItemStatus.SUCCESS.value
+    assert item_by_key["item-success"]["reason_code"] is None

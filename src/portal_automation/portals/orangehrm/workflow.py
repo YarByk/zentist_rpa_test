@@ -8,7 +8,11 @@ from portal_automation.core.document_generator import (
     salary_document_filename,
 )
 from portal_automation.core.models import ItemResult, ItemStatus, ReasonCode
-from portal_automation.core.retries import PortalError
+from portal_automation.core.retries import (
+    PortalError,
+    execute_with_context_retry,
+    is_retryable_error,
+)
 from portal_automation.portals.orangehrm.input_schema import OrangeHrmEmployeeRecord
 
 OPERATION_NAME = "sync_employee_state"
@@ -74,10 +78,13 @@ def process_employee(
     pages: OrangeHrmWorkflowPages,
     context: Any,
 ) -> ItemResult:
-    created_employee = _locate_or_create_employee(employee, pages)
-    pages.update_job(employee)
-    _validate_job(employee, pages.read_job(employee))
-    artifact_path = _ensure_salary_attachment(employee, pages, context)
+    attempts = 1
+    created_employee, locate_attempts = _locate_or_create_employee(employee, pages, context)
+    attempts = max(attempts, locate_attempts)
+    job_attempts = _update_job_and_validate(employee, pages, context)
+    attempts = max(attempts, job_attempts)
+    artifact_path, upload_attempts = _ensure_salary_attachment(employee, pages, context)
+    attempts = max(attempts, upload_attempts)
     return ItemResult(
         item_key=employee.employee_key,
         operation=OPERATION_NAME,
@@ -85,7 +92,7 @@ def process_employee(
         reason_code=None,
         error_detail=None,
         artifact_path=str(artifact_path) if artifact_path is not None else None,
-        attempts=1,
+        attempts=attempts,
         details={
             "created_employee": created_employee,
             "salary_document_uploaded": artifact_path is not None,
@@ -96,23 +103,59 @@ def process_employee(
 def _locate_or_create_employee(
     employee: OrangeHrmEmployeeRecord,
     pages: OrangeHrmWorkflowPages,
-) -> bool:
-    first_find = pages.find_employee_record(employee)
+    context: Any,
+) -> tuple[bool, int]:
+    attempts = 1
+    first_find, first_find_attempts = execute_with_context_retry(
+        context,
+        lambda: pages.find_employee_record(employee),
+    )
+    attempts = max(attempts, first_find_attempts)
     _raise_for_find_failure(first_find)
     if first_find.status is FindStatus.FOUND:
-        pages.open_employee_profile(employee)
-        return False
+        _, open_attempts = execute_with_context_retry(
+            context,
+            lambda: pages.open_employee_profile(employee),
+        )
+        return False, max(attempts, open_attempts)
 
-    pages.add_employee(employee)
-    second_find = pages.find_employee_record(employee)
+    try:
+        pages.add_employee(employee)
+    except PortalError as error:
+        if not is_retryable_error(error):
+            raise
+        attempts = max(attempts, error.attempts)
+        second_find, second_find_attempts = execute_with_context_retry(
+            context,
+            lambda: pages.find_employee_record(employee),
+        )
+        attempts = max(attempts, second_find_attempts)
+        _raise_for_find_failure(second_find)
+        if second_find.status is FindStatus.NOT_FOUND:
+            error.attempts = attempts
+            raise
+        _, open_attempts = execute_with_context_retry(
+            context,
+            lambda: pages.open_employee_profile(employee),
+        )
+        return True, max(attempts, open_attempts)
+
+    second_find, second_find_attempts = execute_with_context_retry(
+        context,
+        lambda: pages.find_employee_record(employee),
+    )
+    attempts = max(attempts, second_find_attempts)
     _raise_for_find_failure(second_find)
     if second_find.status is FindStatus.NOT_FOUND:
         raise PortalError(
             ReasonCode.EMPLOYEE_NOT_FOUND,
             f"Employee '{employee.full_name}' was not found after creation.",
         )
-    pages.open_employee_profile(employee)
-    return True
+    _, open_attempts = execute_with_context_retry(
+        context,
+        lambda: pages.open_employee_profile(employee),
+    )
+    return True, max(attempts, open_attempts)
 
 
 def _raise_for_find_failure(find_result: FindResult) -> None:
@@ -139,14 +182,53 @@ def _validate_job(employee: OrangeHrmEmployeeRecord, actual: dict[str, str]) -> 
         )
 
 
+def _update_job_and_validate(
+    employee: OrangeHrmEmployeeRecord,
+    pages: OrangeHrmWorkflowPages,
+    context: Any,
+) -> int:
+    attempts = 1
+    try:
+        pages.update_job(employee)
+    except PortalError as error:
+        if not is_retryable_error(error):
+            raise
+        attempts = max(attempts, error.attempts)
+        actual, read_attempts = execute_with_context_retry(
+            context,
+            lambda: pages.read_job(employee),
+        )
+        attempts = max(attempts, read_attempts)
+        try:
+            _validate_job(employee, actual)
+        except PortalError:
+            error.attempts = attempts
+            raise error from None
+        return attempts
+
+    actual, read_attempts = execute_with_context_retry(
+        context,
+        lambda: pages.read_job(employee),
+    )
+    attempts = max(attempts, read_attempts)
+    _validate_job(employee, actual)
+    return attempts
+
+
 def _ensure_salary_attachment(
     employee: OrangeHrmEmployeeRecord,
     pages: OrangeHrmWorkflowPages,
     context: Any,
-) -> Path | None:
+) -> tuple[Path | None, int]:
+    attempts = 1
     filename = salary_document_filename(employee.employee_key, context.business_date)
-    if filename in pages.list_salary_attachments(employee):
-        return None
+    attachments, list_attempts = execute_with_context_retry(
+        context,
+        lambda: pages.list_salary_attachments(employee),
+    )
+    attempts = max(attempts, list_attempts)
+    if filename in attachments:
+        return None, attempts
 
     content = generate_salary_document(
         employee_name=employee.full_name,
@@ -170,10 +252,30 @@ def _ensure_salary_attachment(
         context.business_date,
     )
     path = context.artifacts.write_text(doc_path, content)
-    pages.upload_salary_attachment(employee, path)
-    if not pages.verify_salary_attachment(employee, filename):
+    try:
+        pages.upload_salary_attachment(employee, path)
+    except PortalError as error:
+        if not is_retryable_error(error):
+            raise
+        attempts = max(attempts, error.attempts)
+        uploaded, verify_attempts = execute_with_context_retry(
+            context,
+            lambda: pages.verify_salary_attachment(employee, filename),
+        )
+        attempts = max(attempts, verify_attempts)
+        if uploaded:
+            return path, attempts
+        error.attempts = attempts
+        raise
+
+    uploaded, verify_attempts = execute_with_context_retry(
+        context,
+        lambda: pages.verify_salary_attachment(employee, filename),
+    )
+    attempts = max(attempts, verify_attempts)
+    if not uploaded:
         raise PortalError(
             ReasonCode.UPLOAD_FAILED,
             f"Salary attachment verification failed for '{employee.full_name}'.",
         )
-    return path
+    return path, attempts

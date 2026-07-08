@@ -64,3 +64,17 @@ class RetryPolicy:
             attempt=next_attempt_number,
             reason_code=reason.value,
         )
+
+
+def is_retryable_error(error: PortalError) -> bool:
+    return error.reason in RETRYABLE_REASON_CODES
+
+
+def execute_with_context_retry(
+    context: Any,
+    operation: Callable[[], T],
+) -> tuple[T, int]:
+    config = getattr(context, "config", None)
+    max_retries = getattr(config, "max_retries", 0)
+    logger = getattr(context, "logger", None)
+    return RetryPolicy(max_retries=max_retries).execute(operation, logger=logger)

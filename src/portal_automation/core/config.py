@@ -55,6 +55,7 @@ class AppConfig:
     smtp_password: str | None = field(repr=False)
     smtp_from: str | None
     smtp_to: str | None
+    smtp_use_tls: bool
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -90,6 +91,7 @@ class AppConfig:
             smtp_password=_optional_env_value("SMTP_PASSWORD"),
             smtp_from=_optional_env_value("SMTP_FROM"),
             smtp_to=_optional_env_value("SMTP_TO"),
+            smtp_use_tls=_bool_env_value("SMTP_USE_TLS", "true"),
         )
 
     def default_input_path(self, portal_name: str) -> str:

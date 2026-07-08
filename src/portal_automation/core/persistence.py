@@ -126,6 +126,51 @@ class PersistenceConnector:
         self._connection.commit()
         return cursor.rowcount > 0
 
+    def mark_stale_item_failed(
+        self,
+        run_id: str,
+        portal_name: str,
+        business_date: date,
+        item_key: str,
+        operation: str,
+        timeout_seconds: int,
+        *,
+        reason_code: ReasonCode = ReasonCode.SESSION_DROPPED,
+        error_detail: str = "Recovered stale in-progress item via CLI recover command.",
+    ) -> bool:
+        now = _utc_now()
+        cursor = self._connection.execute(
+            """
+            UPDATE item_results
+            SET status = ?,
+                reason_code = ?,
+                error_detail = ?,
+                updated_at = ?
+            WHERE run_id = ?
+              AND portal_name = ?
+              AND business_date = ?
+              AND item_key = ?
+              AND operation = ?
+              AND status = ?
+              AND updated_at < ?;
+            """,
+            (
+                ItemStatus.FAILED.value,
+                reason_code.value,
+                error_detail,
+                now,
+                run_id,
+                portal_name,
+                business_date.isoformat(),
+                item_key,
+                operation,
+                ItemStatus.IN_PROGRESS.value,
+                _stale_cutoff(timeout_seconds),
+            ),
+        )
+        self._connection.commit()
+        return cursor.rowcount > 0
+
     def mark_item_in_progress(
         self,
         run_id: str,

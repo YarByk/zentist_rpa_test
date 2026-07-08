@@ -26,8 +26,7 @@ pytest
 ```
 
 The default `pytest` configuration runs `tests/unit` and `tests/integration`. Live browser
-e2e tests belong under `tests/e2e` and are excluded from the default test path. The current
-default suite contains 325 tests.
+e2e tests belong under `tests/e2e` and are excluded from the default test path.
 
 ## Configuration
 
@@ -54,7 +53,7 @@ Important variables and defaults:
 | `SAUCEDEMO_INPUT_PATH` | `data/saucedemo_accounts.json` |
 | `EMAIL_BACKEND` | `dry_run` |
 | `REPORT_EMAIL_TO` | optional recipient address |
-| `SMTP_HOST`, `SMTP_PORT` (`587`), `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_TO` | present in `.env.example` for future SMTP use; `EmailConnector("smtp", ...)` raises at send time and is not implemented in this slice |
+| `SMTP_HOST`, `SMTP_PORT` (`587`), `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_TO`, `SMTP_USE_TLS` | used when `EMAIL_BACKEND=smtp` |
 
 ## CLI Usage
 
@@ -63,6 +62,7 @@ python -m portal_automation --help
 python -m portal_automation all --dry-run
 python -m portal_automation orangehrm --dry-run
 python -m portal_automation saucedemo --dry-run
+python -m portal_automation recover --business-date 2026-06-29 --dry-run
 ```
 
 Useful options:
@@ -99,7 +99,9 @@ Important artifact paths:
 - `generated_documents/` - salary document output for OrangeHRM workflows.
 - `screenshots/` and `traces/` - deterministic directories exposed by `ArtifactStore`.
 
-Current real portal finalizers write reports. They do not send email.
+Current real portal finalizers write reports and call `email.send_report()`. With the
+default `dry_run` backend this produces `email_report.txt`; with `smtp` it sends through
+standard-library SMTP.
 
 ## Input Contracts
 
@@ -151,8 +153,39 @@ Stale recovery helpers are exposed by `PersistenceConnector`:
 - `find_stale_runs()`
 - `mark_run_stale()`
 
-These methods support external monitoring scripts. The base lifecycle does not call them
-automatically.
+### Recovery of stale runs/items
+
+Use:
+
+```bash
+python -m portal_automation recover --business-date YYYY-MM-DD --dry-run
+python -m portal_automation recover --business-date YYYY-MM-DD
+```
+
+What counts as stale:
+
+- a run with `finished_at IS NULL` whose `updated_at` is older than
+  `STALE_ITEM_TIMEOUT_SECONDS`
+- an item row still in `in_progress` whose `updated_at` is older than the same cutoff
+
+What `--dry-run` does:
+
+- finds stale runs and items for the requested business date
+- prints a summary and the exact records that would be recovered
+- does not change the SQLite database
+
+What mutating recovery does:
+
+- marks stale unfinished runs as `stale`
+- marks stale `in_progress` item rows as `failed` with a recovery error detail
+- does not delete data
+- does not modify completed or successful items
+
+Why this helps same-day rerun/resume:
+
+- same-day reruns skip only committed `success` items
+- after recovery, previously stuck `in_progress` items are no longer left hanging
+- those failed rows can be safely retried by the next normal portal run
 
 ## Adding A Third Portal
 
@@ -178,8 +211,11 @@ This repository is a take-home implementation surface, not a deployed product.
 - No scheduler.
 - No live Playwright dependency.
 - No default CLI browser/page factory wiring.
-- SMTP send is not implemented.
-- CLI logger and metrics are no-op placeholders.
+- Observability is local-file based in this take-home implementation:
+  structured events are written to `events.jsonl`, and run metrics are written to
+  `metrics.json` under `artifacts/runs/<run_id>/`. External observability backends
+  are covered in `DESIGN.md`.
+
 
 Live portal behavior is represented by page objects, workflows, and fake-page tests. Dry-run
 is the safe CLI smoke path.

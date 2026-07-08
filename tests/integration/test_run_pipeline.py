@@ -15,6 +15,7 @@ from portal_automation.core.models import (
     RunResult,
     RunStatus,
 )
+from portal_automation.core.observability import RunMetricsCollector, StructuredEventLogger
 from portal_automation.core.persistence import PersistenceConnector
 from portal_automation.core.reporting import ReportGenerator
 from portal_automation.core.retries import PortalError
@@ -85,6 +86,19 @@ def make_context(
 ) -> RunContext:
     run_id = run_id or f"run-{uuid.uuid4().hex[:8]}"
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
+    metrics = RunMetricsCollector(
+        artifacts,
+        run_id=run_id,
+        portal=FAKE_PORTAL,
+        business_date=BUSINESS_DATE,
+    )
+    logger = StructuredEventLogger(
+        artifacts,
+        run_id=run_id,
+        portal=FAKE_PORTAL,
+        business_date=BUSINESS_DATE,
+        metrics=metrics,
+    )
     return RunContext(
         run_id=run_id,
         business_date=BUSINESS_DATE,
@@ -94,11 +108,11 @@ def make_context(
         persistence=(
             persistence or PersistenceConnector(str(tmp_path / "db.sqlite"))
         ),
-        reporter=ReportGenerator(artifacts),
-        logger=object(),
-        metrics=object(),
+        reporter=ReportGenerator(artifacts, logger=logger),
+        logger=logger,
+        metrics=metrics,
         artifacts=artifacts,
-        email=EmailConnector("dry_run", artifacts),
+        email=EmailConnector("dry_run", artifacts, logger=logger),
     )
 
 
@@ -193,6 +207,37 @@ def test_runner_pipeline_persists_run_results_report_and_dry_run_email(tmp_path:
     assert "item_key=item-a" in email_report
     assert "item_key=item-b" in email_report
 
+    events_path = tmp_path / "artifacts" / "runs" / run_id / "events.jsonl"
+    metrics_path = tmp_path / "artifacts" / "runs" / run_id / "metrics.json"
+    assert events_path.is_file()
+    assert metrics_path.is_file()
+    event_rows = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()]
+    assert {row["event"] for row in event_rows} >= {
+        "run_started",
+        "item_started",
+        "item_finished",
+        "report_generated",
+        "email_send_attempt",
+        "email_sent",
+        "run_finished",
+    }
+    for row in event_rows:
+        assert row["run_id"] == run_id
+        assert row["portal"] == FAKE_PORTAL
+        assert row["business_date"] == BUSINESS_DATE.isoformat()
+        assert row["timestamp"]
+        assert row["event"]
+    metrics_payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    assert metrics_payload["run_id"] == run_id
+    assert metrics_payload["portal"] == FAKE_PORTAL
+    assert metrics_payload["business_date"] == BUSINESS_DATE.isoformat()
+    assert metrics_payload["items_total"] == 2
+    assert metrics_payload["items_success"] == 2
+    assert metrics_payload["items_failed"] == 0
+    assert metrics_payload["items_skipped"] == 0
+    assert metrics_payload["retry_count"] == 0
+    assert metrics_payload["duration_seconds"] >= 0
+
 
 def test_runner_pipeline_records_partial_success_for_mixed_item_results(
     tmp_path: Path,
@@ -247,3 +292,10 @@ def test_runner_pipeline_records_partial_success_for_mixed_item_results(
     assert "item_key=item-ok" in report
     assert "item_key=item-bad" in report
     assert "item_key=item-later" in report
+
+    metrics_payload = json.loads(
+        (tmp_path / "artifacts" / "runs" / run_id / "metrics.json").read_text(encoding="utf-8")
+    )
+    assert metrics_payload["items_total"] == 3
+    assert metrics_payload["items_success"] == 2
+    assert metrics_payload["items_failed"] == 1

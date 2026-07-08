@@ -53,5 +53,21 @@ class SauceDemoRunner(BasePortalRunnerZX):
         return process_account(item, self._pages_factory(context), context)
 
     def finalize(self, context: RunContext, result: RunResult) -> None:
+        run_id = getattr(context, "run_id", result.run_id)
+        report_path = None
         if hasattr(context.reporter, "write_report"):
-            context.reporter.write_report(result)
+            report_path = context.reporter.write_report(result)
+        email = getattr(context, "email", None)
+        if hasattr(email, "send_report"):
+            body = (
+                context.reporter.render(result)
+                if hasattr(context.reporter, "render")
+                else f"Portal run {run_id} completed with status {result.status.value}."
+            )
+            email.send_report(
+                run_id=run_id,
+                to=getattr(context.config, "report_email_to", None),
+                subject=f"SauceDemo run report: {run_id}",
+                body=body,
+                report_path=report_path,
+            )

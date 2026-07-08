@@ -47,6 +47,13 @@ def test_all_help_exits_zero(tmp_path) -> None:
     assert "usage:" in result.stdout
 
 
+def test_recover_help_exits_zero(tmp_path) -> None:
+    result = run_cli(["recover", "--help"], tmp_path)
+
+    assert result.returncode == 0
+    assert "usage:" in result.stdout
+
+
 def test_all_dry_run_exits_zero_with_temporary_artifacts(tmp_path) -> None:
     result = run_cli(["all", "--dry-run"], tmp_path)
 

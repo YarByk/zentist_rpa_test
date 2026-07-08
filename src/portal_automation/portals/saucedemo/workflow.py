@@ -3,7 +3,11 @@ from enum import Enum
 from typing import Any, Protocol
 
 from portal_automation.core.models import ItemResult, ItemStatus, ReasonCode
-from portal_automation.core.retries import PortalError
+from portal_automation.core.retries import (
+    PortalError,
+    execute_with_context_retry,
+    is_retryable_error,
+)
 from portal_automation.portals.saucedemo.input_schema import (
     CheckoutProfile,
     SauceDemoAccount,
@@ -80,23 +84,23 @@ def process_account(
     context: Any,
 ) -> ItemResult:
     password = _saucedemo_password(context)
-    login_result = pages.login(account.username, password)
+    attempts = 1
+
+    login_result, login_attempts = execute_with_context_retry(
+        context,
+        lambda: pages.login(account.username, password),
+    )
+    attempts = max(attempts, login_attempts)
     _raise_for_login_failure(account, login_result)
 
-    pages.add_inventory_items(account.items_to_add)
-    cart_count = pages.read_cart_count()
-    if cart_count != account.items_to_add:
-        raise PortalError(
-            ReasonCode.VALIDATION_FAILED,
-            (
-                f"Cart count mismatch for '{account.account_key}': "
-                f"expected {account.items_to_add}, got {cart_count}."
-            ),
-        )
+    cart_count, cart_attempts = _ensure_cart_count(account, pages, context)
+    attempts = max(attempts, cart_attempts)
 
-    pages.open_cart()
-    pages.checkout(account.checkout_profile)
-    order_summary = pages.read_order_summary()
+    _, open_cart_attempts = execute_with_context_retry(context, pages.open_cart)
+    attempts = max(attempts, open_cart_attempts)
+
+    order_summary, summary_attempts = _checkout_and_read_summary(account, pages, context)
+    attempts = max(attempts, summary_attempts)
     if order_summary.item_count != account.items_to_add:
         raise PortalError(
             ReasonCode.VALIDATION_FAILED,
@@ -106,9 +110,18 @@ def process_account(
             ),
         )
 
-    captured_raw = pages.capture_order_details()
-    pages.finish_order()
-    confirmation = pages.read_confirmation()
+    captured_raw, capture_attempts = execute_with_context_retry(
+        context,
+        pages.capture_order_details,
+    )
+    attempts = max(attempts, capture_attempts)
+
+    confirmation, confirmation_attempts = _finish_order_and_read_confirmation(
+        account,
+        pages,
+        context,
+    )
+    attempts = max(attempts, confirmation_attempts)
     _validate_confirmation(account, confirmation)
     details = _result_details(account, cart_count, confirmation, captured_raw)
 
@@ -119,9 +132,115 @@ def process_account(
         reason_code=None,
         error_detail=None,
         artifact_path=None,
-        attempts=1,
+        attempts=attempts,
         details=details,
     )
+
+
+def _ensure_cart_count(
+    account: SauceDemoAccount,
+    pages: SauceDemoWorkflowPages,
+    context: Any,
+) -> tuple[int, int]:
+    attempts = 1
+    max_attempts = getattr(context.config, "max_retries", 0) + 1
+    current_count, read_attempts = execute_with_context_retry(context, pages.read_cart_count)
+    attempts = max(attempts, read_attempts)
+    _raise_for_cart_overage(account, current_count)
+    remaining = account.items_to_add - current_count
+    if remaining == 0:
+        return current_count, attempts
+
+    last_retryable_error: PortalError | None = None
+    for add_attempt in range(1, max_attempts + 1):
+        try:
+            pages.add_inventory_items(remaining)
+            last_retryable_error = None
+        except PortalError as error:
+            if not is_retryable_error(error):
+                raise
+            last_retryable_error = error
+            attempts = max(attempts, error.attempts, add_attempt)
+
+        current_count, verify_attempts = execute_with_context_retry(context, pages.read_cart_count)
+        attempts = max(attempts, verify_attempts)
+        _raise_for_cart_overage(account, current_count)
+        remaining = account.items_to_add - current_count
+        if remaining == 0:
+            return current_count, attempts
+        if last_retryable_error is not None and add_attempt >= max_attempts:
+            last_retryable_error.attempts = attempts
+            raise last_retryable_error
+
+    raise PortalError(
+        ReasonCode.VALIDATION_FAILED,
+        (
+            f"Cart count mismatch for '{account.account_key}': "
+            f"expected {account.items_to_add}, got {current_count}."
+        ),
+        attempts=attempts,
+    )
+
+
+def _raise_for_cart_overage(account: SauceDemoAccount, current_count: int) -> None:
+    if current_count > account.items_to_add:
+        raise PortalError(
+            ReasonCode.VALIDATION_FAILED,
+            (
+                f"Cart count mismatch for '{account.account_key}': "
+                f"expected {account.items_to_add}, got {current_count}."
+            ),
+        )
+
+
+def _checkout_and_read_summary(
+    account: SauceDemoAccount,
+    pages: SauceDemoWorkflowPages,
+    context: Any,
+) -> tuple[OrderSummary, int]:
+    attempts = 1
+    try:
+        pages.checkout(account.checkout_profile)
+    except PortalError as error:
+        if not is_retryable_error(error):
+            raise
+        attempts = max(attempts, error.attempts)
+        summary, read_attempts = execute_with_context_retry(context, pages.read_order_summary)
+        attempts = max(attempts, read_attempts)
+        if summary.item_count == account.items_to_add and summary.confirmation_text.strip():
+            return summary, attempts
+        error.attempts = attempts
+        raise
+
+    summary, read_attempts = execute_with_context_retry(context, pages.read_order_summary)
+    attempts = max(attempts, read_attempts)
+    return summary, attempts
+
+
+def _finish_order_and_read_confirmation(
+    account: SauceDemoAccount,
+    pages: SauceDemoWorkflowPages,
+    context: Any,
+) -> tuple[OrderSummary, int]:
+    attempts = 1
+    try:
+        pages.finish_order()
+    except PortalError as error:
+        if not is_retryable_error(error):
+            raise
+        attempts = max(attempts, error.attempts)
+        confirmation, read_attempts = execute_with_context_retry(context, pages.read_confirmation)
+        attempts = max(attempts, read_attempts)
+        try:
+            _validate_confirmation(account, confirmation)
+        except PortalError:
+            error.attempts = attempts
+            raise error from None
+        return confirmation, attempts
+
+    confirmation, read_attempts = execute_with_context_retry(context, pages.read_confirmation)
+    attempts = max(attempts, read_attempts)
+    return confirmation, attempts
 
 
 def _saucedemo_password(context: Any) -> str:

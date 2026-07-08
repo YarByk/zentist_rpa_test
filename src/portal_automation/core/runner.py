@@ -17,6 +17,9 @@ class BasePortalRunnerZX(ABC):
     operation_name: str
 
     def run(self, context: RunContext) -> RunResult:
+        logger = getattr(context, "logger", None)
+        if logger is not None and hasattr(logger, "info"):
+            logger.info("run_started", dry_run=context.dry_run)
         context.persistence.create_run(context.run_id, self.portal_name, context.business_date)
         try:
             items = self.load_items(context)
@@ -84,6 +87,13 @@ class BasePortalRunnerZX(ABC):
         item_key: str,
     ) -> ItemResult:
         try:
+            logger = getattr(context, "logger", None)
+            if logger is not None and hasattr(logger, "info"):
+                logger.info(
+                    "item_started",
+                    item_key=item_key,
+                    operation=self.operation_name,
+                )
             context.persistence.mark_item_in_progress(
                 context.run_id,
                 self.portal_name,
@@ -92,11 +102,14 @@ class BasePortalRunnerZX(ABC):
                 self.operation_name,
             )
             try:
-                return self.process_item(context, item)
+                result = self.process_item(context, item)
             except PortalError as error:
-                return self._portal_error_result(item_key, error)
+                result = self._portal_error_result(item_key, error)
             except Exception as exc:
-                return self._unexpected_error_result(item_key, exc)
+                result = self._unexpected_error_result(item_key, exc)
+            if logger is not None and hasattr(logger, "log_item_result"):
+                logger.log_item_result(result)
+            return result
         except Exception as exc:
             self._log_persistence_failure(context, exc)
             raise
@@ -165,7 +178,15 @@ class BasePortalRunnerZX(ABC):
 
     def _finalize_and_finish(self, context: RunContext, result: RunResult) -> None:
         self.finalize(context, result)
+        metrics = getattr(context, "metrics", None)
+        if metrics is not None and hasattr(metrics, "record_run_result"):
+            metrics.record_run_result(result)
+        logger = getattr(context, "logger", None)
+        if logger is not None and hasattr(logger, "info"):
+            logger.info("run_finished", status=result.status.value)
         context.persistence.finish_run(context.run_id, result.status, self._summary(result.results))
+        if metrics is not None and hasattr(metrics, "write_metrics"):
+            metrics.write_metrics()
 
     def _log_persistence_failure(self, context: RunContext, exc: Exception) -> None:
         logger = getattr(context, "logger", None)

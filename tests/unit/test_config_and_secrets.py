@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from portal_automation.core.config import AppConfig
-from portal_automation.core.secrets import SecretsLoader
+from portal_automation.core.secrets import MissingSecretError, SecretsLoader
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_ENV_KEYS = (
@@ -29,6 +29,7 @@ CONFIG_ENV_KEYS = (
     "SMTP_PASSWORD",
     "SMTP_FROM",
     "SMTP_TO",
+    "SMTP_USE_TLS",
 )
 
 
@@ -64,6 +65,7 @@ def test_app_config_from_env_returns_defaults(monkeypatch: pytest.MonkeyPatch) -
     assert config.smtp_password is None
     assert config.smtp_from is None
     assert config.smtp_to is None
+    assert config.smtp_use_tls is True
 
 
 def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -90,6 +92,7 @@ def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setenv("SMTP_PASSWORD", "smtp-token")
     monkeypatch.setenv("SMTP_FROM", "from@example.com")
     monkeypatch.setenv("SMTP_TO", "to@example.com")
+    monkeypatch.setenv("SMTP_USE_TLS", "false")
 
     config = AppConfig.from_env()
 
@@ -115,6 +118,7 @@ def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) ->
     assert config.smtp_password == "smtp-token"
     assert config.smtp_from == "from@example.com"
     assert config.smtp_to == "to@example.com"
+    assert config.smtp_use_tls is False
 
 
 def test_empty_optional_env_values_become_none(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -144,6 +148,7 @@ def test_empty_optional_env_values_become_none(monkeypatch: pytest.MonkeyPatch) 
     assert config.smtp_password is None
     assert config.smtp_from is None
     assert config.smtp_to is None
+    assert config.smtp_use_tls is True
 
 
 @pytest.mark.parametrize("value", ["true", "TRUE", "1", "yes", "on"])
@@ -213,6 +218,16 @@ def test_secrets_loader_returns_none_for_unknown_keys(monkeypatch: pytest.Monkey
     loader = SecretsLoader(AppConfig.from_env())
 
     assert loader.get("UNKNOWN") is None
+
+
+def test_secrets_loader_require_raises_clear_error_for_missing_secret(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clear_config_env(monkeypatch)
+    loader = SecretsLoader(AppConfig.from_env())
+
+    with pytest.raises(MissingSecretError, match="ORANGEHRM_PASSWORD"):
+        loader.require("ORANGEHRM_PASSWORD")
 
 
 def test_config_and_secrets_repr_do_not_expose_secret_values(
