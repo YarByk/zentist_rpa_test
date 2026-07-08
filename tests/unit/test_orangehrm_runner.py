@@ -385,7 +385,7 @@ def test_finalize_returns_without_error_when_reporter_has_no_write_report(tmp_pa
     OrangeHrmRunner().finalize(make_process_context(tmp_path), result)
 
 
-def test_orangehrm_pages_login_uses_config_values_and_page_calls() -> None:
+def test_orangehrm_pages_login_uses_explicit_credentials_and_base_url() -> None:
     page = FakePage()
     config = ConfigStub(
         orangehrm_input_path="input.json",
@@ -394,23 +394,23 @@ def test_orangehrm_pages_login_uses_config_values_and_page_calls() -> None:
         orangehrm_password="pw",
     )
 
-    OrangeHrmPages(page, config).login()
+    OrangeHrmPages(page, config).login("Admin", "pw")
 
     assert ("goto", "https://orange.example") in page.calls
-    assert ("label", "Username", "fill", "Admin") in page.calls
-    assert ("label", "Password", "fill", "pw") in page.calls
-    assert ("role:button", "Login", "click") in page.calls
+    assert ("locator", OrangeHrmPages.USERNAME_INPUT, "fill", "Admin") in page.calls
+    assert ("locator", OrangeHrmPages.PASSWORD_INPUT, "fill", "pw") in page.calls
+    assert ("locator", OrangeHrmPages.LOGIN_BUTTON, "click") in page.calls
 
 
-@pytest.mark.parametrize("password", [None, "", "   "])
-def test_orangehrm_pages_login_maps_blank_password_to_credential_expired(password) -> None:
+def test_orangehrm_pages_login_failed_attr_raises_login_failed() -> None:
     page = FakePage()
-    config = ConfigStub(orangehrm_input_path="input.json", orangehrm_password=password)
+    page.login_succeeded = False
+    config = ConfigStub(orangehrm_input_path="input.json", orangehrm_base_url="https://x.example")
 
     with pytest.raises(PortalError) as error:
-        OrangeHrmPages(page, config).login()
+        OrangeHrmPages(page, config).login("Admin", "wrong")
 
-    assert error.value.reason is ReasonCode.CREDENTIAL_EXPIRED
+    assert error.value.reason is ReasonCode.LOGIN_FAILED
 
 
 def test_page_methods_operate_against_fake_page_and_record_expected_calls(tmp_path) -> None:
@@ -431,7 +431,6 @@ def test_page_methods_operate_against_fake_page_and_record_expected_calls(tmp_pa
     pages.upload_salary_attachment(employee(), attachment_path)
     assert pages.verify_salary_attachment(employee(), "salary.txt") is False
 
-    assert ("label", "Employee Name", "fill", "Alice Johnson") in page.calls
     assert ("label", "First Name", "fill", "Alice") in page.calls
     assert ("label", "Last Name", "fill", "Johnson") in page.calls
     assert ("label", "Job Title", "fill", "QA Engineer") in page.calls
