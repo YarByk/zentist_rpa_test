@@ -21,12 +21,17 @@ Python `>=3.11` is required.
 
 ```bash
 python -m pip install -e ".[dev]"
+python -m playwright install chromium
 ruff check .
 pytest
 ```
 
 The default `pytest` configuration runs `tests/unit` and `tests/integration`. Live browser
 e2e tests belong under `tests/e2e` and are excluded from the default test path.
+
+`python -m playwright install chromium` is required for non-dry-run CLI invocations and for
+opt-in live e2e tests. Dry-run and the default test suite do not start a browser and do not
+require the Chromium binary.
 
 ## Configuration
 
@@ -201,6 +206,50 @@ The runner must inherit `BasePortalRunnerZX`, implement hooks only, and avoid ov
 input variables if needed, and cover the portal with unit and integration tests. A new portal
 should not change the base lifecycle.
 
+## Live E2E Tests
+
+Live browser tests are opt-in and not part of the default CI run. Public demo portals may be
+temporarily unavailable, reset between runs, or change their DOM without notice.
+
+**Unix / macOS:**
+
+```bash
+RUN_LIVE_E2E=1 pytest -m e2e tests/e2e/
+```
+
+**Windows PowerShell:**
+
+```powershell
+$env:RUN_LIVE_E2E="1"
+pytest -m e2e tests\e2e\
+Remove-Item Env:\RUN_LIVE_E2E -ErrorAction SilentlyContinue
+```
+
+### OrangeHRM live employee override
+
+By default the OrangeHRM smoke test searches for `Emily Jones`, a confirmed employee in the
+public demo. Override with:
+
+```powershell
+$env:RUN_LIVE_E2E="1"
+$env:ORANGEHRM_E2E_EMPLOYEE_NAME="Emily Jones"
+pytest -m e2e tests\e2e\test_orangehrm_live.py -vv -s
+Remove-Item Env:\RUN_LIVE_E2E -ErrorAction SilentlyContinue
+Remove-Item Env:\ORANGEHRM_E2E_EMPLOYEE_NAME -ErrorAction SilentlyContinue
+```
+
+### Verified locally
+
+Live e2e tests were run locally against the public demo portals and passed:
+
+- **Sauce Demo** (2 passed): `standard_user` login → success; `locked_out_user` login →
+  locked_out.
+- **OrangeHRM** (3 passed): Admin login → success; `Emily Jones` search → found;
+  nonexistent name → not_found.
+
+Public demo portals may be unavailable or reset at any time. These results are not guaranteed
+to reproduce on every run.
+
 ## Demo Limitations
 
 This repository is a take-home implementation surface, not a deployed product.
@@ -208,15 +257,12 @@ This repository is a take-home implementation surface, not a deployed product.
 - No web UI.
 - No REST API.
 - No production deployment packaging.
-- No scheduler.
-- Playwright must be installed locally, including browser binaries:
-  `python -m playwright install chromium`.
-- Non-dry-run CLI now starts Playwright and injects portal page objects per portal run.
-- Observability is local-file based in this take-home implementation:
-  structured events are written to `events.jsonl`, and run metrics are written to
-  `metrics.json` under `artifacts/runs/<run_id>/`. External observability backends
+- No production scheduler (design covered in `DESIGN.md`).
+- Non-dry-run CLI starts Playwright, creates a browser/context/page, and injects portal page
+  objects through `pages_factory`. Requires `python -m playwright install chromium`.
+- Dry-run does not start Playwright and does not require the Chromium binary.
+- Observability is local-file based: structured events are written to `events.jsonl` and run
+  metrics to `metrics.json` under `artifacts/runs/<run_id>/`. External observability backends
   are covered in `DESIGN.md`.
-
-
-Live portal behavior is represented by page objects, workflows, and fake-page tests. Dry-run
-is the safe CLI smoke path.
+- Public demo portals may reset, change DOM, or be temporarily unavailable. Live e2e is
+  opt-in and not run in default CI.

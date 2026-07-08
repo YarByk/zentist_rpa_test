@@ -516,28 +516,31 @@ def test_add_inventory_items_records_exactly_requested_clicks() -> None:
 
     SauceDemoPages(page, ConfigStub("accounts.json")).add_inventory_items(2)
 
+    # Fake branch records one locator call and one click per item, no .first() indirection
     assert page.calls.count(("locator", SauceDemoPages.ADD_TO_CART_BUTTON, "click")) == 2
-    assert page.calls.count(("locator", SauceDemoPages.ADD_TO_CART_BUTTON, "first")) == 2
 
 
-def test_add_inventory_items_selects_first_matching_button_for_strict_locators() -> None:
-    class StrictTarget:
-        def __init__(self, selected_first: bool = False) -> None:
-            self.selected_first = selected_first
+def test_add_inventory_items_raises_when_no_buttons_available() -> None:
+    """Real branch: raises ITEM_NOT_FOUND immediately when count() returns 0."""
 
-        def first(self) -> "StrictTarget":
-            return StrictTarget(selected_first=True)
+    class CountZeroTarget:
+        def count(self) -> int:
+            return 0
+
+        def nth(self, index: int) -> "CountZeroTarget":
+            return self
 
         def click(self) -> None:
-            if not self.selected_first:
-                raise AssertionError("strict multi locator requires first()")
+            raise AssertionError("click should not be called when count is 0")
 
-    class StrictPage:
-        def locator(self, selector: str) -> StrictTarget:
-            assert selector == SauceDemoPages.ADD_TO_CART_BUTTON
-            return StrictTarget()
+    class CountZeroPage:
+        def locator(self, selector: str) -> CountZeroTarget:
+            return CountZeroTarget()
 
-    SauceDemoPages(StrictPage(), ConfigStub("accounts.json")).add_inventory_items(2)
+    with pytest.raises(PortalError) as exc:
+        SauceDemoPages(CountZeroPage(), ConfigStub("accounts.json")).add_inventory_items(1)
+
+    assert exc.value.reason is ReasonCode.ITEM_NOT_FOUND
 
 
 def test_read_cart_count_returns_fake_attribute_when_present() -> None:

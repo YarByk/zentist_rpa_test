@@ -53,6 +53,38 @@ def test_demo_credentials_do_not_appear_in_src() -> None:
     assert offenders == []
 
 
+def test_readme_does_not_contain_stale_self_damaging_phrases() -> None:
+    readme = read_text("README.md")
+    stale_phrases = [
+        "No live Playwright dependency",
+        "No default CLI browser/page factory wiring",
+        "pages_factory is not configured",
+        "Playwright not implemented",
+        "no-op logger",
+        "NoOp logger",
+        "SMTP not implemented",
+        "fake-only page objects",
+        "no real browser runtime",
+    ]
+    found = [phrase for phrase in stale_phrases if phrase.lower() in readme.lower()]
+
+    assert found == [], f"README contains stale phrases: {found}"
+
+
+def test_readme_documents_playwright_install() -> None:
+    readme = read_text("README.md")
+
+    assert "playwright install chromium" in readme
+
+
+def test_readme_documents_live_e2e_as_opt_in() -> None:
+    readme = read_text("README.md")
+
+    assert "RUN_LIVE_E2E" in readme
+    assert "pytest -m e2e" in readme
+    assert "opt-in" in readme
+
+
 def test_production_placeholders_do_not_appear_in_src() -> None:
     line_patterns = {
         "TODO": re.compile(r"^\s*TODO\b"),

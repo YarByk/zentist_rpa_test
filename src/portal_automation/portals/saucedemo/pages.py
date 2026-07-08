@@ -67,18 +67,11 @@ class SauceDemoPages:
     def add_inventory_items(self, count: int) -> None:
         if hasattr(self._page, "calls"):
             for _ in range(count):
-                add_button = self._page.locator(self.ADD_TO_CART_BUTTON)
-                if hasattr(add_button, "first"):
-                    add_button = add_button.first()
-                add_button.click()
+                self._page.locator(self.ADD_TO_CART_BUTTON).click()
             return
         for _ in range(count):
             available = self._locator_count(self.ADD_TO_CART_BUTTON)
             if available <= 0:
-                add_button = self._page.locator(self.ADD_TO_CART_BUTTON)
-                if hasattr(add_button, "first"):
-                    add_button.first().click()
-                    continue
                 raise PortalError(
                     ReasonCode.ITEM_NOT_FOUND,
                     "No Sauce Demo add-to-cart buttons were available.",
