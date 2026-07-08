@@ -2,10 +2,12 @@ import argparse
 import copy
 import sys
 import uuid
+from collections.abc import Callable
 from datetime import date
 from typing import Any
 
 from portal_automation.core.artifact_store import ArtifactStore
+from portal_automation.core.browser import BrowserManager
 from portal_automation.core.config import AppConfig
 from portal_automation.core.email_connector import EmailConnector
 from portal_automation.core.models import RunContext, RunStatus
@@ -14,6 +16,8 @@ from portal_automation.core.persistence import PersistenceConnector
 from portal_automation.core.registry import PORTAL_RUNNERS, get_runner
 from portal_automation.core.reporting import ReportGenerator
 from portal_automation.core.secrets import SecretsLoader
+from portal_automation.portals.orangehrm.pages import OrangeHrmPages
+from portal_automation.portals.saucedemo.pages import SauceDemoPages
 
 TRUE_VALUES = {"true", "1", "yes", "on"}
 FALSE_VALUES = {"false", "0", "no", "off"}
@@ -313,6 +317,30 @@ def _build_context(
     )
 
 
+def _build_pages_factory(portal_name: str, page: Any) -> Callable[[RunContext], Any]:
+    if portal_name == "orangehrm":
+        return lambda ctx: OrangeHrmPages(page, ctx.config)
+    if portal_name == "saucedemo":
+        return lambda ctx: SauceDemoPages(page, ctx.config)
+    raise ValueError(f"Unknown portal for pages factory: {portal_name}")
+
+
+def _run_portal(
+    portal_name: str,
+    *,
+    runner_class: Any,
+    context: RunContext,
+) -> Any:
+    if context.dry_run:
+        return runner_class().run(context)
+
+    with BrowserManager(context.config) as session:
+        runner = runner_class(
+            pages_factory=_build_pages_factory(portal_name, session.page),
+        )
+        return runner.run(context)
+
+
 def _run_selected_portals(
     selected_portals: list[str],
     *,
@@ -329,7 +357,13 @@ def _run_selected_portals(
             business_date=business_date,
             dry_run=dry_run,
         )
-        results.append(runner_class().run(context))
+        results.append(
+            _run_portal(
+                portal_name,
+                runner_class=runner_class,
+                context=context,
+            )
+        )
     return 0 if all(result.status is RunStatus.SUCCESS for result in results) else 1
 
 

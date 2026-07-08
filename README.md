@@ -209,8 +209,9 @@ This repository is a take-home implementation surface, not a deployed product.
 - No REST API.
 - No production deployment packaging.
 - No scheduler.
-- No live Playwright dependency.
-- No default CLI browser/page factory wiring.
+- Playwright must be installed locally, including browser binaries:
+  `python -m playwright install chromium`.
+- Non-dry-run CLI now starts Playwright and injects portal page objects per portal run.
 - Observability is local-file based in this take-home implementation:
   structured events are written to `events.jsonl`, and run metrics are written to
   `metrics.json` under `artifacts/runs/<run_id>/`. External observability backends

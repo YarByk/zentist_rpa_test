@@ -47,6 +47,7 @@ def test_only_package_init_files_exist_under_runtime_packages() -> None:
         "src/portal_automation/__main__.py",
         "src/portal_automation/core/__init__.py",
         "src/portal_automation/core/artifact_store.py",
+        "src/portal_automation/core/browser.py",
         "src/portal_automation/core/config.py",
         "src/portal_automation/core/document_generator.py",
         "src/portal_automation/core/email_connector.py",

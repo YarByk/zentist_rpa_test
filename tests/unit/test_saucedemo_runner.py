@@ -135,6 +135,81 @@ class FakePage:
         return FakeTarget(self, "locator", selector)
 
 
+class DomElement:
+    def __init__(self, *, text: str = "", attrs: dict[str, str] | None = None) -> None:
+        self.text = text
+        self.attrs = attrs or {}
+        self.value = ""
+
+
+class DomLocator:
+    def __init__(self, page: "DomPage", selector: str, index: int | None = None) -> None:
+        self.page = page
+        self.selector = selector
+        self.index = index
+
+    def count(self) -> int:
+        return len(self.page.elements.get(self.selector, []))
+
+    def nth(self, index: int) -> "DomLocator":
+        return DomLocator(self.page, self.selector, index=index)
+
+    def first(self) -> "DomLocator":
+        return self.nth(0)
+
+    def fill(self, value: str) -> None:
+        self.page.fills.append((self.selector, self.index, value))
+        element = self._element()
+        element.value = value
+
+    def click(self) -> None:
+        self.page.clicks.append((self.selector, self.index))
+        handler = self.page.click_handlers.get((self.selector, self.index))
+        if handler is None:
+            handler = self.page.click_handlers.get((self.selector, None))
+        if handler is not None:
+            handler()
+
+    def text_content(self) -> str:
+        return self._element().text
+
+    def all_text_contents(self) -> list[str]:
+        return [element.text for element in self.page.elements.get(self.selector, [])]
+
+    def _element(self) -> DomElement:
+        elements = self.page.elements.get(self.selector, [])
+        if not elements:
+            raise AssertionError(f"no element for selector {self.selector}")
+        if self.index is None:
+            return elements[0]
+        return elements[self.index]
+
+
+class DomPage:
+    def __init__(self, *, url: str = "https://www.saucedemo.com/") -> None:
+        self.url = url
+        self.elements: dict[str, list[DomElement]] = {
+            SauceDemoPages.USERNAME_INPUT: [DomElement()],
+            SauceDemoPages.PASSWORD_INPUT: [DomElement()],
+            SauceDemoPages.LOGIN_BUTTON: [DomElement(text="Login")],
+        }
+        self.click_handlers: dict[tuple[str, int | None], object] = {}
+        self.fills: list[tuple[str, int | None, str]] = []
+        self.clicks: list[tuple[str, int | None]] = []
+        self.goto_calls: list[str] = []
+        self.waited_urls: list[str] = []
+
+    def goto(self, url: str) -> None:
+        self.url = url
+        self.goto_calls.append(url)
+
+    def locator(self, selector: str) -> DomLocator:
+        return DomLocator(self, selector)
+
+    def wait_for_url(self, pattern: str) -> None:
+        self.waited_urls.append(pattern)
+
+
 def account() -> SauceDemoAccount:
     return SauceDemoAccount(
         account_key="standard_user",
@@ -393,6 +468,49 @@ def test_saucedemo_pages_login_returns_failed_result() -> None:
     assert "login failed" in result.detail
 
 
+def test_saucedemo_pages_login_reads_locked_out_dom_error() -> None:
+    page = DomPage()
+    page.click_handlers[(SauceDemoPages.LOGIN_BUTTON, None)] = lambda: page.elements.update(
+        {
+            SauceDemoPages.ERROR_MESSAGE: [DomElement(text=SauceDemoPages.LOCKED_OUT_TEXT)],
+        }
+    )
+
+    result = SauceDemoPages(page, ConfigStub("accounts.json")).login("locked_out_user", "pw")
+
+    assert result.status is LoginStatus.LOCKED_OUT
+    assert result.detail == SauceDemoPages.LOCKED_OUT_TEXT
+
+
+def test_saucedemo_pages_login_reads_non_locked_dom_error() -> None:
+    page = DomPage()
+    error_text = "Epic sadface: Username and password do not match."
+    page.click_handlers[(SauceDemoPages.LOGIN_BUTTON, None)] = lambda: page.elements.update(
+        {
+            SauceDemoPages.ERROR_MESSAGE: [DomElement(text=error_text)],
+        }
+    )
+
+    result = SauceDemoPages(page, ConfigStub("accounts.json")).login("standard_user", "pw")
+
+    assert result.status is LoginStatus.FAILED
+    assert result.detail == error_text
+
+
+def test_saucedemo_pages_login_succeeds_when_inventory_page_is_visible() -> None:
+    page = DomPage()
+
+    def on_login() -> None:
+        page.url = "https://www.saucedemo.com/inventory.html"
+        page.elements[SauceDemoPages.INVENTORY_ITEM] = [DomElement(text="item")]
+
+    page.click_handlers[(SauceDemoPages.LOGIN_BUTTON, None)] = on_login
+
+    result = SauceDemoPages(page, ConfigStub("accounts.json")).login("standard_user", "pw")
+
+    assert result.status is LoginStatus.SUCCESS
+
+
 def test_add_inventory_items_records_exactly_requested_clicks() -> None:
     page = FakePage()
 
@@ -444,6 +562,19 @@ def test_read_cart_count_returns_zero_for_blank_badge_text() -> None:
     assert SauceDemoPages(page, ConfigStub("accounts.json")).read_cart_count() == 0
 
 
+def test_read_cart_count_returns_zero_when_badge_is_absent_in_dom() -> None:
+    page = DomPage(url="https://www.saucedemo.com/inventory.html")
+
+    assert SauceDemoPages(page, ConfigStub("accounts.json")).read_cart_count() == 0
+
+
+def test_read_cart_count_reads_integer_badge_from_dom() -> None:
+    page = DomPage(url="https://www.saucedemo.com/inventory.html")
+    page.elements[SauceDemoPages.CART_BADGE] = [DomElement(text="3")]
+
+    assert SauceDemoPages(page, ConfigStub("accounts.json")).read_cart_count() == 3
+
+
 def test_page_methods_operate_against_fake_page_and_record_expected_calls() -> None:
     page = FakePage()
     pages = SauceDemoPages(page, ConfigStub("accounts.json"))
@@ -462,6 +593,89 @@ def test_page_methods_operate_against_fake_page_and_record_expected_calls() -> N
     assert ("locator", SauceDemoPages.POSTAL_CODE_INPUT, "fill", "10001") in page.calls
     assert ("locator", SauceDemoPages.CONTINUE_BUTTON, "click") in page.calls
     assert ("locator", SauceDemoPages.FINISH_BUTTON, "click") in page.calls
+
+
+def test_open_cart_real_dom_empty_cart_does_not_crash() -> None:
+    page = DomPage(url="https://www.saucedemo.com/inventory.html")
+
+    def on_open_cart() -> None:
+        page.url = "https://www.saucedemo.com/cart.html"
+        page.elements[SauceDemoPages.CHECKOUT_BUTTON] = [DomElement(text="Checkout")]
+
+    page.click_handlers[(SauceDemoPages.CART_LINK, None)] = on_open_cart
+
+    SauceDemoPages(page, ConfigStub("accounts.json")).open_cart()
+
+    assert page.url.endswith("/cart.html")
+
+
+def test_read_order_summary_reads_dom_summary_totals_and_item_count() -> None:
+    page = DomPage(url="https://www.saucedemo.com/checkout-step-two.html")
+    page.elements[SauceDemoPages.CART_ITEM_ROW] = [DomElement(), DomElement(), DomElement()]
+    page.elements[SauceDemoPages.SUBTOTAL_LABEL] = [DomElement(text="Item total: $55.97")]
+    page.elements[SauceDemoPages.TAX_LABEL] = [DomElement(text="Tax: $4.48")]
+    page.elements[SauceDemoPages.TOTAL_LABEL] = [DomElement(text="Total: $60.45")]
+
+    summary = SauceDemoPages(page, ConfigStub("accounts.json")).read_order_summary()
+
+    assert summary.item_count == 3
+    assert summary.total == "Total: $60.45"
+    assert "Item total: $55.97" in summary.confirmation_text
+    assert "Tax: $4.48" in summary.confirmation_text
+    assert "Total: $60.45" in summary.confirmation_text
+
+
+def test_read_confirmation_reads_dom_header_and_text() -> None:
+    page = DomPage(url="https://www.saucedemo.com/checkout-complete.html")
+    page.elements[SauceDemoPages.CONFIRMATION_HEADER] = [
+        DomElement(text="Thank you for your order!")
+    ]
+    page.elements[SauceDemoPages.CONFIRMATION_TEXT] = [
+        DomElement(
+            text=(
+                "Your order has been dispatched, and will arrive just as fast "
+                "as the pony can get there!"
+            )
+        )
+    ]
+    pages = SauceDemoPages(page, ConfigStub("accounts.json"))
+    pages._last_order_summary = OrderSummary(
+        item_count=3,
+        confirmation_text="overview",
+        total="Total: $60.45",
+    )
+
+    confirmation = pages.read_confirmation()
+
+    assert confirmation.item_count == 3
+    assert "Thank you for your order!" in confirmation.confirmation_text
+    assert "pony can get there" in confirmation.confirmation_text
+    assert confirmation.total == "Total: $60.45"
+
+
+def test_capture_order_details_real_dom_does_not_leak_secret_like_keys() -> None:
+    page = DomPage(url="https://www.saucedemo.com/checkout-step-two.html")
+    page.elements[SauceDemoPages.CART_ITEM_NAME] = [
+        DomElement(text="Sauce Labs Backpack"),
+        DomElement(text="Sauce Labs Bike Light"),
+    ]
+    page.elements[SauceDemoPages.CART_ITEM_QUANTITY] = [
+        DomElement(text="1"),
+        DomElement(text="1"),
+    ]
+    page.elements[SauceDemoPages.SUBTOTAL_LABEL] = [DomElement(text="Item total: $39.98")]
+    page.elements[SauceDemoPages.TAX_LABEL] = [DomElement(text="Tax: $3.20")]
+    page.elements[SauceDemoPages.TOTAL_LABEL] = [DomElement(text="Total: $43.18")]
+
+    details = SauceDemoPages(page, ConfigStub("accounts.json")).capture_order_details()
+
+    assert details == {
+        "item_names": ["Sauce Labs Backpack", "Sauce Labs Bike Light"],
+        "item_quantities": ["1", "1"],
+        "subtotal": "Item total: $39.98",
+        "tax": "Tax: $3.20",
+        "total": "Total: $43.18",
+    }
 
 
 def test_checkout_uses_current_sauce_demo_postal_code_selector() -> None:
