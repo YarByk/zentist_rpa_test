@@ -136,6 +136,12 @@ Non-retryable examples include `LOCKED_OUT`, `INPUT_VALIDATION_FAILED`,
 `EMPLOYEE_MATCH_AMBIGUOUS`, and credential/login failures. Writes are not blindly retried; the
 workflow verifies current state first and uses idempotent checks before writing.
 
+The current `RetryPolicy` executes retries immediately without delay. For production deployments
+where a portal enforces rate limits or has transient backend load, a configurable exponential
+backoff can be enabled by passing `backoff_seconds` and `backoff_multiplier` to the policy and
+injecting a sleep callable. This keeps the default behavior deterministic and test-safe (zero
+delay) while allowing production workers to pace retries for rate-limited portals.
+
 On failures in non-dry-run Playwright sessions, the runtime captures reviewer-friendly
 diagnostics when available:
 
@@ -236,6 +242,10 @@ Playwright:
 
 - modern browser automation with robust locators, trace viewer, and screenshots;
 - a clear separation between fake page tests and opt-in live e2e tests.
+
+Live e2e tests are intentionally limited to read-only smoke tests (login, employee search) to
+avoid mutating the shared public demo portal and to keep opt-in test runs stable across concurrent
+users.
 
 SQLite:
 

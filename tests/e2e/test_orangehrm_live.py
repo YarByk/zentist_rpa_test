@@ -14,6 +14,8 @@ from dataclasses import dataclass
 import pytest
 
 from portal_automation.core.browser import BrowserManager
+from portal_automation.core.models import ReasonCode
+from portal_automation.core.retries import PortalError
 from portal_automation.portals.orangehrm.pages import OrangeHrmPages
 from portal_automation.portals.orangehrm.workflow import FindStatus
 
@@ -43,6 +45,18 @@ def _e2e_employee_name() -> str:
     return os.environ.get("ORANGEHRM_E2E_EMPLOYEE_NAME", "Emily Jones")
 
 
+def _should_skip_live_portal_error(error: PortalError) -> bool:
+    return error.reason in {
+        ReasonCode.PORTAL_UNAVAILABLE,
+        ReasonCode.PORTAL_TIMEOUT,
+    }
+
+
+def _skip_if_live_portal_unavailable(error: PortalError) -> None:
+    if _should_skip_live_portal_error(error):
+        pytest.skip(str(error))
+
+
 def test_orangehrm_live_login_success() -> None:
     """Admin login should succeed and leave the login page."""
     _require_live_run()
@@ -51,8 +65,9 @@ def test_orangehrm_live_login_success() -> None:
         with BrowserManager(config) as session:
             pages = OrangeHrmPages(session.page, config)
             pages.login("Admin", "admin123")
-    except Exception as exc:  # noqa: BLE001
-        pytest.skip(f"Live portal unavailable: {exc}")
+    except PortalError as exc:
+        _skip_if_live_portal_unavailable(exc)
+        raise
 
 
 def test_orangehrm_live_find_known_employee() -> None:
@@ -82,8 +97,9 @@ def test_orangehrm_live_find_known_employee() -> None:
             pages = OrangeHrmPages(session.page, config)
             pages.login("Admin", "admin123")
             result = pages.find_employee_record(record)
-    except Exception as exc:  # noqa: BLE001
-        pytest.skip(f"Live portal unavailable: {exc}")
+    except PortalError as exc:
+        _skip_if_live_portal_unavailable(exc)
+        raise
 
     assert result.status in (FindStatus.FOUND, FindStatus.AMBIGUOUS), (
         f"Expected found/ambiguous for '{employee_name}', got {result.status}: {result.detail}"
@@ -114,8 +130,9 @@ def test_orangehrm_live_find_nonexistent_employee_returns_not_found() -> None:
             pages = OrangeHrmPages(session.page, config)
             pages.login("Admin", "admin123")
             result = pages.find_employee_record(record)
-    except Exception as exc:  # noqa: BLE001
-        pytest.skip(f"Live portal unavailable: {exc}")
+    except PortalError as exc:
+        _skip_if_live_portal_unavailable(exc)
+        raise
 
     assert result.status is FindStatus.NOT_FOUND, (
         f"Expected not_found for nonexistent employee, got {result.status}"
