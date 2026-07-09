@@ -220,9 +220,11 @@ def test_invalid_input_maps_to_input_validation_failed_portal_error(tmp_path) ->
 
 
 def test_schema_does_not_import_playwright_browser_or_page_modules() -> None:
-    source = (ROOT / "src/portal_automation/portals/saucedemo/input_schema.py").read_text(
-        encoding="utf-8"
-    ).lower()
+    source = (
+        (ROOT / "src/portal_automation/portals/saucedemo/input_schema.py")
+        .read_text(encoding="utf-8")
+        .lower()
+    )
 
     assert "playwright" not in source
     assert "browser" not in source
@@ -230,9 +232,11 @@ def test_schema_does_not_import_playwright_browser_or_page_modules() -> None:
 
 
 def test_runner_does_not_import_playwright_directly() -> None:
-    source = (ROOT / "src/portal_automation/portals/saucedemo/runner.py").read_text(
-        encoding="utf-8"
-    ).lower()
+    source = (
+        (ROOT / "src/portal_automation/portals/saucedemo/runner.py")
+        .read_text(encoding="utf-8")
+        .lower()
+    )
 
     for forbidden in (
         "import playwright",

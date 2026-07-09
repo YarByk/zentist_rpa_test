@@ -12,6 +12,8 @@ CONFIG_ENV_KEYS = (
     "BUSINESS_DATE",
     "HEADLESS",
     "DEFAULT_TIMEOUT_SECONDS",
+    "ORANGEHRM_TIMEOUT_SECONDS",
+    "SAUCEDEMO_TIMEOUT_SECONDS",
     "MAX_RETRIES",
     "STALE_ITEM_TIMEOUT_SECONDS",
     "ORANGEHRM_BASE_URL",
@@ -30,6 +32,8 @@ CONFIG_ENV_KEYS = (
     "SMTP_FROM",
     "SMTP_TO",
     "SMTP_USE_TLS",
+    "PLAYWRIGHT_TRACE_ON_FAILURE",
+    "PLAYWRIGHT_SCREENSHOT_ON_FAILURE",
 )
 
 
@@ -48,6 +52,8 @@ def test_app_config_from_env_returns_defaults(monkeypatch: pytest.MonkeyPatch) -
     assert config.business_date is None
     assert config.headless is True
     assert config.default_timeout_seconds == 30
+    assert config.orangehrm_timeout_seconds is None
+    assert config.saucedemo_timeout_seconds is None
     assert config.max_retries == 2
     assert config.stale_item_timeout_seconds == 300
     assert config.orangehrm_base_url == "https://opensource-demo.orangehrmlive.com"
@@ -66,6 +72,8 @@ def test_app_config_from_env_returns_defaults(monkeypatch: pytest.MonkeyPatch) -
     assert config.smtp_from is None
     assert config.smtp_to is None
     assert config.smtp_use_tls is True
+    assert config.playwright_trace_on_failure is True
+    assert config.playwright_screenshot_on_failure is True
 
 
 def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -75,6 +83,8 @@ def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setenv("BUSINESS_DATE", "2026-06-28")
     monkeypatch.setenv("HEADLESS", "false")
     monkeypatch.setenv("DEFAULT_TIMEOUT_SECONDS", "45")
+    monkeypatch.setenv("ORANGEHRM_TIMEOUT_SECONDS", "55")
+    monkeypatch.setenv("SAUCEDEMO_TIMEOUT_SECONDS", "12")
     monkeypatch.setenv("MAX_RETRIES", "4")
     monkeypatch.setenv("STALE_ITEM_TIMEOUT_SECONDS", "600")
     monkeypatch.setenv("ORANGEHRM_BASE_URL", "https://orange.example")
@@ -93,6 +103,8 @@ def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setenv("SMTP_FROM", "from@example.com")
     monkeypatch.setenv("SMTP_TO", "to@example.com")
     monkeypatch.setenv("SMTP_USE_TLS", "false")
+    monkeypatch.setenv("PLAYWRIGHT_TRACE_ON_FAILURE", "false")
+    monkeypatch.setenv("PLAYWRIGHT_SCREENSHOT_ON_FAILURE", "false")
 
     config = AppConfig.from_env()
 
@@ -101,6 +113,8 @@ def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) ->
     assert config.business_date == "2026-06-28"
     assert config.headless is False
     assert config.default_timeout_seconds == 45
+    assert config.orangehrm_timeout_seconds == 55
+    assert config.saucedemo_timeout_seconds == 12
     assert config.max_retries == 4
     assert config.stale_item_timeout_seconds == 600
     assert config.orangehrm_base_url == "https://orange.example"
@@ -119,6 +133,8 @@ def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) ->
     assert config.smtp_from == "from@example.com"
     assert config.smtp_to == "to@example.com"
     assert config.smtp_use_tls is False
+    assert config.playwright_trace_on_failure is False
+    assert config.playwright_screenshot_on_failure is False
 
 
 def test_empty_optional_env_values_become_none(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -149,6 +165,8 @@ def test_empty_optional_env_values_become_none(monkeypatch: pytest.MonkeyPatch) 
     assert config.smtp_from is None
     assert config.smtp_to is None
     assert config.smtp_use_tls is True
+    assert config.playwright_trace_on_failure is True
+    assert config.playwright_screenshot_on_failure is True
 
 
 @pytest.mark.parametrize("value", ["true", "TRUE", "1", "yes", "on"])
@@ -180,6 +198,61 @@ def test_invalid_integer_raises_value_error_with_key(monkeypatch: pytest.MonkeyP
     monkeypatch.setenv("MAX_RETRIES", "many")
 
     with pytest.raises(ValueError, match="MAX_RETRIES"):
+        AppConfig.from_env()
+
+
+def test_portal_timeout_seconds_uses_portal_overrides(monkeypatch: pytest.MonkeyPatch) -> None:
+    clear_config_env(monkeypatch)
+    monkeypatch.setenv("DEFAULT_TIMEOUT_SECONDS", "30")
+    monkeypatch.setenv("ORANGEHRM_TIMEOUT_SECONDS", "45")
+    monkeypatch.setenv("SAUCEDEMO_TIMEOUT_SECONDS", "15")
+
+    config = AppConfig.from_env()
+
+    assert config.portal_timeout_seconds("orangehrm") == 45
+    assert config.portal_timeout_seconds("saucedemo") == 15
+    assert config.portal_timeout_seconds("unknown") == 30
+
+
+def test_portal_timeout_seconds_normalizes_portal_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    clear_config_env(monkeypatch)
+    monkeypatch.setenv("DEFAULT_TIMEOUT_SECONDS", "30")
+    monkeypatch.setenv("ORANGEHRM_TIMEOUT_SECONDS", "45")
+    monkeypatch.setenv("SAUCEDEMO_TIMEOUT_SECONDS", "15")
+
+    config = AppConfig.from_env()
+
+    assert config.portal_timeout_seconds(" OrangeHRM ") == 45
+    assert config.portal_timeout_seconds("SAUCEDEMO") == 15
+
+
+def test_portal_timeout_seconds_falls_back_to_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    clear_config_env(monkeypatch)
+    monkeypatch.setenv("DEFAULT_TIMEOUT_SECONDS", "22")
+
+    config = AppConfig.from_env()
+
+    assert config.portal_timeout_seconds("orangehrm") == 22
+    assert config.portal_timeout_seconds("saucedemo") == 22
+
+
+@pytest.mark.parametrize(
+    ("env_key", "value"),
+    [
+        ("DEFAULT_TIMEOUT_SECONDS", "0"),
+        ("ORANGEHRM_TIMEOUT_SECONDS", "0"),
+        ("SAUCEDEMO_TIMEOUT_SECONDS", "-1"),
+    ],
+)
+def test_timeout_values_must_be_positive(
+    monkeypatch: pytest.MonkeyPatch,
+    env_key: str,
+    value: str,
+) -> None:
+    clear_config_env(monkeypatch)
+    monkeypatch.setenv(env_key, value)
+
+    with pytest.raises(ValueError, match=env_key):
         AppConfig.from_env()
 
 

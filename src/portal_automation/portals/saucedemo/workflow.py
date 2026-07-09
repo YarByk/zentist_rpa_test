@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Protocol
@@ -15,6 +16,7 @@ from portal_automation.portals.saucedemo.input_schema import (
 
 OPERATION_NAME = "checkout"
 SECRET_DETAIL_KEYS = frozenset({"password", "secret", "sauce_password", "token", "credential"})
+PreFinishPersistCallback = Callable[[ItemResult], None]
 
 
 class LoginStatus(str, Enum):  # noqa: UP042
@@ -82,6 +84,8 @@ def process_account(
     account: SauceDemoAccount,
     pages: SauceDemoWorkflowPages,
     context: Any,
+    *,
+    persist_before_finish: PreFinishPersistCallback | None = None,
 ) -> ItemResult:
     password = _saucedemo_password(context)
     attempts = 1
@@ -116,6 +120,11 @@ def process_account(
     )
     attempts = max(attempts, capture_attempts)
 
+    _persist_order_details_before_finish(
+        persist_before_finish,
+        _pre_finish_result(account, cart_count, order_summary, captured_raw, attempts),
+    )
+
     confirmation, confirmation_attempts = _finish_order_and_read_confirmation(
         account,
         pages,
@@ -135,6 +144,56 @@ def process_account(
         attempts=attempts,
         details=details,
     )
+
+
+def _persist_order_details_before_finish(
+    persist_before_finish: PreFinishPersistCallback | None,
+    result: ItemResult,
+) -> None:
+    if persist_before_finish is None:
+        return
+    persist_before_finish(result)
+
+
+def _pre_finish_result(
+    account: SauceDemoAccount,
+    cart_count: int,
+    order_summary: OrderSummary,
+    captured_details: dict[str, Any],
+    attempts: int,
+) -> ItemResult:
+    return ItemResult(
+        item_key=account.account_key,
+        operation=OPERATION_NAME,
+        status=ItemStatus.IN_PROGRESS,
+        reason_code=None,
+        error_detail=None,
+        artifact_path=None,
+        attempts=attempts,
+        details=_pre_finish_details(account, cart_count, order_summary, captured_details),
+    )
+
+
+def _pre_finish_details(
+    account: SauceDemoAccount,
+    cart_count: int,
+    order_summary: OrderSummary,
+    captured_details: dict[str, Any],
+) -> dict[str, Any]:
+    details: dict[str, Any] = {
+        "username": account.username,
+        "items_requested": account.items_to_add,
+        "cart_count": cart_count,
+        "overview_item_count": order_summary.item_count,
+        "overview_text": order_summary.confirmation_text.strip(),
+        "order_details_captured_before_finish": True,
+    }
+    if order_summary.order_id is not None:
+        details["overview_order_id"] = order_summary.order_id
+    if order_summary.total is not None:
+        details["overview_total"] = order_summary.total
+    details.update(_non_secret_details(captured_details))
+    return details
 
 
 def _ensure_cart_count(

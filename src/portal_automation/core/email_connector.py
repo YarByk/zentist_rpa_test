@@ -96,9 +96,7 @@ class EmailConnector:
                 client.send_message(message)
         except Exception as exc:  # pragma: no cover - covered via mocks in tests
             self._log_email_event("email_failed", backend=self.backend, error=str(exc))
-            raise EmailDeliveryError(
-                f"Email delivery failed via SMTP backend: {exc}"
-            ) from exc
+            raise EmailDeliveryError(f"Email delivery failed via SMTP backend: {exc}") from exc
         self._log_email_event(
             "email_sent",
             backend=self.backend,

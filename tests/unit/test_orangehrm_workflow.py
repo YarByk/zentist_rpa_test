@@ -39,6 +39,8 @@ class FakePages:
         job: dict[str, str] | None = None,
         verify_upload: bool = True,
         failures: dict[str, list[Exception]] | None = None,
+        update_changes_job: bool = True,
+        append_uploaded_attachment: bool = False,
     ) -> None:
         self.find_results = find_results or [FindResult.found()]
         self.attachments = attachments or []
@@ -47,10 +49,9 @@ class FakePages:
             "employment_status": employee().employment_status,
         }
         self.verify_upload = verify_upload
-        self.failures = {
-            key: list(value)
-            for key, value in (failures or {}).items()
-        }
+        self.update_changes_job = update_changes_job
+        self.append_uploaded_attachment = append_uploaded_attachment
+        self.failures = {key: list(value) for key, value in (failures or {}).items()}
         self.calls: list[str] = []
         self.uploaded_paths: list[Path] = []
 
@@ -70,6 +71,11 @@ class FakePages:
     def update_job(self, record: OrangeHrmEmployeeRecord) -> None:
         self.calls.append("update_job")
         self._raise_if_configured("update_job")
+        if self.update_changes_job:
+            self.job = {
+                "job_title": record.job_title,
+                "employment_status": record.employment_status,
+            }
 
     def read_job(self, record: OrangeHrmEmployeeRecord) -> dict[str, str]:
         self.calls.append("read_job")
@@ -85,6 +91,8 @@ class FakePages:
         self.calls.append("upload_salary_attachment")
         self.uploaded_paths.append(path)
         self._raise_if_configured("upload_salary_attachment")
+        if self.append_uploaded_attachment:
+            self.attachments.append(path.name)
 
     def verify_salary_attachment(self, record: OrangeHrmEmployeeRecord, filename: str) -> bool:
         self.calls.append("verify_salary_attachment")
@@ -136,7 +144,7 @@ def test_find_result_constructors_produce_expected_statuses_and_details() -> Non
     assert FindResult.error("failed").detail == "failed"
 
 
-def test_found_path_opens_profile_updates_job_and_reads_job(tmp_path) -> None:
+def test_found_path_opens_profile_reads_job_and_skips_current_job_update(tmp_path) -> None:
     pages = FakePages(attachments=[salary_filename()])
 
     result = process_employee(employee(), pages, context(tmp_path))
@@ -144,13 +152,14 @@ def test_found_path_opens_profile_updates_job_and_reads_job(tmp_path) -> None:
     assert pages.calls == [
         "find_employee_record",
         "open_employee_profile",
-        "update_job",
         "read_job",
         "list_salary_attachments",
     ]
     assert "add_employee" not in pages.calls
+    assert "update_job" not in pages.calls
     assert result.status is ItemStatus.SUCCESS
     assert result.operation == "sync_employee_state"
+    assert result.details["job_updated"] is False
 
 
 def test_not_found_path_adds_employee_and_finds_again(tmp_path) -> None:
@@ -171,13 +180,60 @@ def test_not_found_path_adds_employee_and_finds_again(tmp_path) -> None:
     assert result.attempts == 1
 
 
-def test_ambiguous_first_find_maps_to_employee_match_ambiguous(tmp_path) -> None:
+def test_not_found_add_then_found_completes_profile_job_and_salary_flow(tmp_path) -> None:
+    pages = FakePages(
+        find_results=[FindResult.not_found(), FindResult.found()],
+        attachments=[],
+    )
+
+    result = process_employee(employee(), pages, context(tmp_path))
+
+    assert pages.calls == [
+        "find_employee_record",
+        "add_employee",
+        "find_employee_record",
+        "open_employee_profile",
+        "read_job",
+        "list_salary_attachments",
+        "upload_salary_attachment",
+        "verify_salary_attachment",
+    ]
+    assert result.details["created_employee"] is True
+    assert result.details["job_updated"] is False
+    assert result.details["salary_document_uploaded"] is True
+
+
+def test_job_update_runs_when_current_values_differ_and_then_verifies(tmp_path) -> None:
+    pages = FakePages(
+        job={"job_title": "Old Title", "employment_status": "Old Status"},
+        attachments=[salary_filename()],
+    )
+
+    result = process_employee(employee(), pages, context(tmp_path))
+
+    assert pages.calls == [
+        "find_employee_record",
+        "open_employee_profile",
+        "read_job",
+        "update_job",
+        "read_job",
+        "list_salary_attachments",
+    ]
+    assert result.details["job_updated"] is True
+
+
+def test_ambiguous_first_find_maps_to_employee_match_ambiguous_and_skips_add(
+    tmp_path,
+) -> None:
     pages = FakePages(find_results=[FindResult.ambiguous("too many")])
 
     assert_portal_error(
         ReasonCode.EMPLOYEE_MATCH_AMBIGUOUS,
         lambda: process_employee(employee(), pages, context(tmp_path)),
     )
+
+    assert pages.calls == ["find_employee_record"]
+    assert "add_employee" not in pages.calls
 
 
 def test_ambiguous_second_find_maps_to_employee_match_ambiguous(tmp_path) -> None:
@@ -207,8 +263,11 @@ def test_second_find_still_not_found_maps_to_employee_not_found(tmp_path) -> Non
     )
 
 
-def test_job_title_mismatch_maps_to_validation_failed(tmp_path) -> None:
-    pages = FakePages(job={"job_title": "Wrong", "employment_status": employee().employment_status})
+def test_job_title_mismatch_after_update_maps_to_validation_failed(tmp_path) -> None:
+    pages = FakePages(
+        job={"job_title": "Wrong", "employment_status": employee().employment_status},
+        update_changes_job=False,
+    )
 
     assert_portal_error(
         ReasonCode.VALIDATION_FAILED,
@@ -216,8 +275,11 @@ def test_job_title_mismatch_maps_to_validation_failed(tmp_path) -> None:
     )
 
 
-def test_employment_status_mismatch_maps_to_validation_failed(tmp_path) -> None:
-    pages = FakePages(job={"job_title": employee().job_title, "employment_status": "Wrong"})
+def test_employment_status_mismatch_after_update_maps_to_validation_failed(tmp_path) -> None:
+    pages = FakePages(
+        job={"job_title": employee().job_title, "employment_status": "Wrong"},
+        update_changes_job=False,
+    )
 
     assert_portal_error(
         ReasonCode.VALIDATION_FAILED,
@@ -249,9 +311,30 @@ def test_missing_salary_attachment_generates_writes_uploads_and_verifies(tmp_pat
     )
     assert pages.calls[-2:] == ["upload_salary_attachment", "verify_salary_attachment"]
     assert pages.uploaded_paths == [expected_path]
-    assert expected_path.read_text(encoding="utf-8").startswith("Employee: Alice Johnson\n")
+    content = expected_path.read_text(encoding="utf-8")
+    assert content.startswith("Employee: Alice Johnson\n")
+    assert "Run ID: run-1\n" in content
+    assert "secret_sauce" not in content
+    assert "admin123" not in content
     assert result.artifact_path == str(expected_path)
     assert result.details["salary_document_uploaded"] is True
+
+
+def test_repeated_run_skips_existing_generated_salary_attachment(tmp_path) -> None:
+    pages = FakePages(
+        find_results=[FindResult.found(), FindResult.found()],
+        attachments=[],
+        append_uploaded_attachment=True,
+    )
+    run_context = context(tmp_path)
+
+    first = process_employee(employee(), pages, run_context)
+    second = process_employee(employee(), pages, run_context)
+
+    assert first.details["salary_document_uploaded"] is True
+    assert second.details["salary_document_uploaded"] is False
+    assert pages.calls.count("upload_salary_attachment") == 1
+    assert len(pages.uploaded_paths) == 1
 
 
 def test_retryable_search_failure_is_retried_and_eventually_succeeds(tmp_path) -> None:
@@ -294,9 +377,7 @@ def test_exhausted_retryable_search_failure_raises_final_portal_error_with_attem
 def test_add_employee_write_operation_is_not_retried_blindly(tmp_path) -> None:
     pages = FakePages(
         find_results=[FindResult.not_found(), FindResult.not_found()],
-        failures={
-            "add_employee": [PortalError(ReasonCode.PORTAL_TIMEOUT, "add timed out")]
-        },
+        failures={"add_employee": [PortalError(ReasonCode.PORTAL_TIMEOUT, "add timed out")]},
     )
     run_context = context(tmp_path)
 

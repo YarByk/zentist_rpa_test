@@ -216,9 +216,7 @@ def test_unknown_backend_raises_value_error(tmp_path) -> None:
 
 
 def test_email_connector_source_uses_stdlib_smtplib_without_demo_credentials() -> None:
-    source = (ROOT / "src/portal_automation/core/email_connector.py").read_text(
-        encoding="utf-8"
-    )
+    source = (ROOT / "src/portal_automation/core/email_connector.py").read_text(encoding="utf-8")
 
     assert "import smtplib" in source
     assert "secret_sauce" not in source

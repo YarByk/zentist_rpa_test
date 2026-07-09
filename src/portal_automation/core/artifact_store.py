@@ -37,6 +37,14 @@ class ArtifactStore:
         filename = f"salary_{_sanitize_key(employee_key)}_{business_date.isoformat()}.txt"
         return self.generated_documents_dir(run_id) / filename
 
+    def failure_screenshot_path(self, run_id: str, portal_name: str, item_key: str) -> Path:
+        filename = f"{_sanitize_key(portal_name)}_{_sanitize_key(item_key)}_failure.png"
+        return self.screenshots_dir(run_id) / filename
+
+    def failure_trace_path(self, run_id: str, portal_name: str, item_key: str) -> Path:
+        filename = f"{_sanitize_key(portal_name)}_{_sanitize_key(item_key)}_trace.zip"
+        return self.traces_dir(run_id) / filename
+
     def write_text(self, path: Path, content: str) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")

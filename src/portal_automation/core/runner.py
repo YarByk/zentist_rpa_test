@@ -107,6 +107,8 @@ class BasePortalRunnerZX(ABC):
                 result = self._portal_error_result(item_key, error)
             except Exception as exc:
                 result = self._unexpected_error_result(item_key, exc)
+            if result.status is ItemStatus.FAILED:
+                self._capture_failure_diagnostics(context, result)
             if logger is not None and hasattr(logger, "log_item_result"):
                 logger.log_item_result(result)
             return result
@@ -167,6 +169,7 @@ class BasePortalRunnerZX(ABC):
         }
 
     def _finish_failed_run(self, context: RunContext, failure: ItemResult) -> None:
+        self._capture_failure_diagnostics(context, failure)
         result = RunResult(
             run_id=context.run_id,
             portal_name=self.portal_name,
@@ -187,6 +190,44 @@ class BasePortalRunnerZX(ABC):
         context.persistence.finish_run(context.run_id, result.status, self._summary(result.results))
         if metrics is not None and hasattr(metrics, "write_metrics"):
             metrics.write_metrics()
+
+    def _capture_failure_diagnostics(self, context: RunContext, result: ItemResult) -> None:
+        diagnostics = getattr(context, "diagnostics", None)
+        if diagnostics is None or not hasattr(diagnostics, "capture_failure_artifacts"):
+            return
+        try:
+            paths = diagnostics.capture_failure_artifacts(
+                run_id=context.run_id,
+                portal_name=self.portal_name,
+                item_key=result.item_key,
+                artifacts=context.artifacts,
+            )
+        except Exception as exc:
+            logger = getattr(context, "logger", None)
+            if logger is not None and hasattr(logger, "error"):
+                try:
+                    logger.error(
+                        "failure_diagnostics_failed",
+                        item_key=result.item_key,
+                        error=str(exc),
+                    )
+                except Exception:
+                    return
+            return
+
+        if not paths:
+            return
+        result.details = {**result.details, "diagnostics": paths}
+        logger = getattr(context, "logger", None)
+        if logger is not None and hasattr(logger, "info"):
+            try:
+                logger.info(
+                    "failure_diagnostics_captured",
+                    item_key=result.item_key,
+                    **paths,
+                )
+            except Exception:
+                return
 
     def _log_persistence_failure(self, context: RunContext, exc: Exception) -> None:
         logger = getattr(context, "logger", None)

@@ -94,9 +94,7 @@ def make_context(
         dry_run=dry_run,
         stale_item_timeout_seconds=300,
         config=object(),
-        persistence=(
-            persistence or PersistenceConnector(str(tmp_path / "db.sqlite"))
-        ),
+        persistence=(persistence or PersistenceConnector(str(tmp_path / "db.sqlite"))),
         reporter=ReportGenerator(artifacts),
         logger=object(),
         metrics=object(),
@@ -199,9 +197,7 @@ def test_same_day_rerun_skips_committed_items_and_keeps_report_complete(
         "item-b",
     }
 
-    report = (tmp_path / "artifacts" / "runs" / "run-2" / "report.txt").read_text(
-        encoding="utf-8"
-    )
+    report = (tmp_path / "artifacts" / "runs" / "run-2" / "report.txt").read_text(encoding="utf-8")
     assert "item_key=item-a" in report
     assert "item_key=item-b" in report
 
@@ -259,9 +255,7 @@ def test_recovery_state_keeps_committed_item_and_reprocesses_uncommitted_item(
         "item-b",
     }
     assert count_item_rows(tmp_path / "db.sqlite") == 2
-    assert {
-        result.item_key: result.status for result in result.results
-    } == {
+    assert {result.item_key: result.status for result in result.results} == {
         "item-a": ItemStatus.SUCCESS,
         "item-b": ItemStatus.SUCCESS,
     }

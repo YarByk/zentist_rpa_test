@@ -118,9 +118,7 @@ def test_minimal_runners_can_run_safely_in_dry_run(
         status=RunStatus.SUCCESS,
         results=[],
     )
-    assert persistence.created_runs == [
-        ("run-1", runner_class.portal_name, date(2026, 6, 29))
-    ]
+    assert persistence.created_runs == [("run-1", runner_class.portal_name, date(2026, 6, 29))]
     assert persistence.finished_runs == [
         (
             "run-1",

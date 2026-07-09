@@ -23,8 +23,7 @@ class OrangeHrmPages:
     RESULT_ROW = '.oxd-table-row[role="row"]'
     RESULT_HEADER_ROW = ".oxd-table-row.oxd-table-header-row"
     NO_RECORDS_SELECTOR = (
-        ".orangehrm-horizontal-padding.orangehrm-vertical-padding "
-        ".oxd-text.oxd-text--span"
+        ".orangehrm-horizontal-padding.orangehrm-vertical-padding .oxd-text.oxd-text--span"
     )
 
     JOB_TAB = 'a.orangehrm-tabs-item[href*="/viewJobDetails/"]'
@@ -88,13 +87,16 @@ class OrangeHrmPages:
                 return FindResult.not_found()
             if len(results) == 1:
                 return FindResult.found()
-            return FindResult.ambiguous(
-                f"Employee search returned {len(results)} matches."
-            )
+            return FindResult.ambiguous(f"Employee search returned {len(results)} matches.")
         if not self._has_real_page():
             return FindResult.error("Employee search result state is unavailable.")
 
         # real branch
+        # OrangeHRM submits employee search as a server-side filtered query.
+        # After the query returns, the visible result grid is treated as the
+        # authoritative filtered result set for this employee name. If multiple
+        # rows remain visible, the workflow fails as ambiguous instead of
+        # guessing or paging through unrelated directory data.
         self._navigate_to_employee_list()
         self._ensure_search_panel_expanded()
         self._fill_employee_name_and_search(employee.full_name)
@@ -149,9 +151,7 @@ class OrangeHrmPages:
         # real branch — click the single result row
         rows = self.page.locator(self.RESULT_ROW)
         total = self._locator_count_loc(rows)
-        headers = self._locator_count_loc(
-            self.page.locator(self.RESULT_HEADER_ROW)
-        )
+        headers = self._locator_count_loc(self.page.locator(self.RESULT_HEADER_ROW))
         data_rows = max(0, total - headers)
         if data_rows == 0:
             raise PortalError(
@@ -174,9 +174,7 @@ class OrangeHrmPages:
             return dict(self.page.job_values)
         if not self._has_real_page():
             return {
-                "job_title": (
-                    self.page.get_by_label(self.JOB_TITLE_LABEL).text_content() or ""
-                ),
+                "job_title": (self.page.get_by_label(self.JOB_TITLE_LABEL).text_content() or ""),
                 "employment_status": (
                     self.page.get_by_label(self.EMPLOYMENT_STATUS_LABEL).text_content() or ""
                 ),
@@ -194,9 +192,7 @@ class OrangeHrmPages:
         if not self._has_real_page():
             self.page.get_by_role("tab", name="Job").click()
             self.page.get_by_label(self.JOB_TITLE_LABEL).fill(employee.job_title)
-            self.page.get_by_label(self.EMPLOYMENT_STATUS_LABEL).fill(
-                employee.employment_status
-            )
+            self.page.get_by_label(self.EMPLOYMENT_STATUS_LABEL).fill(employee.employment_status)
             self.page.get_by_role("button", name="Save").click()
             return
 
@@ -205,9 +201,7 @@ class OrangeHrmPages:
         current_job = self._read_label_scoped_select("Job Title")
         current_status = self._read_label_scoped_select("Employment Status")
 
-        job_changed = self._select_dropdown_if_needed(
-            "Job Title", employee.job_title, current_job
-        )
+        job_changed = self._select_dropdown_if_needed("Job Title", employee.job_title, current_job)
         status_changed = self._select_dropdown_if_needed(
             "Employment Status", employee.employment_status, current_status
         )
@@ -221,9 +215,7 @@ class OrangeHrmPages:
         if hasattr(self.page, "attachment_filenames"):
             return list(self.page.attachment_filenames)
         if not self._has_real_page():
-            text = (
-                self.page.locator("[data-test='salary-attachments']").text_content() or ""
-            )
+            text = self.page.locator("[data-test='salary-attachments']").text_content() or ""
             return [line.strip() for line in text.splitlines() if line.strip()]
 
         # real branch
@@ -249,9 +241,7 @@ class OrangeHrmPages:
                     filenames.append(name)
         return filenames
 
-    def upload_salary_attachment(
-        self, employee: OrangeHrmEmployeeRecord, path: Path
-    ) -> None:
+    def upload_salary_attachment(self, employee: OrangeHrmEmployeeRecord, path: Path) -> None:
         # fake-page branch
         if not self._has_real_page():
             self.page.get_by_label(self.SALARY_ATTACHMENT_LABEL).set_input_files(str(path))
@@ -290,9 +280,7 @@ class OrangeHrmPages:
         self.page.locator(self.FORM_SAVE_BUTTON).first.click()
         self._wait_for_toast_or_stable()
 
-    def verify_salary_attachment(
-        self, employee: OrangeHrmEmployeeRecord, filename: str
-    ) -> bool:
+    def verify_salary_attachment(self, employee: OrangeHrmEmployeeRecord, filename: str) -> bool:
         return filename in self.list_salary_attachments(employee)
 
     # ── Private helpers ────────────────────────────────────────────────────
@@ -448,8 +436,7 @@ class OrangeHrmPages:
     def _attachments_section(self) -> Any | None:
         """Locate the Attachments card on the Salary tab."""
         heading = self.page.locator(
-            ".oxd-text--h6, .orangehrm-card-container h6, "
-            ".oxd-table-filter-header-title .oxd-text"
+            ".oxd-text--h6, .orangehrm-card-container h6, .oxd-table-filter-header-title .oxd-text"
         ).filter(has_text="Attachments")
         if self._locator_count_loc(heading) > 0:
             section = heading.first.locator("xpath=../../..")

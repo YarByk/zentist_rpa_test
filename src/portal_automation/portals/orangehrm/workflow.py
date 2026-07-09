@@ -48,6 +48,9 @@ class FindResult:
 
 
 class OrangeHrmWorkflowPages(Protocol):
+    def login(self, username: str, password: str) -> None:
+        return
+
     def find_employee_record(self, employee: OrangeHrmEmployeeRecord) -> FindResult:
         return FindResult.error("workflow interface method was called directly")
 
@@ -81,7 +84,7 @@ def process_employee(
     attempts = 1
     created_employee, locate_attempts = _locate_or_create_employee(employee, pages, context)
     attempts = max(attempts, locate_attempts)
-    job_attempts = _update_job_and_validate(employee, pages, context)
+    job_updated, job_attempts = _update_job_and_validate(employee, pages, context)
     attempts = max(attempts, job_attempts)
     artifact_path, upload_attempts = _ensure_salary_attachment(employee, pages, context)
     attempts = max(attempts, upload_attempts)
@@ -95,6 +98,7 @@ def process_employee(
         attempts=attempts,
         details={
             "created_employee": created_employee,
+            "job_updated": job_updated,
             "salary_document_uploaded": artifact_path is not None,
         },
     )
@@ -182,12 +186,27 @@ def _validate_job(employee: OrangeHrmEmployeeRecord, actual: dict[str, str]) -> 
         )
 
 
+def _job_matches(employee: OrangeHrmEmployeeRecord, actual: dict[str, str]) -> bool:
+    return (
+        actual.get("job_title") == employee.job_title
+        and actual.get("employment_status") == employee.employment_status
+    )
+
+
 def _update_job_and_validate(
     employee: OrangeHrmEmployeeRecord,
     pages: OrangeHrmWorkflowPages,
     context: Any,
-) -> int:
+) -> tuple[bool, int]:
     attempts = 1
+    actual, read_attempts = execute_with_context_retry(
+        context,
+        lambda: pages.read_job(employee),
+    )
+    attempts = max(attempts, read_attempts)
+    if _job_matches(employee, actual):
+        return False, attempts
+
     try:
         pages.update_job(employee)
     except PortalError as error:
@@ -204,7 +223,7 @@ def _update_job_and_validate(
         except PortalError:
             error.attempts = attempts
             raise error from None
-        return attempts
+        return True, attempts
 
     actual, read_attempts = execute_with_context_retry(
         context,
@@ -212,7 +231,7 @@ def _update_job_and_validate(
     )
     attempts = max(attempts, read_attempts)
     _validate_job(employee, actual)
-    return attempts
+    return True, attempts
 
 
 def _ensure_salary_attachment(
@@ -239,6 +258,7 @@ def _ensure_salary_attachment(
         pay_frequency=employee.salary.frequency,
         details=employee.salary.details,
         business_date=context.business_date,
+        run_id=context.run_id,
     )
     if not content:
         raise PortalError(

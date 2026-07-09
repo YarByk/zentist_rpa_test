@@ -36,9 +36,7 @@ def _parse_business_date(value: str) -> date:
     try:
         return date.fromisoformat(value)
     except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            f"{value!r} must use YYYY-MM-DD format"
-        ) from exc
+        raise argparse.ArgumentTypeError(f"{value!r} must use YYYY-MM-DD format") from exc
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -334,11 +332,37 @@ def _run_portal(
     if context.dry_run:
         return runner_class().run(context)
 
-    with BrowserManager(context.config) as session:
+    timeout_seconds = context.config.portal_timeout_seconds(portal_name)
+    with BrowserManager(context.config, timeout_seconds=timeout_seconds) as session:
+        context.diagnostics = getattr(session, "diagnostics", None)
         runner = runner_class(
             pages_factory=_build_pages_factory(portal_name, session.page),
         )
         return runner.run(context)
+
+
+def _run_artifact_path(context: RunContext, filename: str) -> str:
+    path = context.artifacts.run_dir(context.run_id) / filename
+    return str(path) if path.exists() else "not_created"
+
+
+def _print_portal_run_summary(context: RunContext, result: Any) -> None:
+    artifacts_dir = context.artifacts.run_dir(context.run_id)
+    report_path = context.artifacts.report_path(context.run_id)
+    email_artifact = context.artifacts.email_report_path(context.run_id)
+    email_result = str(email_artifact) if email_artifact.exists() else "not_created"
+    print(
+        "run_summary "
+        f"portal={result.portal_name} "
+        f"run_id={context.run_id} "
+        f"status={result.status.value} "
+        f"artifacts_dir={artifacts_dir} "
+        f"report_path={report_path if report_path.exists() else 'not_created'} "
+        f"email_backend={context.config.email_backend} "
+        f"email_artifact={email_result} "
+        f"events_path={_run_artifact_path(context, 'events.jsonl')} "
+        f"metrics_path={_run_artifact_path(context, 'metrics.json')}"
+    )
 
 
 def _run_selected_portals(
@@ -357,13 +381,13 @@ def _run_selected_portals(
             business_date=business_date,
             dry_run=dry_run,
         )
-        results.append(
-            _run_portal(
-                portal_name,
-                runner_class=runner_class,
-                context=context,
-            )
+        result = _run_portal(
+            portal_name,
+            runner_class=runner_class,
+            context=context,
         )
+        results.append(result)
+        _print_portal_run_summary(context, result)
     return 0 if all(result.status is RunStatus.SUCCESS for result in results) else 1
 
 

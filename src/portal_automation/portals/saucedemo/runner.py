@@ -24,6 +24,7 @@ class SauceDemoRunner(BasePortalRunnerZX):
         pages_factory: Callable[[RunContext], SauceDemoWorkflowPages] | None = None,
     ) -> None:
         self._pages_factory = pages_factory
+        self._pre_finish_details_by_item: dict[str, dict[str, Any]] = {}
 
     def preflight_check(self, context: RunContext) -> None:
         password = getattr(context.config, "saucedemo_password", None)
@@ -45,12 +46,39 @@ class SauceDemoRunner(BasePortalRunnerZX):
         return super().item_key(item)
 
     def process_item(self, context: RunContext, item: Any) -> ItemResult:
+        item_key = self.item_key(item)
+        self._pre_finish_details_by_item.pop(item_key, None)
         if self._pages_factory is None:
             raise PortalError(
                 ReasonCode.PORTAL_UNAVAILABLE,
                 "Sauce Demo page factory is not configured.",
             )
-        return process_account(item, self._pages_factory(context), context)
+
+        def persist_before_finish(result: ItemResult) -> None:
+            context.persistence.upsert_item_result(
+                result,
+                context.run_id,
+                self.portal_name,
+                context.business_date,
+            )
+            self._pre_finish_details_by_item[result.item_key] = dict(result.details)
+
+        return process_account(
+            item,
+            self._pages_factory(context),
+            context,
+            persist_before_finish=persist_before_finish,
+        )
+
+    def _portal_error_result(self, item_key: str, error: PortalError) -> ItemResult:
+        result = super()._portal_error_result(item_key, error)
+        pre_finish_details = self._pre_finish_details_by_item.get(item_key)
+        if pre_finish_details is not None:
+            result.details = {
+                **pre_finish_details,
+                "failed_after_pre_finish_persist": True,
+            }
+        return result
 
     def finalize(self, context: RunContext, result: RunResult) -> None:
         run_id = getattr(context, "run_id", result.run_id)

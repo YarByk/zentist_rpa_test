@@ -23,6 +23,7 @@ from portal_automation.portals.orangehrm.input_schema import (
 )
 from portal_automation.portals.orangehrm.pages import OrangeHrmPages
 from portal_automation.portals.orangehrm.runner import OrangeHrmRunner
+from portal_automation.portals.orangehrm.workflow import FindResult
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -50,6 +51,7 @@ class FakePersistence:
         self.created_runs = []
         self.finished_runs = []
         self.real_run_methods = []
+        self.item_results: list[ItemResult] = []
 
     def create_run(self, run_id: str, portal_name: str, business_date: date) -> None:
         self.created_runs.append((run_id, portal_name, business_date))
@@ -73,10 +75,11 @@ class FakePersistence:
 
     def upsert_item_result(self, *args: object) -> None:
         self.real_run_methods.append("upsert_item_result")
+        self.item_results.append(args[0])
 
     def list_results_by_business_date(self, portal_name: str, business_date: date) -> list[object]:
         self.real_run_methods.append("list_results_by_business_date")
-        return []
+        return list(self.item_results)
 
 
 class ReporterStub:
@@ -146,6 +149,48 @@ class FakePage:
         return FakeTarget(self, "locator", selector)
 
 
+class FakeWorkflowPages:
+    def __init__(self, *, login_error: PortalError | None = None) -> None:
+        self.login_error = login_error
+        self.calls: list[tuple | str] = []
+
+    def login(self, username: str, password: str) -> None:
+        self.calls.append(("login", username, password))
+        if self.login_error is not None:
+            raise self.login_error
+
+    def find_employee_record(self, record: OrangeHrmEmployeeRecord):
+        self.calls.append("find_employee_record")
+        return FindResult.found()
+
+    def add_employee(self, record: OrangeHrmEmployeeRecord) -> None:
+        self.calls.append("add_employee")
+
+    def open_employee_profile(self, record: OrangeHrmEmployeeRecord) -> None:
+        self.calls.append("open_employee_profile")
+
+    def update_job(self, record: OrangeHrmEmployeeRecord) -> None:
+        self.calls.append("update_job")
+
+    def read_job(self, record: OrangeHrmEmployeeRecord) -> dict[str, str]:
+        self.calls.append("read_job")
+        return {
+            "job_title": record.job_title,
+            "employment_status": record.employment_status,
+        }
+
+    def list_salary_attachments(self, record: OrangeHrmEmployeeRecord) -> list[str]:
+        self.calls.append("list_salary_attachments")
+        return [f"salary_{record.employee_key}_2026-06-29.txt"]
+
+    def upload_salary_attachment(self, record: OrangeHrmEmployeeRecord, path: Path) -> None:
+        self.calls.append("upload_salary_attachment")
+
+    def verify_salary_attachment(self, record: OrangeHrmEmployeeRecord, filename: str) -> bool:
+        self.calls.append("verify_salary_attachment")
+        return True
+
+
 def employee() -> OrangeHrmEmployeeRecord:
     return OrangeHrmEmployeeRecord(
         employee_key="emp-alice-johnson",
@@ -155,6 +200,21 @@ def employee() -> OrangeHrmEmployeeRecord:
         employment_status="Full-Time Permanent",
         salary=SalaryDetails(
             amount="90000 USD",
+            frequency="Annual",
+            details="Base salary for 2026",
+        ),
+    )
+
+
+def employee_two() -> OrangeHrmEmployeeRecord:
+    return OrangeHrmEmployeeRecord(
+        employee_key="emp-bob-smith",
+        first_name="Bob",
+        last_name="Smith",
+        job_title="Support Specialist",
+        employment_status="Part-Time Contract",
+        salary=SalaryDetails(
+            amount="50000 USD",
             frequency="Annual",
             details="Base salary for 2026",
         ),
@@ -173,6 +233,40 @@ def write_employee_input(tmp_path) -> str:
     "employment_status": "Full-Time Permanent",
     "salary": {
       "amount": "90000 USD",
+      "frequency": "Annual",
+      "details": "Base salary for 2026"
+    }
+  }
+]""",
+        encoding="utf-8",
+    )
+    return str(path)
+
+
+def write_two_employee_input(tmp_path) -> str:
+    path = tmp_path / "employees_two.json"
+    path.write_text(
+        """[
+  {
+    "employee_key": "emp-alice-johnson",
+    "first_name": "Alice",
+    "last_name": "Johnson",
+    "job_title": "QA Engineer",
+    "employment_status": "Full-Time Permanent",
+    "salary": {
+      "amount": "90000 USD",
+      "frequency": "Annual",
+      "details": "Base salary for 2026"
+    }
+  },
+  {
+    "employee_key": "emp-bob-smith",
+    "first_name": "Bob",
+    "last_name": "Smith",
+    "job_title": "Support Specialist",
+    "employment_status": "Part-Time Contract",
+    "salary": {
+      "amount": "50000 USD",
       "frequency": "Annual",
       "details": "Base salary for 2026"
     }
@@ -242,11 +336,11 @@ def test_dry_run_does_not_call_page_factory_or_process_item(tmp_path) -> None:
     assert context.persistence.real_run_methods == []
 
 
-def test_process_item_uses_injected_page_factory_and_workflow(
+def test_process_item_uses_injected_page_factory_logs_in_then_calls_workflow(
     tmp_path,
     monkeypatch,
 ) -> None:
-    pages = object()
+    pages = FakeWorkflowPages()
     calls = []
 
     def pages_factory(context: ContextStub) -> object:
@@ -275,6 +369,7 @@ def test_process_item_uses_injected_page_factory_and_workflow(
         ("factory", context),
         ("workflow", employee(), pages, context),
     ]
+    assert pages.calls == [("login", "Admin", "pw")]
 
 
 def test_process_item_without_page_factory_raises_portal_unavailable(tmp_path) -> None:
@@ -283,6 +378,93 @@ def test_process_item_without_page_factory_raises_portal_unavailable(tmp_path) -
 
     assert error.value.reason is ReasonCode.PORTAL_UNAVAILABLE
     assert "page factory" in error.value.detail
+
+
+def test_process_item_logs_in_before_first_employee_business_action(tmp_path) -> None:
+    pages = FakeWorkflowPages()
+    context = make_process_context(tmp_path)
+
+    result = OrangeHrmRunner(pages_factory=lambda _: pages).process_item(context, employee())
+
+    assert result.status is ItemStatus.SUCCESS
+    assert pages.calls[:2] == [
+        ("login", "Admin", "pw"),
+        "find_employee_record",
+    ]
+    assert "add_employee" not in pages.calls
+
+
+def test_runner_logs_in_once_for_multiple_items_in_same_session(tmp_path) -> None:
+    pages = FakeWorkflowPages()
+    context = make_process_context(tmp_path)
+    runner = OrangeHrmRunner(pages_factory=lambda _: pages)
+
+    first = runner.process_item(context, employee())
+    second = runner.process_item(context, employee_two())
+
+    assert first.status is ItemStatus.SUCCESS
+    assert second.status is ItemStatus.SUCCESS
+    assert pages.calls.count(("login", "Admin", "pw")) == 1
+    assert pages.calls.count("find_employee_record") == 2
+    assert pages.calls.index(("login", "Admin", "pw")) < pages.calls.index("find_employee_record")
+
+
+def test_login_failure_stops_employee_business_actions_and_is_cached(tmp_path) -> None:
+    login_error = PortalError(ReasonCode.LOGIN_FAILED, "OrangeHRM login failed.")
+    pages = FakeWorkflowPages(login_error=login_error)
+    context = make_process_context(tmp_path)
+    runner = OrangeHrmRunner(pages_factory=lambda _: pages)
+
+    with pytest.raises(PortalError) as first_error:
+        runner.process_item(context, employee())
+    with pytest.raises(PortalError) as second_error:
+        runner.process_item(context, employee_two())
+
+    assert first_error.value.reason is ReasonCode.LOGIN_FAILED
+    assert second_error.value.reason is ReasonCode.LOGIN_FAILED
+    assert pages.calls == [("login", "Admin", "pw")]
+
+
+def test_login_failure_in_run_marks_items_failed_without_business_actions(tmp_path) -> None:
+    login_error = PortalError(ReasonCode.LOGIN_FAILED, "OrangeHRM login failed.")
+    pages = FakeWorkflowPages(login_error=login_error)
+    context = make_run_context(tmp_path)
+    context.dry_run = False
+    runner = OrangeHrmRunner(pages_factory=lambda _: pages)
+
+    result = runner.run(context)
+
+    assert result.status is RunStatus.FAILED
+    assert pages.calls == [("login", "Admin", "pw")]
+    assert context.persistence.real_run_methods.count("mark_item_in_progress") == 1
+    assert context.persistence.real_run_methods.count("upsert_item_result") == 1
+
+
+def test_one_employee_failure_does_not_abort_remaining_batch_items(tmp_path) -> None:
+    class AmbiguousFirstEmployeePages(FakeWorkflowPages):
+        def find_employee_record(self, record: OrangeHrmEmployeeRecord):
+            self.calls.append(("find_employee_record", record.employee_key))
+            if record.employee_key == "emp-alice-johnson":
+                return FindResult.ambiguous("duplicate Alice")
+            return FindResult.found()
+
+    pages = AmbiguousFirstEmployeePages()
+    context = make_run_context(tmp_path)
+    context.config.orangehrm_input_path = write_two_employee_input(tmp_path)
+    context.dry_run = False
+
+    result = OrangeHrmRunner(pages_factory=lambda _: pages).run(context)
+
+    assert result.status is RunStatus.PARTIAL_SUCCESS
+    assert [item.item_key for item in result.results] == [
+        "emp-alice-johnson",
+        "emp-bob-smith",
+    ]
+    assert result.results[0].status is ItemStatus.FAILED
+    assert result.results[0].reason_code is ReasonCode.EMPLOYEE_MATCH_AMBIGUOUS
+    assert result.results[1].status is ItemStatus.SUCCESS
+    assert ("find_employee_record", "emp-bob-smith") in pages.calls
+    assert pages.calls.count(("login", "Admin", "pw")) == 1
 
 
 @pytest.mark.parametrize("password", [None, "", "   "])
@@ -438,18 +620,14 @@ def test_page_methods_operate_against_fake_page_and_record_expected_calls(tmp_pa
 
 
 def test_page_objects_do_not_import_persistence_or_sqlite_modules() -> None:
-    source = (ROOT / "src/portal_automation/portals/orangehrm/pages.py").read_text(
-        encoding="utf-8"
-    )
+    source = (ROOT / "src/portal_automation/portals/orangehrm/pages.py").read_text(encoding="utf-8")
 
     assert "persistence" not in source
     assert "sqlite" not in source
 
 
 def test_page_objects_do_not_contain_demo_credentials() -> None:
-    source = (ROOT / "src/portal_automation/portals/orangehrm/pages.py").read_text(
-        encoding="utf-8"
-    )
+    source = (ROOT / "src/portal_automation/portals/orangehrm/pages.py").read_text(encoding="utf-8")
 
     assert "secret_sauce" not in source
     assert "admin123" not in source

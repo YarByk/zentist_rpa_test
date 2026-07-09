@@ -39,10 +39,7 @@ class FakePages:
             "total": "$49.99",
         }
         self.raise_on = raise_on
-        self.failures = {
-            key: list(value)
-            for key, value in (failures or {}).items()
-        }
+        self.failures = {key: list(value) for key, value in (failures or {}).items()}
         self.calls: list[tuple[str, Any]] = []
         self.login_password: str | None = None
 
@@ -143,7 +140,15 @@ def test_login_result_constructors_produce_expected_statuses_and_details() -> No
 def test_successful_account_workflow_calls_page_methods_in_required_order() -> None:
     pages = FakePages()
 
-    process_account(account(), pages, make_context())
+    def persist_before_finish(result) -> None:
+        pages.calls.append(("persist_before_finish", result.status.value))
+
+    process_account(
+        account(),
+        pages,
+        make_context(),
+        persist_before_finish=persist_before_finish,
+    )
 
     assert pages.calls == [
         ("login", "standard_user"),
@@ -154,9 +159,70 @@ def test_successful_account_workflow_calls_page_methods_in_required_order() -> N
         ("checkout", account().checkout_profile),
         ("read_order_summary", None),
         ("capture_order_details", None),
+        ("persist_before_finish", "in_progress"),
         ("finish_order", None),
         ("read_confirmation", None),
     ]
+
+
+def test_persist_before_finish_receives_sanitized_order_details_before_finish() -> None:
+    pages = FakePages(
+        captured_details={
+            "order_id": "captured-order",
+            "total": "$55.00",
+            "password": "test_pw",
+            "api_secret": "hidden",
+        }
+    )
+    persisted = []
+
+    def persist_before_finish(result) -> None:
+        persisted.append(result)
+        pages.calls.append(("persist_before_finish", result.details.copy()))
+
+    result = process_account(
+        account(),
+        pages,
+        make_context(),
+        persist_before_finish=persist_before_finish,
+    )
+
+    assert result.status is ItemStatus.SUCCESS
+    assert len(persisted) == 1
+    pre_finish = persisted[0]
+    assert pre_finish.status is ItemStatus.IN_PROGRESS
+    assert pre_finish.details["order_details_captured_before_finish"] is True
+    assert pre_finish.details["overview_item_count"] == 3
+    assert pre_finish.details["order_id"] == "captured-order"
+    assert pre_finish.details["total"] == "$55.00"
+    assert "password" not in pre_finish.details
+    assert "api_secret" not in pre_finish.details
+    assert pages.calls.index(("capture_order_details", None)) < pages.calls.index(
+        ("persist_before_finish", pre_finish.details)
+    )
+    assert pages.calls.index(("persist_before_finish", pre_finish.details)) < pages.calls.index(
+        ("finish_order", None)
+    )
+
+
+def test_finish_order_is_not_clicked_when_pre_finish_persistence_fails() -> None:
+    pages = FakePages()
+
+    def persist_before_finish(result) -> None:
+        pages.calls.append(("persist_before_finish", result.status.value))
+        raise RuntimeError("database unavailable")
+
+    with pytest.raises(RuntimeError, match="database unavailable"):
+        process_account(
+            account(),
+            pages,
+            make_context(),
+            persist_before_finish=persist_before_finish,
+        )
+
+    assert ("persist_before_finish", "in_progress") in pages.calls
+    assert ("finish_order", None) not in pages.calls
+    assert ("read_confirmation", None) not in pages.calls
 
 
 def test_successful_workflow_adds_account_items_to_add() -> None:
@@ -255,6 +321,7 @@ def test_locked_out_login_maps_to_locked_out() -> None:
     )
 
     assert error.detail == "user locked"
+    assert pages.calls == [("login", "standard_user")]
 
 
 def test_failed_login_maps_to_login_failed() -> None:
@@ -316,9 +383,7 @@ def test_portal_error_raised_by_page_method_propagates_unchanged() -> None:
 
 def test_retryable_login_failure_is_retried_and_eventually_succeeds() -> None:
     pages = FakePages(
-        failures={
-            "login": [PortalError(ReasonCode.PORTAL_TIMEOUT, "temporary login timeout")]
-        }
+        failures={"login": [PortalError(ReasonCode.PORTAL_TIMEOUT, "temporary login timeout")]}
     )
 
     result = process_account(account(), pages, make_context())
@@ -355,9 +420,7 @@ def test_exhausted_retryable_read_step_raises_final_portal_error_with_attempts()
 def test_finish_order_retryable_failure_is_not_retried_blindly_when_confirmation_missing() -> None:
     pages = FakePages(
         confirmation=OrderSummary(item_count=0, confirmation_text=""),
-        failures={
-            "finish_order": [PortalError(ReasonCode.PORTAL_TIMEOUT, "finish timed out")]
-        },
+        failures={"finish_order": [PortalError(ReasonCode.PORTAL_TIMEOUT, "finish timed out")]},
     )
 
     error = assert_portal_error(
@@ -366,9 +429,7 @@ def test_finish_order_retryable_failure_is_not_retried_blindly_when_confirmation
     )
 
     assert error.detail == "finish timed out"
-    assert [call for call in pages.calls if call[0] == "finish_order"] == [
-        ("finish_order", None)
-    ]
+    assert [call for call in pages.calls if call[0] == "finish_order"] == [("finish_order", None)]
     assert [call for call in pages.calls if call[0] == "read_confirmation"] == [
         ("read_confirmation", None)
     ]
@@ -459,3 +520,34 @@ def workflow_source() -> str:
     return (ROOT / "src/portal_automation/portals/saucedemo/workflow.py").read_text(
         encoding="utf-8"
     )
+
+
+@pytest.mark.parametrize(
+    "username",
+    [
+        "problem_user",
+        "performance_glitch_user",
+        "error_user",
+        "visual_user",
+    ],
+)
+def test_non_locked_demo_accounts_are_not_treated_as_login_failures(username: str) -> None:
+    test_account = SauceDemoAccount(
+        account_key=username,
+        username=username,
+        items_to_add=3,
+        checkout_profile=CheckoutProfile(
+            first_name="Demo",
+            last_name="User",
+            postal_code="10001",
+        ),
+    )
+    pages = FakePages(login_result=LoginResult.success())
+
+    result = process_account(test_account, pages, make_context())
+
+    assert result.status is ItemStatus.SUCCESS
+    assert pages.calls[0] == ("login", username)
+    assert ("open_cart", None) in pages.calls
+    assert ("checkout", test_account.checkout_profile) in pages.calls
+    assert ("finish_order", None) in pages.calls

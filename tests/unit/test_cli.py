@@ -5,8 +5,9 @@ from pathlib import Path
 import pytest
 
 from portal_automation import __main__ as cli
-from portal_automation.core.models import ReasonCode, RunResult, RunStatus
+from portal_automation.core.models import ItemResult, ItemStatus, ReasonCode, RunResult, RunStatus
 from portal_automation.core.retries import PortalError
+from portal_automation.core.runner import BasePortalRunnerZX
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -18,6 +19,8 @@ class ConfigStub:
     business_date: str | None = None
     headless: bool = True
     default_timeout_seconds: int = 30
+    orangehrm_timeout_seconds: int | None = None
+    saucedemo_timeout_seconds: int | None = None
     orangehrm_password: str | None = None
     saucedemo_password: str | None = None
     email_backend: str = "dry_run"
@@ -32,6 +35,13 @@ class ConfigStub:
     smtp_from: str | None = None
     smtp_to: str | None = None
     smtp_use_tls: bool = True
+
+    def portal_timeout_seconds(self, portal_name: str) -> int:
+        if portal_name == "orangehrm" and self.orangehrm_timeout_seconds is not None:
+            return self.orangehrm_timeout_seconds
+        if portal_name == "saucedemo" and self.saucedemo_timeout_seconds is not None:
+            return self.saucedemo_timeout_seconds
+        return self.default_timeout_seconds
 
 
 class RunnerStub:
@@ -67,8 +77,9 @@ class SauceRunnerStub(RunnerStub):
 class BrowserManagerStub:
     instances = []
 
-    def __init__(self, config) -> None:
+    def __init__(self, config, *, timeout_seconds=None) -> None:
         self.config = config
+        self.timeout_seconds = timeout_seconds
         self.entered = False
         self.exited = False
         self.page = object()
@@ -217,7 +228,7 @@ def test_runtime_path_uses_secrets_loader_for_selected_portal(monkeypatch, tmp_p
     monkeypatch.setattr(cli, "OrangeHrmPages", OrangePagesStub)
 
     class LoaderStub:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             self.config = config
 
         def get(self, key: str):
@@ -246,7 +257,7 @@ def test_dry_run_path_does_not_start_browser_manager(monkeypatch, tmp_path) -> N
     configure_cli(monkeypatch, tmp_path)
 
     class FailingBrowserManager:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             raise AssertionError("browser manager must not start in dry-run")
 
     monkeypatch.setattr(cli, "BrowserManager", FailingBrowserManager)
@@ -265,7 +276,7 @@ def test_non_dry_run_saucedemo_creates_browser_and_injects_pages_factory(
     monkeypatch.setattr(cli, "SauceDemoPages", SaucePagesStub)
 
     class LoaderStub:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             self.config = config
 
         def get(self, key: str):
@@ -298,7 +309,7 @@ def test_non_dry_run_orangehrm_creates_browser_and_injects_pages_factory(
     monkeypatch.setattr(cli, "OrangeHrmPages", OrangePagesStub)
 
     class LoaderStub:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             self.config = config
 
         def get(self, key: str):
@@ -329,7 +340,7 @@ def test_all_non_dry_run_uses_separate_browser_sessions_per_portal(monkeypatch, 
     monkeypatch.setattr(cli, "OrangeHrmPages", OrangePagesStub)
 
     class LoaderStub:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             self.config = config
 
         def get(self, key: str):
@@ -358,13 +369,108 @@ def test_all_non_dry_run_uses_separate_browser_sessions_per_portal(monkeypatch, 
     }
 
 
+def test_non_dry_run_passes_resolved_orangehrm_timeout_to_browser_manager(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    config = configure_cli(monkeypatch, tmp_path)
+    config.orangehrm_timeout_seconds = 45
+    monkeypatch.setattr(cli, "BrowserManager", BrowserManagerStub)
+    monkeypatch.setattr(cli, "OrangeHrmPages", OrangePagesStub)
+
+    class LoaderStub:
+        def __init__(self, config, **_kwargs) -> None:
+            self.config = config
+
+        def get(self, key: str):
+            return "loaded-orange-secret" if key == "ORANGEHRM_PASSWORD" else None
+
+        def require(self, key: str):
+            value = self.get(key)
+            if value is None:
+                raise AssertionError(f"unexpected secret lookup: {key}")
+            return value
+
+    monkeypatch.setattr(cli, "SecretsLoader", LoaderStub)
+
+    exit_code = cli.main(["orangehrm"])
+
+    assert exit_code == 0
+    assert len(BrowserManagerStub.instances) == 1
+    assert BrowserManagerStub.instances[0].timeout_seconds == 45
+
+
+def test_non_dry_run_passes_resolved_saucedemo_timeout_to_browser_manager(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    config = configure_cli(monkeypatch, tmp_path)
+    config.saucedemo_timeout_seconds = 12
+    monkeypatch.setattr(cli, "BrowserManager", BrowserManagerStub)
+    monkeypatch.setattr(cli, "SauceDemoPages", SaucePagesStub)
+
+    class LoaderStub:
+        def __init__(self, config, **_kwargs) -> None:
+            self.config = config
+
+        def get(self, key: str):
+            return "loaded-sauce-secret" if key == "SAUCEDEMO_PASSWORD" else None
+
+        def require(self, key: str):
+            value = self.get(key)
+            if value is None:
+                raise AssertionError(f"unexpected secret lookup: {key}")
+            return value
+
+    monkeypatch.setattr(cli, "SecretsLoader", LoaderStub)
+
+    exit_code = cli.main(["saucedemo"])
+
+    assert exit_code == 0
+    assert len(BrowserManagerStub.instances) == 1
+    assert BrowserManagerStub.instances[0].timeout_seconds == 12
+
+
+def test_all_non_dry_run_resolves_timeout_per_portal(monkeypatch, tmp_path) -> None:
+    config = configure_cli(monkeypatch, tmp_path)
+    config.orangehrm_timeout_seconds = 45
+    config.saucedemo_timeout_seconds = 12
+    monkeypatch.setattr(cli, "BrowserManager", BrowserManagerStub)
+    monkeypatch.setattr(cli, "SauceDemoPages", SaucePagesStub)
+    monkeypatch.setattr(cli, "OrangeHrmPages", OrangePagesStub)
+
+    class LoaderStub:
+        def __init__(self, config, **_kwargs) -> None:
+            self.config = config
+
+        def get(self, key: str):
+            if key == "ORANGEHRM_PASSWORD":
+                return "loaded-orange-secret"
+            if key == "SAUCEDEMO_PASSWORD":
+                return "loaded-sauce-secret"
+            return None
+
+        def require(self, key: str):
+            value = self.get(key)
+            if value is None:
+                raise AssertionError(f"unexpected secret lookup: {key}")
+            return value
+
+    monkeypatch.setattr(cli, "SecretsLoader", LoaderStub)
+
+    exit_code = cli.main(["all"])
+
+    assert exit_code == 0
+    assert [instance.timeout_seconds for instance in BrowserManagerStub.instances] == [45, 12]
+
+
 def test_browser_session_closes_after_runner_failure(monkeypatch, tmp_path, capsys) -> None:
     configure_cli(monkeypatch, tmp_path)
     monkeypatch.setattr(cli, "BrowserManager", BrowserManagerStub)
     monkeypatch.setattr(cli, "OrangeHrmPages", OrangePagesStub)
 
     class LoaderStub:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             self.config = config
 
         def get(self, key: str):
@@ -405,7 +511,7 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
     monkeypatch.setattr(cli, "OrangeHrmPages", OrangePagesStub)
 
     class LoaderStub:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             self.config = config
 
         def get(self, key: str):
@@ -417,7 +523,7 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
             raise AssertionError(f"unexpected secret lookup: {key}")
 
     class FailingBrowserManager:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             self.config = config
 
         def __enter__(self):
@@ -445,7 +551,7 @@ def test_recover_command_does_not_start_browser(monkeypatch, tmp_path) -> None:
     config = configure_cli(monkeypatch, tmp_path)
 
     class FailingBrowserManager:
-        def __init__(self, config) -> None:
+        def __init__(self, config, **_kwargs) -> None:
             raise AssertionError("browser manager must not start for recover")
 
     config_type = type(
@@ -531,3 +637,98 @@ def test_cli_source_does_not_contain_demo_credentials() -> None:
 
     assert "secret_sauce" not in source
     assert "admin123" not in source
+
+
+class CliArtifactRunner(BasePortalRunnerZX):
+    portal_name = "orangehrm"
+    operation_name = "cli_artifact_check"
+
+    def __init__(self, pages_factory=None) -> None:
+        self.pages_factory = pages_factory
+
+    def preflight_check(self, context):
+        return None
+
+    def load_items(self, context):
+        return [{"item_key": "cli-item"}]
+
+    def process_item(self, context, item):
+        assert self.pages_factory is not None
+        self.pages_factory(context)
+        return ItemResult(
+            item_key="cli-item",
+            operation=self.operation_name,
+            status=ItemStatus.SUCCESS,
+            reason_code=None,
+            error_detail=None,
+            artifact_path=None,
+            details={"note": "safe artifact test"},
+        )
+
+    def finalize(self, context, result):
+        report_path = context.reporter.write_report(result)
+        context.email.send_report(
+            run_id=context.run_id,
+            to=None,
+            subject=f"CLI artifact report: {context.run_id}",
+            body=context.reporter.render(result),
+            report_path=report_path,
+        )
+
+
+def test_non_dry_run_cli_prints_summary_and_creates_artifact_shape_without_real_browser(
+    monkeypatch,
+    tmp_path,
+    capsys,
+) -> None:
+    configure_cli(monkeypatch, tmp_path)
+    monkeypatch.setattr(cli, "BrowserManager", BrowserManagerStub)
+    monkeypatch.setattr(cli, "OrangeHrmPages", OrangePagesStub)
+
+    class LoaderStub:
+        def __init__(self, config, **_kwargs) -> None:
+            self.config = config
+
+        def get(self, key: str):
+            return "loaded-orange-secret" if key == "ORANGEHRM_PASSWORD" else None
+
+        def require(self, key: str):
+            if key == "ORANGEHRM_PASSWORD":
+                return "loaded-orange-secret"
+            raise AssertionError(f"unexpected secret lookup: {key}")
+
+    runner_map = {"orangehrm": CliArtifactRunner, "saucedemo": SauceRunnerStub}
+    monkeypatch.setattr(cli, "SecretsLoader", LoaderStub)
+    monkeypatch.setattr(cli, "PORTAL_RUNNERS", runner_map)
+    monkeypatch.setattr(cli, "get_runner", lambda portal_name: runner_map[portal_name])
+
+    exit_code = cli.main(["orangehrm"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "run_summary portal=orangehrm" in captured.out
+    assert "report_path=" in captured.out
+    assert "artifacts_dir=" in captured.out
+    assert "email_backend=dry_run" in captured.out
+    assert "email_artifact=" in captured.out
+    assert "loaded-orange-secret" not in captured.out
+
+    run_dirs = list((tmp_path / "artifacts" / "runs").iterdir())
+    assert len(run_dirs) == 1
+    run_dir = run_dirs[0]
+    assert (run_dir / "report.txt").is_file()
+    assert (run_dir / "email_report.txt").is_file()
+    assert (run_dir / "events.jsonl").is_file()
+    assert (run_dir / "metrics.json").is_file()
+    combined = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in [
+            run_dir / "report.txt",
+            run_dir / "email_report.txt",
+            run_dir / "events.jsonl",
+            run_dir / "metrics.json",
+        ]
+    )
+    assert "item_key=cli-item" in combined
+    assert "loaded-orange-secret" not in combined
+    assert "secret_sauce" not in combined

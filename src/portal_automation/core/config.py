@@ -14,6 +14,16 @@ def _optional_env_value(key: str, default: str = "") -> str | None:
     return value or None
 
 
+def _optional_int_env_value(key: str) -> int | None:
+    value = _optional_env_value(key)
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except ValueError as exc:
+        raise ValueError(f"{key} must be an integer value") from exc
+
+
 def _bool_env_value(key: str, default: str) -> bool:
     value = _env_value(key, default).strip().lower()
     if value in TRUE_VALUES:
@@ -38,6 +48,8 @@ class AppConfig:
     business_date: str | None
     headless: bool
     default_timeout_seconds: int
+    orangehrm_timeout_seconds: int | None
+    saucedemo_timeout_seconds: int | None
     max_retries: int
     stale_item_timeout_seconds: int
     orangehrm_base_url: str
@@ -56,6 +68,8 @@ class AppConfig:
     smtp_from: str | None
     smtp_to: str | None
     smtp_use_tls: bool
+    playwright_trace_on_failure: bool
+    playwright_screenshot_on_failure: bool
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -65,6 +79,8 @@ class AppConfig:
             business_date=_optional_env_value("BUSINESS_DATE"),
             headless=_bool_env_value("HEADLESS", "true"),
             default_timeout_seconds=_int_env_value("DEFAULT_TIMEOUT_SECONDS", "30"),
+            orangehrm_timeout_seconds=_optional_int_env_value("ORANGEHRM_TIMEOUT_SECONDS"),
+            saucedemo_timeout_seconds=_optional_int_env_value("SAUCEDEMO_TIMEOUT_SECONDS"),
             max_retries=_int_env_value("MAX_RETRIES", "2"),
             stale_item_timeout_seconds=_int_env_value("STALE_ITEM_TIMEOUT_SECONDS", "300"),
             orangehrm_base_url=_env_value(
@@ -92,7 +108,31 @@ class AppConfig:
             smtp_from=_optional_env_value("SMTP_FROM"),
             smtp_to=_optional_env_value("SMTP_TO"),
             smtp_use_tls=_bool_env_value("SMTP_USE_TLS", "true"),
+            playwright_trace_on_failure=_bool_env_value("PLAYWRIGHT_TRACE_ON_FAILURE", "true"),
+            playwright_screenshot_on_failure=_bool_env_value(
+                "PLAYWRIGHT_SCREENSHOT_ON_FAILURE",
+                "true",
+            ),
         )
+
+    def __post_init__(self) -> None:
+        _validate_positive_timeout("DEFAULT_TIMEOUT_SECONDS", self.default_timeout_seconds)
+        _validate_optional_positive_timeout(
+            "ORANGEHRM_TIMEOUT_SECONDS",
+            self.orangehrm_timeout_seconds,
+        )
+        _validate_optional_positive_timeout(
+            "SAUCEDEMO_TIMEOUT_SECONDS",
+            self.saucedemo_timeout_seconds,
+        )
+
+    def portal_timeout_seconds(self, portal_name: str) -> int:
+        normalized = portal_name.strip().lower()
+        if normalized == "orangehrm" and self.orangehrm_timeout_seconds is not None:
+            return self.orangehrm_timeout_seconds
+        if normalized == "saucedemo" and self.saucedemo_timeout_seconds is not None:
+            return self.saucedemo_timeout_seconds
+        return self.default_timeout_seconds
 
     def default_input_path(self, portal_name: str) -> str:
         if portal_name == "orangehrm":
@@ -100,3 +140,13 @@ class AppConfig:
         if portal_name == "saucedemo":
             return self.saucedemo_input_path
         raise ValueError(f"Unknown portal name: {portal_name}")
+
+
+def _validate_positive_timeout(name: str, value: int) -> None:
+    if value <= 0:
+        raise ValueError(f"{name} must be greater than 0")
+
+
+def _validate_optional_positive_timeout(name: str, value: int | None) -> None:
+    if value is not None:
+        _validate_positive_timeout(name, value)

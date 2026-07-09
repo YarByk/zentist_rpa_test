@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Any
 
 from portal_automation.core.models import ItemResult, ReasonCode, RunContext, RunResult
-from portal_automation.core.retries import PortalError
+from portal_automation.core.retries import PortalError, execute_with_context_retry
 from portal_automation.core.runner import BasePortalRunnerZX
 from portal_automation.portals.orangehrm.input_schema import (
     InputValidationError,
@@ -24,6 +24,9 @@ class OrangeHrmRunner(BasePortalRunnerZX):
         pages_factory: Callable[[RunContext], OrangeHrmWorkflowPages] | None = None,
     ) -> None:
         self._pages_factory = pages_factory
+        self._pages: OrangeHrmWorkflowPages | None = None
+        self._logged_in = False
+        self._login_error: PortalError | None = None
 
     def preflight_check(self, context: RunContext) -> None:
         password = getattr(context.config, "orangehrm_password", None)
@@ -45,12 +48,39 @@ class OrangeHrmRunner(BasePortalRunnerZX):
         return super().item_key(item)
 
     def process_item(self, context: RunContext, item: Any) -> ItemResult:
-        if self._pages_factory is None:
-            raise PortalError(
+        pages = self._ensure_logged_in(context)
+        return process_employee(item, pages, context)
+
+    def _ensure_logged_in(self, context: RunContext) -> OrangeHrmWorkflowPages:
+        if self._login_error is not None:
+            raise self._login_error
+        if self._pages is None:
+            if self._pages_factory is None:
+                raise PortalError(
+                    ReasonCode.PORTAL_UNAVAILABLE,
+                    "OrangeHRM page factory is not configured.",
+                )
+            self._pages = self._pages_factory(context)
+        if self._logged_in:
+            return self._pages
+
+        username = getattr(context.config, "orangehrm_username", "")
+        password = getattr(context.config, "orangehrm_password", None)
+        login = getattr(self._pages, "login", None)
+        if not callable(login):
+            self._login_error = PortalError(
                 ReasonCode.PORTAL_UNAVAILABLE,
-                "OrangeHRM page factory is not configured.",
+                "OrangeHRM pages do not support login.",
             )
-        return process_employee(item, self._pages_factory(context), context)
+            raise self._login_error
+
+        try:
+            execute_with_context_retry(context, lambda: login(username, password))
+        except PortalError as error:
+            self._login_error = error
+            raise
+        self._logged_in = True
+        return self._pages
 
     def finalize(self, context: RunContext, result: RunResult) -> None:
         run_id = getattr(context, "run_id", result.run_id)

@@ -44,6 +44,8 @@ class FakePersistence:
         self.created_runs = []
         self.finished_runs = []
         self.real_run_methods = []
+        self.upserted_results: list[ItemResult] = []
+        self._results_by_key: dict[tuple[str, str], ItemResult] = {}
 
     def create_run(self, run_id: str, portal_name: str, business_date: date) -> None:
         self.created_runs.append((run_id, portal_name, business_date))
@@ -67,10 +69,14 @@ class FakePersistence:
 
     def upsert_item_result(self, *args: object) -> None:
         self.real_run_methods.append("upsert_item_result")
+        result = args[0]
+        assert isinstance(result, ItemResult)
+        self.upserted_results.append(result)
+        self._results_by_key[(result.item_key, result.operation)] = result
 
     def list_results_by_business_date(self, portal_name: str, business_date: date) -> list[object]:
         self.real_run_methods.append("list_results_by_business_date")
-        return []
+        return list(self._results_by_key.values())
 
 
 class ReporterStub:
@@ -223,23 +229,22 @@ def account() -> SauceDemoAccount:
     )
 
 
-def write_saucedemo_input(tmp_path) -> str:
+def write_saucedemo_input(tmp_path, records: list[dict[str, object]] | None = None) -> str:
     path = tmp_path / "accounts.json"
+    default_records = [
+        {
+            "account_key": "standard_user",
+            "username": "standard_user",
+            "items_to_add": 3,
+            "checkout_profile": {
+                "first_name": "Standard",
+                "last_name": "User",
+                "postal_code": "10001",
+            },
+        }
+    ]
     path.write_text(
-        json.dumps(
-            [
-                {
-                    "account_key": "standard_user",
-                    "username": "standard_user",
-                    "items_to_add": 3,
-                    "checkout_profile": {
-                        "first_name": "Standard",
-                        "last_name": "User",
-                        "postal_code": "10001",
-                    },
-                }
-            ]
-        ),
+        json.dumps(records if records is not None else default_records),
         encoding="utf-8",
     )
     return str(path)
@@ -309,8 +314,8 @@ def test_process_item_uses_injected_page_factory_and_workflow(tmp_path, monkeypa
         calls.append(("factory", context))
         return pages
 
-    def fake_process_account(record, page_objects, context):
-        calls.append(("workflow", record, page_objects, context))
+    def fake_process_account(record, page_objects, context, *, persist_before_finish=None):
+        calls.append(("workflow", record, page_objects, context, persist_before_finish))
         return ItemResult(
             item_key=record.account_key,
             operation="checkout",
@@ -327,10 +332,152 @@ def test_process_item_uses_injected_page_factory_and_workflow(tmp_path, monkeypa
     result = SauceDemoRunner(pages_factory=pages_factory).process_item(context, account())
 
     assert result.status is ItemStatus.SUCCESS
-    assert calls == [
-        ("factory", context),
-        ("workflow", account(), pages, context),
+    assert len(calls) == 2
+    assert calls[0] == ("factory", context)
+    workflow_call = calls[1]
+    assert workflow_call[:4] == ("workflow", account(), pages, context)
+    assert callable(workflow_call[4])
+
+
+def test_process_item_pre_finish_callback_persists_order_details(tmp_path, monkeypatch) -> None:
+    pages = object()
+    context = make_run_context(tmp_path)
+    context.dry_run = False
+
+    def fake_process_account(record, page_objects, run_context, *, persist_before_finish=None):
+        assert persist_before_finish is not None
+        persist_before_finish(
+            ItemResult(
+                item_key=record.account_key,
+                operation="checkout",
+                status=ItemStatus.IN_PROGRESS,
+                reason_code=None,
+                error_detail=None,
+                artifact_path=None,
+                details={
+                    "order_id": "ord-001",
+                    "total": "$14.99",
+                    "order_details_captured_before_finish": True,
+                },
+            )
+        )
+        return ItemResult(
+            item_key=record.account_key,
+            operation="checkout",
+            status=ItemStatus.SUCCESS,
+            reason_code=None,
+            error_detail=None,
+            artifact_path=None,
+            details={"confirmation_text": "Thank you for your order!"},
+        )
+
+    monkeypatch.setattr(runner_module, "process_account", fake_process_account)
+
+    result = SauceDemoRunner(pages_factory=lambda run_context: pages).process_item(
+        context,
+        account(),
+    )
+
+    assert result.status is ItemStatus.SUCCESS
+    assert context.persistence.real_run_methods == ["upsert_item_result"]
+    pre_finish_result = context.persistence.upserted_results[0]
+    assert pre_finish_result.status is ItemStatus.IN_PROGRESS
+    assert pre_finish_result.details["order_details_captured_before_finish"] is True
+    assert pre_finish_result.details["order_id"] == "ord-001"
+
+
+def test_failed_result_after_pre_finish_persistence_keeps_order_details(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    context = make_run_context(tmp_path)
+    context.dry_run = False
+
+    def fake_process_account(record, page_objects, run_context, *, persist_before_finish=None):
+        assert persist_before_finish is not None
+        persist_before_finish(
+            ItemResult(
+                item_key=record.account_key,
+                operation="checkout",
+                status=ItemStatus.IN_PROGRESS,
+                reason_code=None,
+                error_detail=None,
+                artifact_path=None,
+                details={
+                    "order_id": "ord-before-finish",
+                    "total": "$14.99",
+                    "order_details_captured_before_finish": True,
+                },
+            )
+        )
+        raise PortalError(ReasonCode.CHECKOUT_FAILED, "finish failed after persistence")
+
+    monkeypatch.setattr(runner_module, "process_account", fake_process_account)
+
+    result = SauceDemoRunner(pages_factory=lambda run_context: object()).run(context)
+
+    failed = result.results[0]
+    assert failed.status is ItemStatus.FAILED
+    assert failed.reason_code is ReasonCode.CHECKOUT_FAILED
+    assert failed.details["order_id"] == "ord-before-finish"
+    assert failed.details["total"] == "$14.99"
+    assert failed.details["order_details_captured_before_finish"] is True
+    assert failed.details["failed_after_pre_finish_persist"] is True
+    assert context.persistence.upserted_results[-1].details["order_id"] == "ord-before-finish"
+
+
+def test_run_continues_after_one_saucedemo_account_failure(tmp_path, monkeypatch) -> None:
+    records = [
+        {
+            "account_key": "standard_user",
+            "username": "standard_user",
+            "items_to_add": 3,
+            "checkout_profile": {
+                "first_name": "Standard",
+                "last_name": "User",
+                "postal_code": "10001",
+            },
+        },
+        {
+            "account_key": "locked_out_user",
+            "username": "locked_out_user",
+            "items_to_add": 3,
+            "checkout_profile": {
+                "first_name": "Locked",
+                "last_name": "User",
+                "postal_code": "10001",
+            },
+        },
     ]
+    context = make_run_context(tmp_path)
+    context.dry_run = False
+    context.config.saucedemo_input_path = write_saucedemo_input(tmp_path, records)
+    processed: list[str] = []
+
+    def fake_process_account(record, page_objects, run_context, *, persist_before_finish=None):
+        processed.append(record.account_key)
+        if record.account_key == "locked_out_user":
+            raise PortalError(ReasonCode.LOCKED_OUT, "user locked")
+        return ItemResult(
+            item_key=record.account_key,
+            operation="checkout",
+            status=ItemStatus.SUCCESS,
+            reason_code=None,
+            error_detail=None,
+            artifact_path=None,
+            details={"confirmation_text": "Thank you for your order!"},
+        )
+
+    monkeypatch.setattr(runner_module, "process_account", fake_process_account)
+
+    result = SauceDemoRunner(pages_factory=lambda run_context: object()).run(context)
+
+    assert processed == ["standard_user", "locked_out_user"]
+    assert result.status is RunStatus.PARTIAL_SUCCESS
+    results_by_key = {item.item_key: item for item in result.results}
+    assert results_by_key["standard_user"].status is ItemStatus.SUCCESS
+    assert results_by_key["locked_out_user"].status is ItemStatus.FAILED
+    assert results_by_key["locked_out_user"].reason_code is ReasonCode.LOCKED_OUT
 
 
 def test_process_item_without_page_factory_raises_portal_unavailable(tmp_path) -> None:
@@ -702,9 +849,7 @@ def test_capture_order_details_excludes_secret_like_fields() -> None:
 
 
 def test_page_objects_do_not_import_persistence_or_sqlite_modules() -> None:
-    source = (ROOT / "src/portal_automation/portals/saucedemo/pages.py").read_text(
-        encoding="utf-8"
-    )
+    source = (ROOT / "src/portal_automation/portals/saucedemo/pages.py").read_text(encoding="utf-8")
 
     assert "persistence" not in source
     assert "sqlite" not in source

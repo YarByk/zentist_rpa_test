@@ -27,9 +27,42 @@ class ObjectItem:
 class FakeLogger:
     def __init__(self) -> None:
         self.errors: list[tuple[str, dict[str, str]]] = []
+        self.infos: list[tuple[str, dict[str, str]]] = []
+
+    def info(self, event: str, **kwargs: str) -> None:
+        self.infos.append((event, kwargs))
 
     def error(self, event: str, **kwargs: str) -> None:
         self.errors.append((event, kwargs))
+
+
+class DiagnosticsStub:
+    def __init__(self, *, error: Exception | None = None) -> None:
+        self.error = error
+        self.calls: list[dict[str, Any]] = []
+
+    def capture_failure_artifacts(
+        self,
+        *,
+        run_id: str,
+        portal_name: str,
+        item_key: str,
+        artifacts: Any,
+    ) -> dict[str, str]:
+        self.calls.append(
+            {
+                "run_id": run_id,
+                "portal_name": portal_name,
+                "item_key": item_key,
+                "artifacts": artifacts,
+            }
+        )
+        if self.error is not None:
+            raise self.error
+        return {
+            "screenshot_path": f"/artifacts/{portal_name}/{item_key}_failure.png",
+            "trace_path": f"/artifacts/{portal_name}/{item_key}_trace.zip",
+        }
 
 
 class FakePersistence:
@@ -154,8 +187,9 @@ def make_context(
     persistence: FakePersistence,
     logger: FakeLogger | None = None,
     dry_run: bool = False,
+    diagnostics: DiagnosticsStub | None = None,
 ) -> RunContext:
-    return RunContext(
+    context = RunContext(
         run_id="run-1",
         business_date=date(2026, 6, 29),
         dry_run=dry_run,
@@ -168,6 +202,9 @@ def make_context(
         artifacts={},
         email={},
     )
+    if diagnostics is not None:
+        context.diagnostics = diagnostics
+    return context
 
 
 def test_base_portal_runner_zx_exists_and_run_is_concrete() -> None:
@@ -447,3 +484,64 @@ def test_forbidden_modules_were_not_created() -> None:
     ]
 
     assert [path for path in forbidden_paths if (ROOT / path).exists()] == []
+
+
+def test_failed_item_captures_diagnostics_without_masking_portal_error() -> None:
+    persistence = FakePersistence([])
+    logger = FakeLogger()
+    diagnostics = DiagnosticsStub()
+    runner = FakeRunner(items=[{"item_key": "a"}], behavior={"a": "portal_error"})
+
+    result = runner.run(make_context(persistence, logger=logger, diagnostics=diagnostics))
+
+    failed = result.results[0]
+    assert failed.status is ItemStatus.FAILED
+    assert failed.reason_code is ReasonCode.PORTAL_TIMEOUT
+    assert failed.details["diagnostics"] == {
+        "screenshot_path": "/artifacts/fakeportal/a_failure.png",
+        "trace_path": "/artifacts/fakeportal/a_trace.zip",
+    }
+    assert diagnostics.calls == [
+        {
+            "run_id": "run-1",
+            "portal_name": "fakeportal",
+            "item_key": "a",
+            "artifacts": {},
+        }
+    ]
+    assert (
+        "failure_diagnostics_captured",
+        {
+            "item_key": "a",
+            "screenshot_path": "/artifacts/fakeportal/a_failure.png",
+            "trace_path": "/artifacts/fakeportal/a_trace.zip",
+        },
+    ) in logger.infos
+
+
+def test_diagnostic_failure_does_not_mask_original_item_error() -> None:
+    persistence = FakePersistence([])
+    logger = FakeLogger()
+    diagnostics = DiagnosticsStub(error=RuntimeError("diagnostics failed"))
+    runner = FakeRunner(items=[{"item_key": "a"}], behavior={"a": "portal_error"})
+
+    result = runner.run(make_context(persistence, logger=logger, diagnostics=diagnostics))
+
+    failed = result.results[0]
+    assert failed.status is ItemStatus.FAILED
+    assert failed.reason_code is ReasonCode.PORTAL_TIMEOUT
+    assert failed.details == {}
+    assert (
+        "failure_diagnostics_failed",
+        {"item_key": "a", "error": "diagnostics failed"},
+    ) in logger.errors
+
+
+def test_dry_run_does_not_attempt_failure_diagnostics() -> None:
+    persistence = FakePersistence([])
+    diagnostics = DiagnosticsStub()
+    runner = FakeRunner(items=[{"item_key": "a"}], behavior={"a": "portal_error"})
+
+    runner.run(make_context(persistence, dry_run=True, diagnostics=diagnostics))
+
+    assert diagnostics.calls == []

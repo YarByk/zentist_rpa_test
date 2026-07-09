@@ -184,9 +184,9 @@ def test_invalid_input_maps_to_input_validation_failed_portal_error(tmp_path) ->
 
 
 def test_schema_and_runner_do_not_import_playwright_browser_or_page_modules() -> None:
-    schema_source = (
-        ROOT / "src/portal_automation/portals/orangehrm/input_schema.py"
-    ).read_text(encoding="utf-8")
+    schema_source = (ROOT / "src/portal_automation/portals/orangehrm/input_schema.py").read_text(
+        encoding="utf-8"
+    )
     runner_source = (ROOT / "src/portal_automation/portals/orangehrm/runner.py").read_text(
         encoding="utf-8"
     )

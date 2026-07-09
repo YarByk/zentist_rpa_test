@@ -15,7 +15,10 @@ from portal_automation.portals.orangehrm.input_schema import (
 from portal_automation.portals.orangehrm.pages import OrangeHrmPages
 from portal_automation.portals.orangehrm.workflow import FindStatus
 
+ROOT = Path(__file__).resolve().parents[2]
+
 # ── Fake Playwright primitives ─────────────────────────────────────────────────
+
 
 class FakeLocator:
     """Minimal fake locator that mimics Playwright locator API."""
@@ -130,6 +133,7 @@ def _pages(page: FakePage) -> OrangeHrmPages:
 
 # ── login ──────────────────────────────────────────────────────────────────────
 
+
 def test_login_success_no_error_element_no_login_in_url() -> None:
     """real branch: no error element, URL doesn't contain 'login' → success."""
     page = FakePage(url="https://orangehrm.example.com/dashboard/index")
@@ -184,6 +188,7 @@ def test_login_real_page_stuck_on_login_url_raises() -> None:
 
 # ── find_employee_record ───────────────────────────────────────────────────────
 
+
 def test_find_no_records_via_no_records_selector() -> None:
     """real branch: NO_RECORDS_SELECTOR visible with 'No Records' text → not_found."""
     no_rec = FakeLocator(["No Records Found"])
@@ -220,6 +225,13 @@ def test_find_multiple_result_rows_returns_ambiguous() -> None:
     assert "2" in result.detail
 
 
+def test_find_search_behavior_is_documented_as_server_filtered_visible_results() -> None:
+    source = (ROOT / "src/portal_automation/portals/orangehrm/pages.py").read_text(encoding="utf-8")
+
+    assert "server-side filtered query" in source
+    assert "visible result grid" in source
+
+
 def test_find_with_header_row_excluded_from_count() -> None:
     """real branch: 2 rows total (1 header + 1 data) → found."""
     all_rows = FakeLocator(["header row", "Emily Jones row"])
@@ -250,9 +262,7 @@ def test_find_employee_results_list_zero_items_returns_not_found() -> None:
 
 def test_find_employee_results_list_one_item_returns_found() -> None:
     """fake-page branch: employee_search_results=[record] → found."""
-    page = SimpleNamespace(
-        employee_search_results=[{"id": "Id09557"}], locator=lambda s: _EMPTY
-    )
+    page = SimpleNamespace(employee_search_results=[{"id": "Id09557"}], locator=lambda s: _EMPTY)
     result = OrangeHrmPages(page, _config()).find_employee_record(_employee())
     assert result.status is FindStatus.FOUND
 
@@ -291,6 +301,7 @@ def test_find_search_panel_collapsed_expand_called() -> None:
 
 
 # ── list_salary_attachments ────────────────────────────────────────────────────
+
 
 def test_list_salary_attachments_empty_state_returns_empty_list() -> None:
     """real branch: 'No Records Found' in Attachments section → []."""
@@ -336,6 +347,7 @@ def test_list_salary_attachments_fake_attr_returns_filenames() -> None:
 
 
 # ── upload_salary_attachment ───────────────────────────────────────────────────
+
 
 def test_upload_salary_attachment_calls_file_input_set_input_files(tmp_path: Path) -> None:
     """real branch: Add button and file input found → set_input_files called."""

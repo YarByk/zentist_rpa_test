@@ -37,9 +37,7 @@ def successful_item(
 
 
 def utc_stamp(seconds_delta: int) -> str:
-    return (datetime.now(UTC) + timedelta(seconds=seconds_delta)).isoformat(
-        timespec="microseconds"
-    )
+    return (datetime.now(UTC) + timedelta(seconds=seconds_delta)).isoformat(timespec="microseconds")
 
 
 def set_item_updated_at(db: PersistenceConnector, item_key: str, updated_at: str) -> None:

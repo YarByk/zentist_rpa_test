@@ -105,9 +105,7 @@ def make_context(
         dry_run=dry_run,
         stale_item_timeout_seconds=300,
         config=object(),
-        persistence=(
-            persistence or PersistenceConnector(str(tmp_path / "db.sqlite"))
-        ),
+        persistence=(persistence or PersistenceConnector(str(tmp_path / "db.sqlite"))),
         reporter=ReportGenerator(artifacts, logger=logger),
         logger=logger,
         metrics=metrics,

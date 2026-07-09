@@ -89,3 +89,19 @@ def test_write_text_propagates_filesystem_failures(tmp_path) -> None:
 
     with pytest.raises(OSError):
         store.write_text(path, "content")
+
+
+def test_failure_diagnostic_paths_are_deterministic_and_sanitized(tmp_path) -> None:
+    store = ArtifactStore(str(tmp_path / "artifacts"))
+
+    screenshot = store.failure_screenshot_path("run-1", "orangehrm", " emp/00:1 ")
+    trace = store.failure_trace_path("run-1", "orangehrm", " emp/00:1 ")
+
+    assert screenshot == (
+        tmp_path / "artifacts" / "runs" / "run-1" / "screenshots" / "orangehrm_emp_00_1_failure.png"
+    )
+    assert trace == (
+        tmp_path / "artifacts" / "runs" / "run-1" / "traces" / "orangehrm_emp_00_1_trace.zip"
+    )
+    assert screenshot.parent.is_dir()
+    assert trace.parent.is_dir()

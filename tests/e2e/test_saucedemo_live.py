@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import pytest
 
 from portal_automation.core.browser import BrowserManager
+from portal_automation.core.models import ReasonCode
 from portal_automation.core.retries import PortalError
 from portal_automation.portals.saucedemo.pages import SauceDemoPages
 from portal_automation.portals.saucedemo.workflow import LoginStatus
@@ -28,9 +29,16 @@ def _require_live_run() -> None:
     [
         ("standard_user", LoginStatus.SUCCESS),
         ("locked_out_user", LoginStatus.LOCKED_OUT),
+        ("problem_user", LoginStatus.SUCCESS),
+        ("performance_glitch_user", LoginStatus.SUCCESS),
+        ("error_user", LoginStatus.SUCCESS),
+        ("visual_user", LoginStatus.SUCCESS),
     ],
 )
-def test_saucedemo_live_login(username: str, expected_status: LoginStatus) -> None:
+def test_saucedemo_live_login_all_demo_accounts(
+    username: str,
+    expected_status: LoginStatus,
+) -> None:
     _require_live_run()
     config = ConfigStub()
     try:
@@ -38,6 +46,8 @@ def test_saucedemo_live_login(username: str, expected_status: LoginStatus) -> No
             pages = SauceDemoPages(session.page, config)
             result = pages.login(username, "secret_sauce")
     except PortalError as exc:
-        pytest.skip(str(exc))
+        if exc.reason in {ReasonCode.PORTAL_UNAVAILABLE, ReasonCode.PORTAL_TIMEOUT}:
+            pytest.skip(str(exc))
+        raise
 
     assert result.status is expected_status
