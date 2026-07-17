@@ -36,14 +36,14 @@ class FakeRunner(BasePortalRunnerZX):
 
     def __init__(self, items: list[dict[str, Any]], *, send_email: bool = False) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             items: Value supplied by the test or fixture for `items`.
             send_email: Value supplied by the test or fixture for `send_email`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -53,13 +53,13 @@ class FakeRunner(BasePortalRunnerZX):
 
     def preflight_check(self, context: RunContext) -> None:
         """Preflight check.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -67,13 +67,13 @@ class FakeRunner(BasePortalRunnerZX):
 
     def load_items(self, context: RunContext) -> list[dict[str, Any]]:
         """Load items.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -81,14 +81,14 @@ class FakeRunner(BasePortalRunnerZX):
 
     def process_item(self, context: RunContext, item: dict[str, Any]) -> ItemResult:
         """Process item.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
             item: Value supplied by the test or fixture for `item`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -111,14 +111,14 @@ class FakeRunner(BasePortalRunnerZX):
 
     def finalize(self, context: RunContext, result: RunResult) -> None:
         """Finalize.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
             result: Value supplied by the test or fixture for `result`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -146,16 +146,16 @@ def make_context(
 ) -> RunContext:
     # Build a full context using real persistence/report/email helpers and a fake runner.
     """Make context.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         run_id: Value supplied by the test or fixture for `run_id`.
         dry_run: Value supplied by the test or fixture for `dry_run`.
         persistence: Value supplied by the test or fixture for `persistence`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -179,15 +179,15 @@ def make_context(
 def fetch_rows(db_path: Path, query: str, params: tuple[Any, ...] = ()) -> list[sqlite3.Row]:
     # Query helper for checking persisted recovery state.
     """Fetch rows.
-    
+
     Args:
         db_path: Value supplied by the test or fixture for `db_path`.
         query: Value supplied by the test or fixture for `query`.
         params: Value supplied by the test or fixture for `params`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -202,15 +202,15 @@ def fetch_rows(db_path: Path, query: str, params: tuple[Any, ...] = ()) -> list[
 def set_item_updated_at(db_path: Path, item_key: str, updated_at: str) -> None:
     # Force stale timestamps so recovery tests do not need to sleep.
     """Set item updated at.
-    
+
     Args:
         db_path: Value supplied by the test or fixture for `db_path`.
         item_key: Value supplied by the test or fixture for `item_key`.
         updated_at: Value supplied by the test or fixture for `updated_at`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -227,15 +227,15 @@ def set_item_updated_at(db_path: Path, item_key: str, updated_at: str) -> None:
 
 def set_run_updated_at(db_path: Path, run_id: str, updated_at: str) -> None:
     """Set run updated at.
-    
+
     Args:
         db_path: Value supplied by the test or fixture for `db_path`.
         run_id: Value supplied by the test or fixture for `run_id`.
         updated_at: Value supplied by the test or fixture for `updated_at`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -252,13 +252,13 @@ def set_run_updated_at(db_path: Path, run_id: str, updated_at: str) -> None:
 
 def count_item_rows(db_path: Path) -> int:
     """Count item rows.
-    
+
     Args:
         db_path: Value supplied by the test or fixture for `db_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -273,14 +273,14 @@ def count_item_rows(db_path: Path) -> int:
 def run_recover_cli(tmp_path: Path, *args: str):
     # Exercise the real CLI recovery command in a subprocess with isolated storage.
     """Run recover cli.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         *args: Value supplied by the test or fixture for `args`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -304,13 +304,13 @@ def test_same_day_rerun_skips_committed_items_and_keeps_report_complete(
 ) -> None:
     # A same-day rerun should skip already-successful items but still report the full result set.
     """Verify that same day rerun skips committed items and keeps report complete.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -356,13 +356,13 @@ def test_recovery_state_keeps_committed_item_and_reprocesses_uncommitted_item(
     tmp_path: Path,
 ) -> None:
     """Verify that recovery state keeps committed item and reprocesses uncommitted item.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -426,13 +426,13 @@ def test_stale_in_progress_item_detection_uses_portal_and_business_date(
     tmp_path: Path,
 ) -> None:
     """Verify that stale in progress item detection uses portal and business date.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -483,13 +483,13 @@ def test_stale_in_progress_item_detection_uses_portal_and_business_date(
 
 def test_stale_run_detection_uses_finished_at_and_timeout(tmp_path: Path) -> None:
     """Verify that stale run detection uses finished at and timeout.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -511,13 +511,13 @@ def test_stale_run_detection_uses_finished_at_and_timeout(tmp_path: Path) -> Non
 
 def test_recover_dry_run_reports_stale_rows_without_modifying_database(tmp_path: Path) -> None:
     """Verify that recover dry run reports stale rows without modifying database.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -564,13 +564,13 @@ def test_recover_marks_only_safe_stale_rows_and_keeps_success_items_untouched(
     tmp_path: Path,
 ) -> None:
     """Verify that recover marks only safe stale rows and keeps success items untouched.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

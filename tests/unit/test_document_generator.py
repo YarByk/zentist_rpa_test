@@ -12,10 +12,10 @@ ROOT = Path(__file__).resolve().parents[2]
 def salary_document() -> str:
     # Shared fixture helper that produces one canonical salary document payload.
     """Salary document.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -33,10 +33,10 @@ def salary_document() -> str:
 
 def test_salary_document_filename_uses_expected_normal_key_format() -> None:
     """Verify that salary document filename uses expected normal key format.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -47,10 +47,10 @@ def test_salary_document_filename_uses_expected_normal_key_format() -> None:
 
 def test_salary_document_filename_sanitizes_unsafe_key() -> None:
     """Verify that salary document filename sanitizes unsafe key.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -62,10 +62,10 @@ def test_salary_document_filename_sanitizes_unsafe_key() -> None:
 def test_generate_salary_document_uses_required_field_order() -> None:
     # Field ordering matters because generated artifacts are reviewer-facing plain text.
     """Verify that generate salary document uses required field order.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -83,10 +83,10 @@ def test_generate_salary_document_uses_required_field_order() -> None:
 
 def test_generate_salary_document_is_deterministic_for_same_input() -> None:
     """Verify that generate salary document is deterministic for same input.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -95,10 +95,10 @@ def test_generate_salary_document_is_deterministic_for_same_input() -> None:
 
 def test_generate_salary_document_includes_run_id_when_supplied() -> None:
     """Verify that generate salary document includes run id when supplied.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -120,10 +120,10 @@ def test_generate_salary_document_includes_run_id_when_supplied() -> None:
 def test_generate_salary_document_redacts_secret_like_input_values() -> None:
     # Secret-like substrings should be removed even when they appear inside normal text fields.
     """Verify that generate salary document redacts secret like input values.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -149,10 +149,10 @@ def test_generate_salary_document_redacts_secret_like_input_values() -> None:
 
 def test_generated_content_ends_with_exactly_one_trailing_newline() -> None:
     """Verify that generated content ends with exactly one trailing newline.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -164,10 +164,10 @@ def test_generated_content_ends_with_exactly_one_trailing_newline() -> None:
 
 def test_generated_content_does_not_include_secret_like_values_when_not_inputs() -> None:
     """Verify that generated content does not include secret like values when not inputs.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -180,10 +180,10 @@ def test_generated_content_does_not_include_secret_like_values_when_not_inputs()
 
 def test_document_generator_does_not_import_from_orangehrm_portal_modules() -> None:
     """Verify that document generator does not import from orangehrm portal modules.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -194,10 +194,10 @@ def test_document_generator_does_not_import_from_orangehrm_portal_modules() -> N
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

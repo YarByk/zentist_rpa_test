@@ -29,14 +29,14 @@ class FakeLocator:
         children: dict[str, "FakeLocator"] | None = None,
     ) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             items: Value supplied by the test or fixture for `items`.
             children: Value supplied by the test or fixture for `children`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -45,10 +45,10 @@ class FakeLocator:
 
     def count(self) -> int:
         """Count.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -57,10 +57,10 @@ class FakeLocator:
     @property
     def first(self) -> "FakeLocator":
         """First.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -68,13 +68,13 @@ class FakeLocator:
 
     def nth(self, index: int) -> "FakeLocator":
         """Nth.
-        
+
         Args:
             index: Value supplied by the test or fixture for `index`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -84,10 +84,10 @@ class FakeLocator:
 
     def text_content(self) -> str | None:
         """Text content.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -95,13 +95,13 @@ class FakeLocator:
 
     def fill(self, value: str) -> None:
         """Fill.
-        
+
         Args:
             value: Value supplied by the test or fixture for `value`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -109,10 +109,10 @@ class FakeLocator:
 
     def click(self) -> None:
         """Click.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -120,13 +120,13 @@ class FakeLocator:
 
     def set_input_files(self, path: str) -> None:
         """Set input files.
-        
+
         Args:
             path: Value supplied by the test or fixture for `path`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -134,13 +134,13 @@ class FakeLocator:
 
     def filter(self, has_text: str = "") -> "FakeLocator":
         """Filter.
-        
+
         Args:
             has_text: Value supplied by the test or fixture for `has_text`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -149,13 +149,13 @@ class FakeLocator:
 
     def locator(self, selector: str) -> "FakeLocator":
         """Locator.
-        
+
         Args:
             selector: Value supplied by the test or fixture for `selector`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -163,10 +163,10 @@ class FakeLocator:
 
     def all_text_contents(self) -> list[str]:
         """All text contents.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -188,7 +188,7 @@ class FakePage:
         navigated_urls: list[str] | None = None,
     ) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             url: Value supplied by the test or fixture for `url`.
             locators: Value supplied by the test or fixture for `locators`.
@@ -196,10 +196,10 @@ class FakePage:
                 `wait_for_selector_raises`.
             wait_for_url_raises: Value supplied by the test or fixture for `wait_for_url_raises`.
             navigated_urls: Value supplied by the test or fixture for `navigated_urls`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -215,10 +215,10 @@ class FakePage:
     @property
     def url(self) -> str:
         """Url.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -226,13 +226,13 @@ class FakePage:
 
     def goto(self, url: str) -> None:
         """Goto.
-        
+
         Args:
             url: Value supplied by the test or fixture for `url`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -241,13 +241,13 @@ class FakePage:
 
     def locator(self, selector: str) -> FakeLocator:
         """Locator.
-        
+
         Args:
             selector: Value supplied by the test or fixture for `selector`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -255,13 +255,13 @@ class FakePage:
 
     def wait_for_url(self, pattern: str) -> None:
         """Wait for url.
-        
+
         Args:
             pattern: Value supplied by the test or fixture for `pattern`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -270,14 +270,14 @@ class FakePage:
 
     def wait_for_selector(self, selector: str, timeout: int = 5000) -> None:
         """Wait for selector.
-        
+
         Args:
             selector: Value supplied by the test or fixture for `selector`.
             timeout: Value supplied by the test or fixture for `timeout`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -288,10 +288,10 @@ class FakePage:
 def _employee() -> OrangeHrmEmployeeRecord:
     # Canonical employee fixture used by page-object branch tests.
     """Employee.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -309,10 +309,10 @@ def _employee() -> OrangeHrmEmployeeRecord:
 def _config() -> Any:
     # Minimal config object consumed by OrangeHrmPages.
     """Config.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -325,13 +325,13 @@ def _config() -> Any:
 def _pages(page: FakePage) -> OrangeHrmPages:
     # Convenience wrapper that injects the shared fake config.
     """Pages.
-    
+
     Args:
         page: Value supplied by the test or fixture for `page`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -350,10 +350,10 @@ def test_login_success_no_error_element_no_login_in_url() -> None:
 
 def test_login_skips_navigation_when_session_is_already_authenticated() -> None:
     """Verify that login is idempotent when the browser is already inside OrangeHRM.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -366,24 +366,25 @@ def test_login_skips_navigation_when_session_is_already_authenticated() -> None:
 
 def test_login_treats_timed_out_navigation_as_success_when_session_becomes_authenticated() -> None:
     """Verify that a late-authenticated page does not force a second login form interaction.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
+
     class LateAuthenticatedPage(FakePage):
         def goto(self, url: str, wait_until: str | None = None) -> None:  # type: ignore[override]
             """Navigate, then raise like Playwright can after the page has already changed.
-            
+
             Args:
                 url: Value supplied by the test or fixture for `url`.
                 wait_until: Value supplied by the test or fixture for `wait_until`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 TimeoutError: Always, after moving to an authenticated URL.
             """
@@ -400,13 +401,14 @@ def test_login_treats_timed_out_navigation_as_success_when_session_becomes_authe
 
 def test_login_continues_when_navigation_times_out_after_reaching_login_url() -> None:
     """Verify that login waits for the form when goto times out after URL commit.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
+
     class TimeoutAfterLoginUrlPage(FakePage):
         def __init__(self) -> None:
             """Initialize the fake page at about:blank."""
@@ -417,14 +419,14 @@ def test_login_continues_when_navigation_times_out_after_reaching_login_url() ->
 
         def goto(self, url: str, wait_until: str | None = None) -> None:  # type: ignore[override]
             """Raise after changing URL to the login route.
-            
+
             Args:
                 url: Value supplied by the test or fixture for `url`.
                 wait_until: Value supplied by the test or fixture for `wait_until`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 TimeoutError: Always, after moving to the login URL.
             """
@@ -434,13 +436,13 @@ def test_login_continues_when_navigation_times_out_after_reaching_login_url() ->
 
         def wait_for_url(self, pattern: str) -> None:
             """Simulate successful login redirect after the submit click.
-            
+
             Args:
                 pattern: Value supplied by the test or fixture for `pattern`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -455,10 +457,10 @@ def test_login_continues_when_navigation_times_out_after_reaching_login_url() ->
 
 def test_login_reports_unavailable_when_login_url_stays_blank_without_username_field() -> None:
     """Verify that a blank login route reports a specific form-render outage.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -476,10 +478,10 @@ def test_login_reports_unavailable_when_login_url_stays_blank_without_username_f
 
 def test_login_reports_browser_network_error_when_chrome_error_page_is_visible() -> None:
     """Verify that a Chrome network error page maps to a clear portal-unavailable error.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -487,13 +489,7 @@ def test_login_reports_browser_network_error_when_chrome_error_page_is_visible()
         url="https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
         locators={
             "body": FakeLocator(
-                [
-                    (
-                        "This site can't be reached\n"
-                        "The connection was reset.\n"
-                        "ERR_CONNECTION_RESET"
-                    )
-                ]
+                [("This site can't be reached\nThe connection was reset.\nERR_CONNECTION_RESET")]
             )
         },
         wait_for_selector_raises=True,
@@ -505,6 +501,80 @@ def test_login_reports_browser_network_error_when_chrome_error_page_is_visible()
     assert exc.value.reason is ReasonCode.PORTAL_UNAVAILABLE
     assert "ERR_CONNECTION_RESET" in exc.value.detail
     assert "not reachable" in exc.value.detail
+
+
+def test_login_form_timeout_does_not_read_page_title() -> None:
+    """Verify that login outage diagnostics avoid potentially hanging page.title calls.
+
+    Returns:
+        None. Assertions communicate the test outcome.
+
+    Raises:
+        AssertionError: If the timeout path tries to read the page title.
+    """
+
+    class TitleRaisesPage(FakePage):
+        def title(self) -> str:
+            """Fail if the page object tries to read title during login outage diagnostics."""
+            raise AssertionError("page.title() should not be called on login form timeout")
+
+    page = TitleRaisesPage(
+        url="https://opensource-demo.orangehrmlive.com/web/index.php/auth/login",
+        wait_for_selector_raises=True,
+    )
+
+    with pytest.raises(PortalError) as exc:
+        _pages(page).login("Admin", "admin123")
+
+    assert exc.value.reason is ReasonCode.PORTAL_UNAVAILABLE
+    assert "did not render the username field" in exc.value.detail
+
+
+def test_login_continues_when_username_field_exists_after_wait_timeout() -> None:
+    """Verify that a visible login form is used even when selector waiting times out.
+
+    Returns:
+        None. Assertions communicate the test outcome.
+
+    Raises:
+        AssertionError: If the login flow gives up despite the username input being present.
+    """
+    fills: dict[str, str] = {}
+    clicks: list[str] = []
+
+    class LoginInput(FakeLocator):
+        def __init__(self, selector: str) -> None:
+            """Initialize this test helper instance."""
+            super().__init__([""])
+            self.selector = selector
+
+        def fill(self, value: str) -> None:
+            """Record the value submitted to a login input."""
+            fills[self.selector] = value
+
+    class LoginButton(FakeLocator):
+        def click(self) -> None:
+            """Record that the login button was pressed."""
+            clicks.append("login")
+            page._url = "https://orangehrm.example.com/dashboard/index"
+
+    page = FakePage(
+        url="https://orangehrm.example.com/auth/login",
+        wait_for_selector_raises=True,
+        locators={
+            OrangeHrmPages.USERNAME_INPUT: LoginInput(OrangeHrmPages.USERNAME_INPUT),
+            OrangeHrmPages.PASSWORD_INPUT: LoginInput(OrangeHrmPages.PASSWORD_INPUT),
+            OrangeHrmPages.LOGIN_BUTTON: LoginButton(["Login"]),
+        },
+    )
+
+    _pages(page).login("Admin", "admin123")
+
+    assert fills == {
+        OrangeHrmPages.USERNAME_INPUT: "Admin",
+        OrangeHrmPages.PASSWORD_INPUT: "admin123",
+    }
+    assert clicks == ["login"]
 
 
 def test_login_failure_via_fake_attr() -> None:
@@ -536,6 +606,97 @@ def test_login_real_page_error_message_raises() -> None:
         pages.login("Admin", "wrong")
     assert exc.value.reason is ReasonCode.LOGIN_FAILED
     assert "Invalid credentials" in exc.value.detail
+
+
+def test_login_retries_once_after_csrf_validation_failure() -> None:
+    """Verify that stale OrangeHRM CSRF state is cleared and retried once.
+
+    Returns:
+        None. Assertions communicate the test outcome.
+
+    Raises:
+        AssertionError: If cookies/storage are not cleared or the retry is not attempted.
+    """
+
+    class FakeContext:
+        def __init__(self) -> None:
+            """Initialize this test helper instance."""
+            self.clear_cookie_calls = 0
+
+        def clear_cookies(self) -> None:
+            """Record cookie cleanup requested by the page object."""
+            self.clear_cookie_calls += 1
+
+    class LoginErrorLocator(FakeLocator):
+        def __init__(self, page: "CsrfThenSuccessPage") -> None:
+            """Initialize this test helper instance."""
+            self._page = page
+
+        def count(self) -> int:
+            """Return one visible error only after the first submit."""
+            return 1 if self._page.login_clicks == 1 else 0
+
+        @property
+        def first(self) -> "LoginErrorLocator":
+            """Return self so text reads from the dynamic page state."""
+            return self
+
+        def text_content(self) -> str | None:
+            """Return the transient CSRF message after the first submit."""
+            if self._page.login_clicks == 1:
+                return "CSRF token validation failed"
+            return None
+
+    class LoginButtonLocator(FakeLocator):
+        def __init__(self, page: "CsrfThenSuccessPage") -> None:
+            """Initialize this test helper instance."""
+            self._page = page
+
+        def count(self) -> int:
+            """Return one login button."""
+            return 1
+
+        def click(self) -> None:
+            """First click leaves CSRF error visible; second click authenticates."""
+            self._page.login_clicks += 1
+            if self._page.login_clicks >= 2:
+                self._page._url = "https://orangehrm.example.com/dashboard/index"
+
+    class InputLocator(FakeLocator):
+        def count(self) -> int:
+            """Return one input field."""
+            return 1
+
+    class CsrfThenSuccessPage(FakePage):
+        def __init__(self) -> None:
+            """Initialize this test helper instance."""
+            super().__init__(url="https://orangehrm.example.com/auth/login")
+            self.context = FakeContext()
+            self.login_clicks = 0
+            self.storage_clear_calls = 0
+
+        def locator(self, selector: str) -> FakeLocator:
+            """Return dynamic login locators for the CSRF retry scenario."""
+            if selector == OrangeHrmPages.LOGIN_ERROR:
+                return LoginErrorLocator(self)
+            if selector == OrangeHrmPages.LOGIN_BUTTON:
+                return LoginButtonLocator(self)
+            if selector in {OrangeHrmPages.USERNAME_INPUT, OrangeHrmPages.PASSWORD_INPUT}:
+                return InputLocator([""])
+            return super().locator(selector)
+
+        def evaluate(self, _script: str) -> None:
+            """Record browser storage cleanup requested by the page object."""
+            self.storage_clear_calls += 1
+
+    page = CsrfThenSuccessPage()
+
+    _pages(page).login("Admin", "admin123")
+
+    assert page.login_clicks == 2
+    assert page.context.clear_cookie_calls == 2
+    assert page.storage_clear_calls == 2
+    assert "dashboard" in page.url
 
 
 def test_login_real_page_stuck_on_login_url_raises() -> None:
@@ -593,10 +754,10 @@ def test_find_multiple_result_rows_returns_ambiguous() -> None:
 
 def test_find_search_behavior_is_documented_as_server_filtered_visible_results() -> None:
     """Verify that find search behavior is documented as server filtered visible results.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -604,6 +765,57 @@ def test_find_search_behavior_is_documented_as_server_filtered_visible_results()
 
     assert "server-side filtered query" in source
     assert "visible result grid" in source
+
+
+def test_find_uses_direct_employee_list_navigation_and_no_wait_search_click() -> None:
+    """Verify that search avoids OrangeHRM SPA navigation waits.
+
+    Returns:
+        None. Assertions communicate the test outcome.
+
+    Raises:
+        AssertionError: If employee-list navigation or search submit regresses.
+    """
+    search_click_kwargs: list[dict[str, bool]] = []
+
+    class SearchButton(FakeLocator):
+        @property
+        def first(self) -> "SearchButton":  # type: ignore[override]
+            """Return self so click kwargs can be inspected."""
+            return self
+
+        def click(self, **kwargs: bool) -> None:  # type: ignore[override]
+            """Record the Playwright click options requested by the page object."""
+            search_click_kwargs.append(kwargs)
+
+    class SearchForm(FakeLocator):
+        @property
+        def first(self) -> "SearchForm":  # type: ignore[override]
+            """Return self so nested locators stay inspectable."""
+            return self
+
+        def locator(self, selector: str) -> FakeLocator:
+            """Return the search submit button for the form."""
+            if selector == OrangeHrmPages.SEARCH_SUBMIT:
+                return SearchButton(["Search"])
+            return super().locator(selector)
+
+    page = FakePage(
+        url="https://orangehrm.example.com/dashboard/index",
+        locators={
+            OrangeHrmPages.SEARCH_FORM_SELECTOR: SearchForm(["form"]),
+            OrangeHrmPages.RESULT_ROW: FakeLocator(["row"]),
+            OrangeHrmPages.RESULT_HEADER_ROW: FakeLocator([]),
+        },
+    )
+
+    result = _pages(page).find_employee_record(_employee())
+
+    assert result.status is FindStatus.FOUND
+    assert page.navigated_urls == [
+        "https://orangehrm.example.com/web/index.php/pim/viewEmployeeList"
+    ]
+    assert search_click_kwargs == [{"no_wait_after": True}]
 
 
 def test_find_with_header_row_excluded_from_count() -> None:
@@ -658,10 +870,10 @@ def test_find_search_panel_collapsed_expand_called() -> None:
         @property
         def first(self) -> "TrackingLocator":  # type: ignore[override]
             """First.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -669,10 +881,10 @@ def test_find_search_panel_collapsed_expand_called() -> None:
 
         def click(self) -> None:
             """Click.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -751,13 +963,13 @@ def test_list_salary_attachments_empty_state_returns_empty_list() -> None:
     class _Section(FakeLocator):
         def locator(self, selector: str) -> FakeLocator:
             """Locator.
-            
+
             Args:
                 selector: Value supplied by the test or fixture for `selector`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -772,13 +984,13 @@ def test_list_salary_attachments_empty_state_returns_empty_list() -> None:
     class _FakePage(FakePage):
         def locator(self, selector: str) -> FakeLocator:  # type: ignore[override]
             """Locator.
-            
+
             Args:
                 selector: Value supplied by the test or fixture for `selector`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -811,10 +1023,10 @@ def test_list_salary_attachments_fake_attr_returns_filenames() -> None:
 
 def test_list_salary_attachments_reads_filename_from_second_table_cell() -> None:
     """Verify that attachment listing skips the checkbox cell and normalizes wrapped filenames.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -825,13 +1037,13 @@ def test_list_salary_attachments_reads_filename_from_second_table_cell() -> None
     class _Section(FakeLocator):
         def locator(self, selector: str) -> FakeLocator:
             """Return attachment-section child locators for this test.
-            
+
             Args:
                 selector: Selector requested by the page object.
-            
+
             Returns:
                 Fake locator matching the requested selector.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -843,9 +1055,7 @@ def test_list_salary_attachments_reads_filename_from_second_table_cell() -> None
     pages = _pages(page)
     pages._attachments_section = lambda: _Section(["section"])  # type: ignore[method-assign]
 
-    assert pages.list_salary_attachments(_employee()) == [
-        "salary_emp-emily-jones_2026-07-09.txt"
-    ]
+    assert pages.list_salary_attachments(_employee()) == ["salary_emp-emily-jones_2026-07-09.txt"]
 
 
 # --- Salary attachment upload ------------------------------------------------
@@ -861,13 +1071,13 @@ def test_upload_salary_attachment_calls_file_input_set_input_files(tmp_path: Pat
     class _FileInput(FakeLocator):
         def set_input_files(self, path: str) -> None:
             """Set input files.
-            
+
             Args:
                 path: Value supplied by the test or fixture for `path`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -876,13 +1086,13 @@ def test_upload_salary_attachment_calls_file_input_set_input_files(tmp_path: Pat
     class _AddBtn(FakeLocator):
         def filter(self, has_text: str = "") -> "FakeLocator":  # type: ignore[override]
             """Filter.
-            
+
             Args:
                 has_text: Value supplied by the test or fixture for `has_text`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -890,10 +1100,10 @@ def test_upload_salary_attachment_calls_file_input_set_input_files(tmp_path: Pat
 
         def click(self) -> None:
             """Click.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -902,13 +1112,13 @@ def test_upload_salary_attachment_calls_file_input_set_input_files(tmp_path: Pat
     class _FakePage(FakePage):
         def locator(self, selector: str) -> FakeLocator:  # type: ignore[override]
             """Locator.
-            
+
             Args:
                 selector: Value supplied by the test or fixture for `selector`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -931,13 +1141,13 @@ def test_upload_salary_attachment_calls_file_input_set_input_files(tmp_path: Pat
     class _FakeSection(FakeLocator):
         def locator(self, selector: str) -> FakeLocator:
             """Locator.
-            
+
             Args:
                 selector: Value supplied by the test or fixture for `selector`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """

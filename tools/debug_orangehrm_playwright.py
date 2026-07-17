@@ -7,7 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
-# Minimal bootstrap script for live OrangeHRM debugging from Visual Studio.
+# Minimal bootstrap script for live OrangeHRM debugging.
 sys.path.insert(0, str(SRC))
 
 from portal_automation.__main__ import main

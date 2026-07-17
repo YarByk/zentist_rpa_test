@@ -7,7 +7,7 @@ from generate_test_data import main
 
 
 if __name__ == "__main__":
-    # Visual Studio Folder View does not reliably pass arguments to this tool target.
+    # Some launchers do not reliably pass arguments to this tool target.
     seed = int(time()) % 100000
     raise SystemExit(
         main(

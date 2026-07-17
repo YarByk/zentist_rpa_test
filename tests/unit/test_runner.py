@@ -29,10 +29,10 @@ class FakeLogger:
     # Records info/error calls so tests can assert exactly what was logged.
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -41,14 +41,14 @@ class FakeLogger:
 
     def info(self, event: str, **kwargs: str) -> None:
         """Info.
-        
+
         Args:
             event: Value supplied by the test or fixture for `event`.
             **kwargs: Value supplied by the test or fixture for `kwargs`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -56,14 +56,14 @@ class FakeLogger:
 
     def error(self, event: str, **kwargs: str) -> None:
         """Error.
-        
+
         Args:
             event: Value supplied by the test or fixture for `event`.
             **kwargs: Value supplied by the test or fixture for `kwargs`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -74,13 +74,13 @@ class DiagnosticsStub:
     # Simulates diagnostic artifact capture without touching the real filesystem.
     def __init__(self, *, error: Exception | None = None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             error: Value supplied by the test or fixture for `error`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -96,16 +96,16 @@ class DiagnosticsStub:
         artifacts: Any,
     ) -> dict[str, str]:
         """Capture failure artifacts.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             portal_name: Value supplied by the test or fixture for `portal_name`.
             item_key: Value supplied by the test or fixture for `item_key`.
             artifacts: Value supplied by the test or fixture for `artifacts`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -140,17 +140,17 @@ class FakePersistence:
         fail_on_upsert: bool = False,
     ) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             events: Value supplied by the test or fixture for `events`.
             committed_items: Value supplied by the test or fixture for `committed_items`.
             existing_results: Value supplied by the test or fixture for `existing_results`.
             fail_on_mark: Value supplied by the test or fixture for `fail_on_mark`.
             fail_on_upsert: Value supplied by the test or fixture for `fail_on_upsert`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -164,15 +164,15 @@ class FakePersistence:
 
     def create_run(self, run_id: str, portal_name: str, business_date: date) -> None:
         """Create run.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -180,15 +180,15 @@ class FakePersistence:
 
     def finish_run(self, run_id: str, status: RunStatus, summary: dict[str, int]) -> None:
         """Finish run.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             status: Value supplied by the test or fixture for `status`.
             summary: Value supplied by the test or fixture for `summary`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -204,17 +204,17 @@ class FakePersistence:
         operation: str,
     ) -> None:
         """Mark item in progress.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
             item_key: Value supplied by the test or fixture for `item_key`.
             operation: Value supplied by the test or fixture for `operation`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -230,16 +230,16 @@ class FakePersistence:
         business_date: date,
     ) -> None:
         """Upsert item result.
-        
+
         Args:
             result: Value supplied by the test or fixture for `result`.
             run_id: Value supplied by the test or fixture for `run_id`.
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -259,14 +259,14 @@ class FakePersistence:
         business_date: date,
     ) -> list[ItemResult]:
         """List results by business date.
-        
+
         Args:
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -290,14 +290,14 @@ class FakePersistence:
 
     def get_committed_items(self, portal_name: str, business_date: date) -> set[str]:
         """Get committed items.
-        
+
         Args:
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -318,16 +318,16 @@ class FakeRunner(BasePortalRunnerZX):
         preflight_error: Exception | None = None,
     ) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             items: Value supplied by the test or fixture for `items`.
             behavior: Value supplied by the test or fixture for `behavior`.
             load_error: Value supplied by the test or fixture for `load_error`.
             preflight_error: Value supplied by the test or fixture for `preflight_error`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -340,13 +340,13 @@ class FakeRunner(BasePortalRunnerZX):
 
     def preflight_check(self, context: RunContext) -> None:
         """Preflight check.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -357,13 +357,13 @@ class FakeRunner(BasePortalRunnerZX):
 
     def load_items(self, context: RunContext) -> list[Any]:
         """Load items.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -375,14 +375,14 @@ class FakeRunner(BasePortalRunnerZX):
 
     def process_item(self, context: RunContext, item: Any) -> ItemResult:
         """Process item.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
             item: Value supplied by the test or fixture for `item`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -407,14 +407,14 @@ class FakeRunner(BasePortalRunnerZX):
 
     def finalize(self, context: RunContext, result: RunResult) -> None:
         """Finalize.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
             result: Value supplied by the test or fixture for `result`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -431,16 +431,16 @@ def make_context(
 ) -> RunContext:
     # Build the smallest context object needed to execute the shared runner flow.
     """Make context.
-    
+
     Args:
         persistence: Value supplied by the test or fixture for `persistence`.
         logger: Value supplied by the test or fixture for `logger`.
         dry_run: Value supplied by the test or fixture for `dry_run`.
         diagnostics: Value supplied by the test or fixture for `diagnostics`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -464,10 +464,10 @@ def make_context(
 
 def test_base_portal_runner_zx_exists_and_run_is_concrete() -> None:
     """Verify that base portal runner zx exists and run is concrete.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -478,10 +478,10 @@ def test_base_portal_runner_zx_exists_and_run_is_concrete() -> None:
 
 def test_fake_runner_implements_hooks_and_does_not_override_run() -> None:
     """Verify that fake runner implements hooks and does not override run.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -492,10 +492,10 @@ def test_fake_runner_implements_hooks_and_does_not_override_run() -> None:
 def test_dry_run_uses_safe_lifecycle_and_returns_empty_success_result() -> None:
     # Dry-run mode should validate the high-level lifecycle without processing items.
     """Verify that dry run uses safe lifecycle and returns empty success result.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -529,10 +529,10 @@ def test_dry_run_uses_safe_lifecycle_and_returns_empty_success_result() -> None:
 
 def test_load_items_portal_error_finishes_failed_run_and_reraises() -> None:
     """Verify that load items portal error finishes failed run and reraises.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -566,10 +566,10 @@ def test_load_items_portal_error_finishes_failed_run_and_reraises() -> None:
 
 def test_preflight_portal_error_finishes_failed_run_and_reraises() -> None:
     """Verify that preflight portal error finishes failed run and reraises.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -602,10 +602,10 @@ def test_preflight_portal_error_finishes_failed_run_and_reraises() -> None:
 def test_real_run_preflight_and_committed_lookup_happen_before_processing() -> None:
     # The base runner must complete setup checks before touching item execution state.
     """Verify that real run preflight and committed lookup happen before processing.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -626,10 +626,10 @@ def test_real_run_preflight_and_committed_lookup_happen_before_processing() -> N
 
 def test_committed_items_are_skipped_without_writes_or_processing() -> None:
     """Verify that committed items are skipped without writes or processing.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -659,10 +659,10 @@ def test_committed_items_are_skipped_without_writes_or_processing() -> None:
 def test_mark_item_in_progress_is_immediately_before_process_item() -> None:
     # Marking in-progress should happen immediately before the business operation starts.
     """Verify that mark item in progress is immediately before process item.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -678,10 +678,10 @@ def test_mark_item_in_progress_is_immediately_before_process_item() -> None:
 
 def test_successful_item_results_are_persisted_immediately() -> None:
     """Verify that successful item results are persisted immediately.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -698,10 +698,10 @@ def test_successful_item_results_are_persisted_immediately() -> None:
 
 def test_portal_error_becomes_failed_item_result_and_batch_continues() -> None:
     """Verify that portal error becomes failed item result and batch continues.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -727,10 +727,10 @@ def test_portal_error_becomes_failed_item_result_and_batch_continues() -> None:
 
 def test_unexpected_item_error_becomes_unexpected_error_result() -> None:
     """Verify that unexpected item error becomes unexpected error result.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -747,10 +747,10 @@ def test_unexpected_item_error_becomes_unexpected_error_result() -> None:
 
 def test_all_item_level_failures_still_finalize_and_finish_run() -> None:
     """Verify that all item level failures still finalize and finish run.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -775,10 +775,10 @@ def test_all_item_level_failures_still_finalize_and_finish_run() -> None:
 
 def test_all_successes_status_is_success_and_summary_counts_successes() -> None:
     """Verify that all successes status is success and summary counts successes.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -798,10 +798,10 @@ def test_all_successes_status_is_success_and_summary_counts_successes() -> None:
 
 def test_persistence_failure_in_mark_item_in_progress_is_logged_and_raised() -> None:
     """Verify that persistence failure in mark item in progress is logged and raised.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -820,10 +820,10 @@ def test_persistence_failure_in_mark_item_in_progress_is_logged_and_raised() -> 
 
 def test_persistence_failure_in_upsert_item_result_is_logged_and_raised() -> None:
     """Verify that persistence failure in upsert item result is logged and raised.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -842,10 +842,10 @@ def test_persistence_failure_in_upsert_item_result_is_logged_and_raised() -> Non
 
 def test_item_key_default_supports_dict_attribute_and_string_fallback() -> None:
     """Verify that item key default supports dict attribute and string fallback.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -858,10 +858,10 @@ def test_item_key_default_supports_dict_attribute_and_string_fallback() -> None:
 
 def test_runner_source_does_not_reference_browser_automation_symbols() -> None:
     """Verify that runner source does not reference browser automation symbols.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -874,10 +874,10 @@ def test_runner_source_does_not_reference_browser_automation_symbols() -> None:
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -890,10 +890,10 @@ def test_forbidden_modules_were_not_created() -> None:
 
 def test_failed_item_captures_diagnostics_without_masking_portal_error() -> None:
     """Verify that failed item captures diagnostics without masking portal error.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -931,10 +931,10 @@ def test_failed_item_captures_diagnostics_without_masking_portal_error() -> None
 
 def test_diagnostic_failure_does_not_mask_original_item_error() -> None:
     """Verify that diagnostic failure does not mask original item error.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -957,10 +957,10 @@ def test_diagnostic_failure_does_not_mask_original_item_error() -> None:
 
 def test_dry_run_does_not_attempt_failure_diagnostics() -> None:
     """Verify that dry run does not attempt failure diagnostics.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

@@ -29,10 +29,10 @@ REQUIRED_USERNAMES = {
 def valid_record() -> dict:
     # Raw fixture intentionally includes whitespace so parser stripping is covered.
     """Valid record.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -51,14 +51,14 @@ def valid_record() -> dict:
 def write_json(path: Path, value) -> Path:
     # Small helper for building temporary input files with production-like JSON shape.
     """Write json.
-    
+
     Args:
         path: Value supplied by the test or fixture for `path`.
         value: Value supplied by the test or fixture for `value`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -68,10 +68,10 @@ def write_json(path: Path, value) -> Path:
 
 def test_valid_record_parses_into_sauce_demo_account() -> None:
     """Verify that valid record parses into sauce demo account.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -84,10 +84,10 @@ def test_valid_record_parses_into_sauce_demo_account() -> None:
 
 def test_parsed_string_values_are_stripped() -> None:
     """Verify that parsed string values are stripped.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -100,10 +100,10 @@ def test_parsed_string_values_are_stripped() -> None:
 
 def test_items_to_add_defaults_to_three() -> None:
     """Verify that items to add defaults to three.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -116,13 +116,13 @@ def test_items_to_add_defaults_to_three() -> None:
 @pytest.mark.parametrize("field_name", ["account_key", "username"])
 def test_missing_required_account_field_fails_validation(field_name) -> None:
     """Verify that missing required account field fails validation.
-    
+
     Args:
         field_name: Value supplied by the test or fixture for `field_name`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -135,10 +135,10 @@ def test_missing_required_account_field_fails_validation(field_name) -> None:
 
 def test_missing_checkout_profile_fails_validation() -> None:
     """Verify that missing checkout profile fails validation.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -151,10 +151,10 @@ def test_missing_checkout_profile_fails_validation() -> None:
 
 def test_missing_checkout_profile_field_fails_validation() -> None:
     """Verify that missing checkout profile field fails validation.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -167,10 +167,10 @@ def test_missing_checkout_profile_field_fails_validation() -> None:
 
 def test_blank_required_string_fails_validation() -> None:
     """Verify that blank required string fails validation.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -184,13 +184,13 @@ def test_blank_required_string_fails_validation() -> None:
 @pytest.mark.parametrize("value", [0, -1, True, "3"])
 def test_invalid_items_to_add_fails_validation(value) -> None:
     """Verify that invalid items to add fails validation.
-    
+
     Args:
         value: Value supplied by the test or fixture for `value`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -203,13 +203,13 @@ def test_invalid_items_to_add_fails_validation(value) -> None:
 
 def test_top_level_non_list_json_fails_validation(tmp_path) -> None:
     """Verify that top level non list json fails validation.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -221,13 +221,13 @@ def test_top_level_non_list_json_fails_validation(tmp_path) -> None:
 
 def test_non_object_record_fails_validation(tmp_path) -> None:
     """Verify that non object record fails validation.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -239,13 +239,13 @@ def test_non_object_record_fails_validation(tmp_path) -> None:
 
 def test_invalid_json_fails_validation(tmp_path) -> None:
     """Verify that invalid json fails validation.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -258,13 +258,13 @@ def test_invalid_json_fails_validation(tmp_path) -> None:
 
 def test_missing_input_file_maps_to_input_validation_error(tmp_path) -> None:
     """Verify that missing input file maps to input validation error.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -276,13 +276,13 @@ def test_missing_input_file_maps_to_input_validation_error(tmp_path) -> None:
 def test_password_like_fields_are_rejected(field_name) -> None:
     # Credentials must come from runtime config, never from account fixtures.
     """Verify that password like fields are rejected.
-    
+
     Args:
         field_name: Value supplied by the test or fixture for `field_name`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -296,13 +296,13 @@ def test_password_like_fields_are_rejected(field_name) -> None:
 @pytest.mark.parametrize("field_name", ["password", "secret", "sauce_password"])
 def test_nested_password_like_fields_are_rejected(field_name) -> None:
     """Verify that nested password like fields are rejected.
-    
+
     Args:
         field_name: Value supplied by the test or fixture for `field_name`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -315,10 +315,10 @@ def test_nested_password_like_fields_are_rejected(field_name) -> None:
 
 def test_all_sample_records_are_valid() -> None:
     """Verify that all sample records are valid.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -329,10 +329,10 @@ def test_all_sample_records_are_valid() -> None:
 
 def test_sample_data_contains_exactly_required_usernames() -> None:
     """Verify that sample data contains exactly required usernames.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -343,10 +343,10 @@ def test_sample_data_contains_exactly_required_usernames() -> None:
 
 def test_sample_data_contains_exactly_six_records() -> None:
     """Verify that sample data contains exactly six records.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -357,10 +357,10 @@ def test_sample_data_contains_exactly_six_records() -> None:
 
 def test_sample_data_does_not_contain_passwords_or_workflow_control_flags() -> None:
     """Verify that sample data does not contain passwords or workflow control flags.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -393,13 +393,13 @@ class ContextStub:
 
 def test_saucedemo_runner_load_items_reads_config_input_path(tmp_path) -> None:
     """Verify that saucedemo runner load items reads config input path.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -415,13 +415,13 @@ def test_saucedemo_runner_load_items_reads_config_input_path(tmp_path) -> None:
 def test_invalid_input_maps_to_input_validation_failed_portal_error(tmp_path) -> None:
     # Runner boundary should translate schema errors into PortalError reason codes.
     """Verify that invalid input maps to input validation failed portal error.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -437,10 +437,10 @@ def test_invalid_input_maps_to_input_validation_failed_portal_error(tmp_path) ->
 
 def test_schema_does_not_import_playwright_browser_or_page_modules() -> None:
     """Verify that schema does not import playwright browser or page modules.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -457,10 +457,10 @@ def test_schema_does_not_import_playwright_browser_or_page_modules() -> None:
 
 def test_runner_does_not_import_playwright_directly() -> None:
     """Verify that runner does not import playwright directly.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -484,10 +484,10 @@ def test_runner_does_not_import_playwright_directly() -> None:
 
 def test_schema_source_does_not_import_persistence_or_sqlite_modules() -> None:
     """Verify that schema source does not import persistence or sqlite modules.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -501,10 +501,10 @@ def test_schema_source_does_not_import_persistence_or_sqlite_modules() -> None:
 
 def test_source_and_sample_data_do_not_contain_demo_credentials() -> None:
     """Verify that source and sample data do not contain demo credentials.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -522,10 +522,10 @@ def test_source_and_sample_data_do_not_contain_demo_credentials() -> None:
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

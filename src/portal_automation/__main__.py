@@ -452,7 +452,8 @@ def _build_context(
             smtp_use_tls=config.smtp_use_tls,
             logger=logger,
         ),
-)
+    )
+
 
 SAFE_CONSOLE_DETAIL_KEYS = frozenset(
     {
@@ -697,11 +698,7 @@ def _safe_item_details(item: Any) -> dict[str, Any]:
     details = getattr(item, "details", None)
     if not isinstance(details, dict):
         return {}
-    return {
-        key: value
-        for key, value in sorted(details.items())
-        if key in SAFE_CONSOLE_DETAIL_KEYS
-    }
+    return {key: value for key, value in sorted(details.items()) if key in SAFE_CONSOLE_DETAIL_KEYS}
 
 
 def _format_console_value(value: Any) -> str:

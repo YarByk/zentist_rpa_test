@@ -192,7 +192,11 @@ class OrangeHrmRunner(BasePortalRunnerZX):
         try:
             execute_with_context_retry(context, lambda: login(username, password))
         except PortalError as error:
-            if error.reason is ReasonCode.PORTAL_UNAVAILABLE and not self._has_successful_login:
+            if not self._has_successful_login and error.reason in {
+                ReasonCode.LOGIN_FAILED,
+                ReasonCode.PORTAL_TIMEOUT,
+                ReasonCode.PORTAL_UNAVAILABLE,
+            }:
                 self._login_error = error
                 self._stop_after_initial_login_unavailable = True
             elif error.reason is not ReasonCode.PORTAL_TIMEOUT and not self._has_successful_login:
@@ -232,7 +236,12 @@ class OrangeHrmRunner(BasePortalRunnerZX):
         return (
             self._stop_after_initial_login_unavailable
             and not self._has_successful_login
-            and result.reason_code is ReasonCode.PORTAL_UNAVAILABLE
+            and result.reason_code
+            in {
+                ReasonCode.LOGIN_FAILED,
+                ReasonCode.PORTAL_TIMEOUT,
+                ReasonCode.PORTAL_UNAVAILABLE,
+            }
         )
 
     def finalize(self, context: RunContext, result: RunResult) -> None:

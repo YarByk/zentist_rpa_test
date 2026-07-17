@@ -33,3 +33,4 @@ build/
 *.db
 
 generated_data/
+tools/set_live_env.local_currps.ps1

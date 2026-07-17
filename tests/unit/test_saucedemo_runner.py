@@ -45,10 +45,10 @@ class FakePersistence:
     # In-memory result store that lets tests inspect every write made by the runner.
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -60,15 +60,15 @@ class FakePersistence:
 
     def create_run(self, run_id: str, portal_name: str, business_date: date) -> None:
         """Create run.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -76,15 +76,15 @@ class FakePersistence:
 
     def finish_run(self, run_id: str, status: RunStatus, summary: dict[str, int]) -> None:
         """Finish run.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             status: Value supplied by the test or fixture for `status`.
             summary: Value supplied by the test or fixture for `summary`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -92,14 +92,14 @@ class FakePersistence:
 
     def get_committed_items(self, portal_name: str, business_date: date) -> set[str]:
         """Get committed items.
-        
+
         Args:
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -115,17 +115,17 @@ class FakePersistence:
         operation: str,
     ) -> None:
         """Mark item in progress.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
             item_key: Value supplied by the test or fixture for `item_key`.
             operation: Value supplied by the test or fixture for `operation`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -133,13 +133,13 @@ class FakePersistence:
 
     def upsert_item_result(self, *args: object) -> None:
         """Upsert item result.
-        
+
         Args:
             *args: Value supplied by the test or fixture for `args`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -151,14 +151,14 @@ class FakePersistence:
 
     def list_results_by_business_date(self, portal_name: str, business_date: date) -> list[object]:
         """List results by business date.
-        
+
         Args:
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -170,10 +170,10 @@ class ReporterStub:
     # Captures the finalized result instead of writing a real report file.
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -181,13 +181,13 @@ class ReporterStub:
 
     def write_report(self, result: RunResult) -> None:
         """Write report.
-        
+
         Args:
             result: Value supplied by the test or fixture for `result`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -195,13 +195,13 @@ class ReporterStub:
 
     def render(self, result: RunResult) -> str:
         """Render.
-        
+
         Args:
             result: Value supplied by the test or fixture for `result`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -212,10 +212,10 @@ class EmailStub:
     # Captures outgoing email parameters so finalize() can be asserted precisely.
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -223,13 +223,13 @@ class EmailStub:
 
     def send_report(self, **kwargs: object) -> None:
         """Send report.
-        
+
         Args:
             **kwargs: Value supplied by the test or fixture for `kwargs`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -240,15 +240,15 @@ class FakeTarget:
     # Simplified locator/element object used by the lightweight fake page branch.
     def __init__(self, page: "FakePage", kind: str, name: str) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             page: Value supplied by the test or fixture for `page`.
             kind: Value supplied by the test or fixture for `kind`.
             name: Value supplied by the test or fixture for `name`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -258,13 +258,13 @@ class FakeTarget:
 
     def fill(self, value: str) -> None:
         """Fill.
-        
+
         Args:
             value: Value supplied by the test or fixture for `value`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -272,10 +272,10 @@ class FakeTarget:
 
     def click(self) -> None:
         """Click.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -283,10 +283,10 @@ class FakeTarget:
 
     def first(self) -> "FakeTarget":
         """First.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -295,10 +295,10 @@ class FakeTarget:
 
     def text_content(self) -> str:
         """Text content.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -310,10 +310,10 @@ class FakePage:
     # Very small fake used for call-recording tests that do not need DOM semantics.
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -331,13 +331,13 @@ class FakePage:
 
     def goto(self, url: str) -> None:
         """Goto.
-        
+
         Args:
             url: Value supplied by the test or fixture for `url`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -345,13 +345,13 @@ class FakePage:
 
     def locator(self, selector: str) -> FakeTarget:
         """Locator.
-        
+
         Args:
             selector: Value supplied by the test or fixture for `selector`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -363,14 +363,14 @@ class DomElement:
     # Represents one DOM node in the richer fake DOM used by page-object tests.
     def __init__(self, *, text: str = "", attrs: dict[str, str] | None = None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             text: Value supplied by the test or fixture for `text`.
             attrs: Value supplied by the test or fixture for `attrs`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -383,15 +383,15 @@ class DomLocator:
     # Emulates the subset of locator behavior needed by the page object methods.
     def __init__(self, page: "DomPage", selector: str, index: int | None = None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             page: Value supplied by the test or fixture for `page`.
             selector: Value supplied by the test or fixture for `selector`.
             index: Value supplied by the test or fixture for `index`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -401,10 +401,10 @@ class DomLocator:
 
     def count(self) -> int:
         """Count.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -412,13 +412,13 @@ class DomLocator:
 
     def nth(self, index: int) -> "DomLocator":
         """Nth.
-        
+
         Args:
             index: Value supplied by the test or fixture for `index`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -426,10 +426,10 @@ class DomLocator:
 
     def first(self) -> "DomLocator":
         """First.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -437,13 +437,13 @@ class DomLocator:
 
     def fill(self, value: str) -> None:
         """Fill.
-        
+
         Args:
             value: Value supplied by the test or fixture for `value`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -453,10 +453,10 @@ class DomLocator:
 
     def click(self) -> None:
         """Click.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -469,10 +469,10 @@ class DomLocator:
 
     def text_content(self) -> str:
         """Text content.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -480,10 +480,10 @@ class DomLocator:
 
     def all_text_contents(self) -> list[str]:
         """All text contents.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -491,10 +491,10 @@ class DomLocator:
 
     def _element(self) -> DomElement:
         """Element.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -510,13 +510,13 @@ class DomPage:
     # Fake DOM-driven page used to test selector logic and state transitions.
     def __init__(self, *, url: str = "https://www.saucedemo.com/") -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             url: Value supplied by the test or fixture for `url`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -534,13 +534,13 @@ class DomPage:
 
     def goto(self, url: str) -> None:
         """Goto.
-        
+
         Args:
             url: Value supplied by the test or fixture for `url`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -549,13 +549,13 @@ class DomPage:
 
     def locator(self, selector: str) -> DomLocator:
         """Locator.
-        
+
         Args:
             selector: Value supplied by the test or fixture for `selector`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -563,13 +563,13 @@ class DomPage:
 
     def wait_for_url(self, pattern: str) -> None:
         """Wait for url.
-        
+
         Args:
             pattern: Value supplied by the test or fixture for `pattern`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -579,10 +579,10 @@ class DomPage:
 def account() -> SauceDemoAccount:
     # Canonical account fixture reused across many runner and page-object tests.
     """Account.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -601,14 +601,14 @@ def account() -> SauceDemoAccount:
 def write_saucedemo_input(tmp_path, records: list[dict[str, object]] | None = None) -> str:
     # Write a temporary JSON fixture that mirrors the real repository input format.
     """Write saucedemo input.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         records: Value supplied by the test or fixture for `records`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -635,14 +635,14 @@ def write_saucedemo_input(tmp_path, records: list[dict[str, object]] | None = No
 def make_run_context(tmp_path, *, reporter=None) -> RunContext:
     # Build a realistic run context with fake collaborators and a temp artifact root.
     """Make run context.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         reporter: Value supplied by the test or fixture for `reporter`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -664,14 +664,14 @@ def make_run_context(tmp_path, *, reporter=None) -> RunContext:
 def make_process_context(tmp_path, *, reporter=None) -> ContextStub:
     # Build a smaller context for methods that only need config/reporter access.
     """Make process context.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         reporter: Value supplied by the test or fixture for `reporter`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -683,10 +683,10 @@ def make_process_context(tmp_path, *, reporter=None) -> ContextStub:
 
 def test_runner_contract_constants_are_correct() -> None:
     """Verify that runner contract constants are correct.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -696,10 +696,10 @@ def test_runner_contract_constants_are_correct() -> None:
 
 def test_runner_inherits_base_and_does_not_override_run() -> None:
     """Verify that runner inherits base and does not override run.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -710,10 +710,10 @@ def test_runner_inherits_base_and_does_not_override_run() -> None:
 
 def test_runner_item_key_uses_account_key() -> None:
     """Verify that runner item key uses account key.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -722,13 +722,13 @@ def test_runner_item_key_uses_account_key() -> None:
 
 def test_dry_run_does_not_call_page_factory_or_process_item(tmp_path) -> None:
     """Verify that dry run does not call page factory or process item.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -736,13 +736,13 @@ def test_dry_run_does_not_call_page_factory_or_process_item(tmp_path) -> None:
 
     def pages_factory(context: RunContext) -> object:
         """Pages factory.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -761,14 +761,14 @@ def test_dry_run_does_not_call_page_factory_or_process_item(tmp_path) -> None:
 
 def test_process_item_uses_injected_page_factory_and_workflow(tmp_path, monkeypatch) -> None:
     """Verify that process item uses injected page factory and workflow.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -777,13 +777,13 @@ def test_process_item_uses_injected_page_factory_and_workflow(tmp_path, monkeypa
 
     def pages_factory(context: ContextStub) -> object:
         """Pages factory.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -792,17 +792,17 @@ def test_process_item_uses_injected_page_factory_and_workflow(tmp_path, monkeypa
 
     def fake_process_account(record, page_objects, context, *, persist_before_finish=None):
         """Fake process account.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             page_objects: Value supplied by the test or fixture for `page_objects`.
             context: Value supplied by the test or fixture for `context`.
             persist_before_finish: Value supplied by the test or fixture for
                 `persist_before_finish`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -832,14 +832,14 @@ def test_process_item_uses_injected_page_factory_and_workflow(tmp_path, monkeypa
 
 def test_process_item_pre_finish_callback_persists_order_details(tmp_path, monkeypatch) -> None:
     """Verify that process item pre finish callback persists order details.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -849,17 +849,17 @@ def test_process_item_pre_finish_callback_persists_order_details(tmp_path, monke
 
     def fake_process_account(record, page_objects, run_context, *, persist_before_finish=None):
         """Fake process account.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             page_objects: Value supplied by the test or fixture for `page_objects`.
             run_context: Value supplied by the test or fixture for `run_context`.
             persist_before_finish: Value supplied by the test or fixture for
                 `persist_before_finish`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -909,14 +909,14 @@ def test_failed_result_after_pre_finish_persistence_keeps_order_details(
     monkeypatch,
 ) -> None:
     """Verify that failed result after pre finish persistence keeps order details.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -925,17 +925,17 @@ def test_failed_result_after_pre_finish_persistence_keeps_order_details(
 
     def fake_process_account(record, page_objects, run_context, *, persist_before_finish=None):
         """Fake process account.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             page_objects: Value supplied by the test or fixture for `page_objects`.
             run_context: Value supplied by the test or fixture for `run_context`.
             persist_before_finish: Value supplied by the test or fixture for
                 `persist_before_finish`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -973,14 +973,14 @@ def test_failed_result_after_pre_finish_persistence_keeps_order_details(
 
 def test_run_continues_after_one_saucedemo_account_failure(tmp_path, monkeypatch) -> None:
     """Verify that run continues after one saucedemo account failure.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1013,17 +1013,17 @@ def test_run_continues_after_one_saucedemo_account_failure(tmp_path, monkeypatch
 
     def fake_process_account(record, page_objects, run_context, *, persist_before_finish=None):
         """Fake process account.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             page_objects: Value supplied by the test or fixture for `page_objects`.
             run_context: Value supplied by the test or fixture for `run_context`.
             persist_before_finish: Value supplied by the test or fixture for
                 `persist_before_finish`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -1067,14 +1067,14 @@ def test_known_saucedemo_demo_failures_are_skipped_for_operator_visibility(
     reason: ReasonCode,
 ) -> None:
     """Verify that known broken Sauce Demo users become skipped operator notices.
-    
+
     Args:
         item_key: Known Sauce Demo demo account key.
         reason: Expected portal-domain failure for that account.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1088,10 +1088,10 @@ def test_known_saucedemo_demo_failures_are_skipped_for_operator_visibility(
 
 def test_unexpected_saucedemo_demo_user_reason_stays_failed() -> None:
     """Verify that only known account-and-reason pairs are converted to skipped.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1106,13 +1106,13 @@ def test_unexpected_saucedemo_demo_user_reason_stays_failed() -> None:
 
 def test_process_item_without_page_factory_raises_portal_unavailable(tmp_path) -> None:
     """Verify that process item without page factory raises portal unavailable.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1129,14 +1129,14 @@ def test_preflight_raises_credential_expired_when_password_missing_or_blank(
     password,
 ) -> None:
     """Verify that preflight raises credential expired when password missing or blank.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         password: Value supplied by the test or fixture for `password`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1151,13 +1151,13 @@ def test_preflight_raises_credential_expired_when_password_missing_or_blank(
 
 def test_preflight_passes_with_required_non_browser_config(tmp_path) -> None:
     """Verify that preflight passes with required non browser config.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1166,13 +1166,13 @@ def test_preflight_passes_with_required_non_browser_config(tmp_path) -> None:
 
 def test_preflight_does_not_call_page_factory(tmp_path) -> None:
     """Verify that preflight does not call page factory.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1186,13 +1186,13 @@ def test_preflight_does_not_call_page_factory(tmp_path) -> None:
 
 def test_load_items_still_reads_validated_input_records(tmp_path) -> None:
     """Verify that load items still reads validated input records.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1205,13 +1205,13 @@ def test_load_items_still_reads_validated_input_records(tmp_path) -> None:
 
 def test_finalize_writes_report_when_reporter_supports_write_report(tmp_path) -> None:
     """Verify that finalize writes report when reporter supports write report.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1233,13 +1233,13 @@ def test_finalize_writes_report_when_reporter_supports_write_report(tmp_path) ->
 
 def test_finalize_calls_email_send_report_with_written_report(tmp_path) -> None:
     """Verify that finalize calls email send report with written report.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1271,13 +1271,13 @@ def test_finalize_calls_email_send_report_with_written_report(tmp_path) -> None:
 
 def test_finalize_returns_without_error_when_reporter_has_no_write_report(tmp_path) -> None:
     """Verify that finalize returns without error when reporter has no write report.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1294,10 +1294,10 @@ def test_finalize_returns_without_error_when_reporter_has_no_write_report(tmp_pa
 
 def test_saucedemo_pages_login_uses_arguments_config_values_and_page_calls() -> None:
     """Verify that saucedemo pages login uses arguments config values and page calls.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1318,10 +1318,10 @@ def test_saucedemo_pages_login_uses_arguments_config_values_and_page_calls() -> 
 
 def test_saucedemo_pages_login_returns_locked_out_result() -> None:
     """Verify that saucedemo pages login returns locked out result.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1336,10 +1336,10 @@ def test_saucedemo_pages_login_returns_locked_out_result() -> None:
 
 def test_saucedemo_pages_login_returns_failed_result() -> None:
     """Verify that saucedemo pages login returns failed result.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1354,10 +1354,10 @@ def test_saucedemo_pages_login_returns_failed_result() -> None:
 
 def test_saucedemo_pages_login_reads_locked_out_dom_error() -> None:
     """Verify that saucedemo pages login reads locked out dom error.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1376,10 +1376,10 @@ def test_saucedemo_pages_login_reads_locked_out_dom_error() -> None:
 
 def test_saucedemo_pages_login_reads_non_locked_dom_error() -> None:
     """Verify that saucedemo pages login reads non locked dom error.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1399,10 +1399,10 @@ def test_saucedemo_pages_login_reads_non_locked_dom_error() -> None:
 
 def test_saucedemo_pages_login_succeeds_when_inventory_page_is_visible() -> None:
     """Verify that saucedemo pages login succeeds when inventory page is visible.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1410,10 +1410,10 @@ def test_saucedemo_pages_login_succeeds_when_inventory_page_is_visible() -> None
 
     def on_login() -> None:
         """On login.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -1429,10 +1429,10 @@ def test_saucedemo_pages_login_succeeds_when_inventory_page_is_visible() -> None
 
 def test_add_inventory_items_records_exactly_requested_clicks() -> None:
     """Verify that add inventory items records exactly requested clicks.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1450,10 +1450,10 @@ def test_add_inventory_items_raises_when_no_buttons_available() -> None:
     class CountZeroTarget:
         def count(self) -> int:
             """Count.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1461,13 +1461,13 @@ def test_add_inventory_items_raises_when_no_buttons_available() -> None:
 
         def nth(self, index: int) -> "CountZeroTarget":
             """Nth.
-            
+
             Args:
                 index: Value supplied by the test or fixture for `index`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1475,10 +1475,10 @@ def test_add_inventory_items_raises_when_no_buttons_available() -> None:
 
         def click(self) -> None:
             """Click.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1487,13 +1487,13 @@ def test_add_inventory_items_raises_when_no_buttons_available() -> None:
     class CountZeroPage:
         def locator(self, selector: str) -> CountZeroTarget:
             """Locator.
-            
+
             Args:
                 selector: Value supplied by the test or fixture for `selector`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1507,10 +1507,10 @@ def test_add_inventory_items_raises_when_no_buttons_available() -> None:
 
 def test_read_cart_count_returns_fake_attribute_when_present() -> None:
     """Verify that read cart count returns fake attribute when present.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1522,10 +1522,10 @@ def test_read_cart_count_returns_fake_attribute_when_present() -> None:
 
 def test_read_cart_count_reads_numeric_badge_text() -> None:
     """Verify that read cart count reads numeric badge text.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1538,10 +1538,10 @@ def test_read_cart_count_reads_numeric_badge_text() -> None:
 
 def test_read_cart_count_returns_zero_for_blank_badge_text() -> None:
     """Verify that read cart count returns zero for blank badge text.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1553,10 +1553,10 @@ def test_read_cart_count_returns_zero_for_blank_badge_text() -> None:
 
 def test_read_cart_count_returns_zero_when_badge_is_absent_in_dom() -> None:
     """Verify that read cart count returns zero when badge is absent in dom.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1567,10 +1567,10 @@ def test_read_cart_count_returns_zero_when_badge_is_absent_in_dom() -> None:
 
 def test_read_cart_count_reads_integer_badge_from_dom() -> None:
     """Verify that read cart count reads integer badge from dom.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1582,10 +1582,10 @@ def test_read_cart_count_reads_integer_badge_from_dom() -> None:
 
 def test_page_methods_operate_against_fake_page_and_record_expected_calls() -> None:
     """Verify that page methods operate against fake page and record expected calls.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1610,10 +1610,10 @@ def test_page_methods_operate_against_fake_page_and_record_expected_calls() -> N
 
 def test_open_cart_real_dom_empty_cart_does_not_crash() -> None:
     """Verify that open cart real dom empty cart does not crash.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1621,10 +1621,10 @@ def test_open_cart_real_dom_empty_cart_does_not_crash() -> None:
 
     def on_open_cart() -> None:
         """On open cart.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -1640,10 +1640,10 @@ def test_open_cart_real_dom_empty_cart_does_not_crash() -> None:
 
 def test_read_order_summary_reads_dom_summary_totals_and_item_count() -> None:
     """Verify that read order summary reads dom summary totals and item count.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1664,10 +1664,10 @@ def test_read_order_summary_reads_dom_summary_totals_and_item_count() -> None:
 
 def test_read_confirmation_reads_dom_header_and_text() -> None:
     """Verify that read confirmation reads dom header and text.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1700,10 +1700,10 @@ def test_read_confirmation_reads_dom_header_and_text() -> None:
 
 def test_capture_order_details_real_dom_does_not_leak_secret_like_keys() -> None:
     """Verify that capture order details real dom does not leak secret like keys.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1733,10 +1733,10 @@ def test_capture_order_details_real_dom_does_not_leak_secret_like_keys() -> None
 
 def test_checkout_uses_current_sauce_demo_postal_code_selector() -> None:
     """Verify that checkout uses current sauce demo postal code selector.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1745,10 +1745,10 @@ def test_checkout_uses_current_sauce_demo_postal_code_selector() -> None:
 
 def test_capture_order_details_excludes_secret_like_fields() -> None:
     """Verify that capture order details excludes secret like fields.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1769,10 +1769,10 @@ def test_capture_order_details_excludes_secret_like_fields() -> None:
 
 def test_page_objects_do_not_import_persistence_or_sqlite_modules() -> None:
     """Verify that page objects do not import persistence or sqlite modules.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1784,10 +1784,10 @@ def test_page_objects_do_not_import_persistence_or_sqlite_modules() -> None:
 
 def test_page_objects_and_runner_do_not_contain_demo_credentials() -> None:
     """Verify that page objects and runner do not contain demo credentials.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1804,10 +1804,10 @@ def test_page_objects_and_runner_do_not_contain_demo_credentials() -> None:
 
 def test_runner_and_page_source_do_not_import_playwright_directly() -> None:
     """Verify that runner and page source do not import playwright directly.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1832,10 +1832,10 @@ def test_runner_and_page_source_do_not_import_playwright_directly() -> None:
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

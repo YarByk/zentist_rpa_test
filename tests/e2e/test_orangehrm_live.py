@@ -31,10 +31,10 @@ class ConfigStub:
 
 def _require_live_run() -> None:
     """Require live run.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -44,10 +44,10 @@ def _require_live_run() -> None:
 
 def _base_url() -> str:
     """Base url.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -59,10 +59,10 @@ def _base_url() -> str:
 
 def _e2e_employee_name() -> str:
     """E2e employee name.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -71,13 +71,13 @@ def _e2e_employee_name() -> str:
 
 def _should_skip_live_portal_error(error: PortalError) -> bool:
     """Should skip live portal error.
-    
+
     Args:
         error: Value supplied by the test or fixture for `error`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -89,13 +89,13 @@ def _should_skip_live_portal_error(error: PortalError) -> bool:
 
 def _skip_if_live_portal_unavailable(error: PortalError) -> None:
     """Skip if live portal unavailable.
-    
+
     Args:
         error: Value supplied by the test or fixture for `error`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

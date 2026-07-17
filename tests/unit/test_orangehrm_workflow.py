@@ -49,7 +49,7 @@ class FakePages:
         append_uploaded_attachment: bool = False,
     ) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             find_results: Value supplied by the test or fixture for `find_results`.
             attachments: Value supplied by the test or fixture for `attachments`.
@@ -59,10 +59,10 @@ class FakePages:
             update_changes_job: Value supplied by the test or fixture for `update_changes_job`.
             append_uploaded_attachment: Value supplied by the test or fixture for
                 `append_uploaded_attachment`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -81,13 +81,13 @@ class FakePages:
 
     def find_employee_record(self, record: OrangeHrmEmployeeRecord) -> FindResult:
         """Find employee record.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -97,13 +97,13 @@ class FakePages:
 
     def add_employee(self, record: OrangeHrmEmployeeRecord) -> None:
         """Add employee.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -112,13 +112,13 @@ class FakePages:
 
     def open_employee_profile(self, record: OrangeHrmEmployeeRecord) -> None:
         """Open employee profile.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -127,13 +127,13 @@ class FakePages:
 
     def update_job(self, record: OrangeHrmEmployeeRecord) -> None:
         """Update job.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -147,13 +147,13 @@ class FakePages:
 
     def read_job(self, record: OrangeHrmEmployeeRecord) -> dict[str, str]:
         """Read job.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -163,13 +163,13 @@ class FakePages:
 
     def list_salary_attachments(self, record: OrangeHrmEmployeeRecord) -> list[str]:
         """List salary attachments.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -179,14 +179,14 @@ class FakePages:
 
     def upload_salary_attachment(self, record: OrangeHrmEmployeeRecord, path: Path) -> None:
         """Upload salary attachment.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             path: Value supplied by the test or fixture for `path`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -198,14 +198,14 @@ class FakePages:
 
     def verify_salary_attachment(self, record: OrangeHrmEmployeeRecord, filename: str) -> bool:
         """Verify salary attachment.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             filename: Value supplied by the test or fixture for `filename`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -215,13 +215,13 @@ class FakePages:
 
     def _raise_if_configured(self, method_name: str) -> None:
         """Raise if configured.
-        
+
         Args:
             method_name: Value supplied by the test or fixture for `method_name`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -233,10 +233,10 @@ class FakePages:
 def employee() -> OrangeHrmEmployeeRecord:
     # Canonical employee fixture used across the OrangeHRM workflow tests.
     """Employee.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -257,13 +257,13 @@ def employee() -> OrangeHrmEmployeeRecord:
 def context(tmp_path) -> ContextStub:
     # Build a workflow context with temp artifacts so generated documents are isolated per test.
     """Context.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -278,14 +278,14 @@ def context(tmp_path) -> ContextStub:
 def assert_portal_error(reason: ReasonCode, func) -> None:
     # Helper for tests that care about the mapped reason code more than exception mechanics.
     """Assert portal error.
-    
+
     Args:
         reason: Value supplied by the test or fixture for `reason`.
         func: Value supplied by the test or fixture for `func`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -296,10 +296,10 @@ def assert_portal_error(reason: ReasonCode, func) -> None:
 
 def test_find_result_constructors_produce_expected_statuses_and_details() -> None:
     """Verify that find result constructors produce expected statuses and details.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -314,13 +314,13 @@ def test_find_result_constructors_produce_expected_statuses_and_details() -> Non
 def test_found_path_opens_profile_reads_job_and_skips_current_job_update(tmp_path) -> None:
     # Existing employee + already-correct job + existing salary attachment should be read-only.
     """Verify that found path opens profile reads job and skips current job update.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -343,13 +343,13 @@ def test_found_path_opens_profile_reads_job_and_skips_current_job_update(tmp_pat
 
 def test_not_found_path_adds_employee_and_continues_from_created_profile(tmp_path) -> None:
     """Verify that a newly added employee continues from the created profile.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -374,13 +374,13 @@ def test_not_found_add_then_profile_open_completes_job_and_salary_flow(tmp_path)
     # A successful Add Employee leaves OrangeHRM on the new profile, so no search round-trip is
     # needed before continuing with the job and salary tabs.
     """Verify that not found add then profile open completes job and salary flow.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -407,13 +407,13 @@ def test_not_found_add_then_profile_open_completes_job_and_salary_flow(tmp_path)
 def test_job_update_runs_when_current_values_differ_and_then_verifies(tmp_path) -> None:
     # Read current job state, write only when needed, then validate by reading again.
     """Verify that job update runs when current values differ and then verifies.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -439,13 +439,13 @@ def test_ambiguous_first_find_maps_to_employee_match_ambiguous_and_skips_add(
     tmp_path,
 ) -> None:
     """Verify that ambiguous first find maps to employee match ambiguous and skips add.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -464,13 +464,13 @@ def test_retryable_add_error_second_find_ambiguous_maps_to_employee_match_ambigu
     tmp_path,
 ) -> None:
     """Verify that an ambiguous re-check after uncertain create maps to ambiguous.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -487,13 +487,13 @@ def test_retryable_add_error_second_find_ambiguous_maps_to_employee_match_ambigu
 
 def test_search_error_maps_to_search_failed(tmp_path) -> None:
     """Verify that search error maps to search failed.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -509,13 +509,13 @@ def test_retryable_add_error_second_find_still_not_found_reraises_create_error(
     tmp_path,
 ) -> None:
     """Verify that a missing re-check after uncertain create reraises the create error.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -532,13 +532,13 @@ def test_retryable_add_error_second_find_still_not_found_reraises_create_error(
 
 def test_job_title_mismatch_after_update_maps_to_validation_failed(tmp_path) -> None:
     """Verify that job title mismatch after update maps to validation failed.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -555,13 +555,13 @@ def test_job_title_mismatch_after_update_maps_to_validation_failed(tmp_path) -> 
 
 def test_employment_status_mismatch_after_update_maps_to_validation_failed(tmp_path) -> None:
     """Verify that employment status mismatch after update maps to validation failed.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -578,13 +578,13 @@ def test_employment_status_mismatch_after_update_maps_to_validation_failed(tmp_p
 
 def test_existing_salary_attachment_skips_document_generation_and_upload(tmp_path) -> None:
     """Verify that existing salary attachment skips document generation and upload.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -600,13 +600,13 @@ def test_existing_salary_attachment_skips_document_generation_and_upload(tmp_pat
 
 def test_missing_salary_attachment_generates_writes_uploads_and_verifies(tmp_path) -> None:
     """Verify that missing salary attachment generates writes uploads and verifies.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -633,13 +633,13 @@ def test_missing_salary_attachment_generates_writes_uploads_and_verifies(tmp_pat
 
 def test_repeated_run_skips_existing_generated_salary_attachment(tmp_path) -> None:
     """Verify that repeated run skips existing generated salary attachment.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -661,13 +661,13 @@ def test_repeated_run_skips_existing_generated_salary_attachment(tmp_path) -> No
 
 def test_retryable_search_failure_is_retried_and_eventually_succeeds(tmp_path) -> None:
     """Verify that retryable search failure is retried and eventually succeeds.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -690,13 +690,13 @@ def test_exhausted_retryable_search_failure_raises_final_portal_error_with_attem
     tmp_path,
 ) -> None:
     """Verify that exhausted retryable search failure raises final portal error with attempts.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -720,13 +720,13 @@ def test_exhausted_retryable_search_failure_raises_final_portal_error_with_attem
 
 def test_add_employee_write_operation_is_not_retried_blindly(tmp_path) -> None:
     """Verify that add employee write operation is not retried blindly.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -746,13 +746,13 @@ def test_add_employee_write_operation_is_not_retried_blindly(tmp_path) -> None:
 
 def test_runtime_workflow_uses_retry_policy_execute(tmp_path) -> None:
     """Verify that runtime workflow uses retry policy execute.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -764,14 +764,14 @@ def test_runtime_workflow_uses_retry_policy_execute(tmp_path) -> None:
 
     def tracked_execute(context_obj, operation):
         """Tracked execute.
-        
+
         Args:
             context_obj: Value supplied by the test or fixture for `context_obj`.
             operation: Value supplied by the test or fixture for `operation`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -790,10 +790,10 @@ def test_runtime_workflow_uses_retry_policy_execute(tmp_path) -> None:
 
 def test_salary_document_filename_exactly_matches_contract() -> None:
     """Verify that salary document filename exactly matches contract.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -807,15 +807,15 @@ def test_document_generation_failure_maps_to_document_generation_failed(
     generated_content,
 ) -> None:
     """Verify that document generation failure maps to document generation failed.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         generated_content: Value supplied by the test or fixture for `generated_content`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -830,13 +830,13 @@ def test_document_generation_failure_maps_to_document_generation_failed(
 
 def test_upload_verification_failure_maps_to_upload_failed(tmp_path) -> None:
     """Verify that upload verification failure maps to upload failed.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -850,10 +850,10 @@ def test_upload_verification_failure_maps_to_upload_failed(tmp_path) -> None:
 
 def test_workflow_does_not_import_persistence_or_sqlite_modules() -> None:
     """Verify that workflow does not import persistence or sqlite modules.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -865,10 +865,10 @@ def test_workflow_does_not_import_persistence_or_sqlite_modules() -> None:
 
 def test_workflow_does_not_import_playwright_browser_or_page_modules() -> None:
     """Verify that workflow does not import playwright browser or page modules.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -883,10 +883,10 @@ def test_workflow_does_not_import_playwright_browser_or_page_modules() -> None:
 
 def test_workflow_source_does_not_contain_demo_credentials() -> None:
     """Verify that workflow source does not contain demo credentials.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -898,10 +898,10 @@ def test_workflow_source_does_not_contain_demo_credentials() -> None:
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -914,10 +914,10 @@ def test_forbidden_modules_were_not_created() -> None:
 
 def salary_filename() -> str:
     """Salary filename.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -926,10 +926,10 @@ def salary_filename() -> str:
 
 def workflow_source() -> str:
     """Workflow source.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

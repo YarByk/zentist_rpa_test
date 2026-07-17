@@ -11,10 +11,10 @@ REAL_DATA_PATH = _DATA_DIR / "orangehrm_employees.json"
 
 def _load_generator():
     """Load generator.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -42,13 +42,13 @@ main = _gen.main
 
 def _salary_amounts(records):
     """Salary amounts.
-    
+
     Args:
         records: Value supplied by the test or fixture for `records`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -57,10 +57,10 @@ def _salary_amounts(records):
 
 def test_generate_orangehrm_records_creates_requested_count() -> None:
     """Verify that generate orangehrm records creates requested count.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -71,10 +71,10 @@ def test_generate_orangehrm_records_creates_requested_count() -> None:
 
 def test_generate_orangehrm_payload_validates_against_schema() -> None:
     """Verify that generate orangehrm payload validates against schema.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -85,10 +85,10 @@ def test_generate_orangehrm_payload_validates_against_schema() -> None:
 
 def test_load_reference_values_returns_nonempty_lists() -> None:
     """Verify that load reference values returns nonempty lists.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -100,10 +100,10 @@ def test_load_reference_values_returns_nonempty_lists() -> None:
 
 def test_generate_orangehrm_employee_keys_are_unique() -> None:
     """Verify that generate orangehrm employee keys are unique.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -146,10 +146,10 @@ def test_generate_orangehrm_seed_changes_employee_keys_and_ids() -> None:
 
 def test_generate_orangehrm_is_deterministic_for_same_seed() -> None:
     """Verify that generate orangehrm is deterministic for same seed.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -161,10 +161,10 @@ def test_generate_orangehrm_is_deterministic_for_same_seed() -> None:
 
 def test_generate_orangehrm_seed_changes_salary_sequence() -> None:
     """Verify that generate orangehrm seed changes salary sequence.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -176,10 +176,10 @@ def test_generate_orangehrm_seed_changes_salary_sequence() -> None:
 
 def test_generate_orangehrm_rejects_zero_count() -> None:
     """Verify that generate orangehrm rejects zero count.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -189,10 +189,10 @@ def test_generate_orangehrm_rejects_zero_count() -> None:
 
 def test_generate_orangehrm_rejects_negative_count() -> None:
     """Verify that generate orangehrm rejects negative count.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -202,10 +202,10 @@ def test_generate_orangehrm_rejects_negative_count() -> None:
 
 def test_generated_records_do_not_contain_secret_like_values() -> None:
     """Verify that generated records do not contain secret like values.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -218,13 +218,13 @@ def test_generated_records_do_not_contain_secret_like_values() -> None:
 
 def test_build_output_path_orangehrm_prefers_output_dir(tmp_path) -> None:
     """Verify that build output path orangehrm prefers output dir.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -243,13 +243,13 @@ def test_build_output_path_orangehrm_prefers_output_dir(tmp_path) -> None:
 
 def test_build_output_path_orangehrm_uses_output_when_no_output_dir(tmp_path) -> None:
     """Verify that build output path orangehrm uses output when no output dir.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -262,10 +262,10 @@ def test_build_output_path_orangehrm_uses_output_when_no_output_dir(tmp_path) ->
 
 def test_build_output_path_all_requires_output_dir() -> None:
     """Verify that build output path all requires output dir.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -275,13 +275,13 @@ def test_build_output_path_all_requires_output_dir() -> None:
 
 def test_write_json_creates_parent_directory_and_trailing_newline(tmp_path) -> None:
     """Verify that write json creates parent directory and trailing newline.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -293,14 +293,14 @@ def test_write_json_creates_parent_directory_and_trailing_newline(tmp_path) -> N
 
 def test_portal_all_generates_only_orangehrm_file(capsys, tmp_path) -> None:
     """Verify that portal all generates only orangehrm file.
-    
+
     Args:
         capsys: Value supplied by the test or fixture for `capsys`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -314,13 +314,13 @@ def test_portal_all_generates_only_orangehrm_file(capsys, tmp_path) -> None:
 
 def test_cli_output_dir_uses_expected_filename(tmp_path) -> None:
     """Verify that cli output dir uses expected filename.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -332,13 +332,13 @@ def test_cli_output_dir_uses_expected_filename(tmp_path) -> None:
 
 def test_main_uses_explicit_output_path(tmp_path) -> None:
     """Verify that main uses explicit output path.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -353,14 +353,14 @@ def test_main_uses_explicit_output_path(tmp_path) -> None:
 
 def test_main_rejects_zero_count(capsys, tmp_path) -> None:
     """Verify that main rejects zero count.
-    
+
     Args:
         capsys: Value supplied by the test or fixture for `capsys`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

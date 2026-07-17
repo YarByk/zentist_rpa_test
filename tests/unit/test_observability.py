@@ -11,13 +11,13 @@ def test_structured_event_logger_creates_jsonl_with_required_fields_and_redacts_
 ) -> None:
     # Structured logs should preserve useful context while redacting secret-looking payload values.
     """Verify that structured event logger creates jsonl with required fields and redacts secrets.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -119,13 +119,13 @@ def test_structured_event_logger_logs_skipped_items_with_specific_event(tmp_path
 def test_metrics_collector_writes_expected_json(tmp_path) -> None:
     # Metrics output should summarize item outcomes and retry count in one JSON payload.
     """Verify that metrics collector writes expected json.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

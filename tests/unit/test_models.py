@@ -14,10 +14,10 @@ from portal_automation.core.models import (
 def test_reason_code_values_match_contract() -> None:
     # ReasonCode values are stable serialized identifiers used in persistence and reports.
     """Verify that reason code values match contract.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -47,10 +47,10 @@ def test_reason_code_values_match_contract() -> None:
 
 def test_item_status_values_match_contract() -> None:
     """Verify that item status values match contract.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -66,10 +66,10 @@ def test_item_status_values_match_contract() -> None:
 
 def test_run_status_values_match_contract() -> None:
     """Verify that run status values match contract.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -86,10 +86,10 @@ def test_run_status_values_match_contract() -> None:
 
 def test_item_result_can_be_created_with_required_fields() -> None:
     """Verify that item result can be created with required fields.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -116,10 +116,10 @@ def test_item_result_can_be_created_with_required_fields() -> None:
 
 def test_item_result_uses_conservative_defaults() -> None:
     """Verify that item result uses conservative defaults.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -138,10 +138,10 @@ def test_item_result_uses_conservative_defaults() -> None:
 
 def test_run_result_can_be_created_with_item_results() -> None:
     """Verify that run result can be created with item results.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -170,10 +170,10 @@ def test_run_result_can_be_created_with_item_results() -> None:
 
 def test_run_context_can_be_created_with_required_runtime_dependencies() -> None:
     """Verify that run context can be created with required runtime dependencies.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -207,10 +207,10 @@ def test_run_context_can_be_created_with_required_runtime_dependencies() -> None
 def test_dataclass_fields_match_contract() -> None:
     # Field order is part of the lightweight data contract used across tests and repr checks.
     """Verify that dataclass fields match contract.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -249,10 +249,10 @@ def test_dataclass_fields_match_contract() -> None:
 def test_item_result_repr_excludes_sensitive_operational_fields() -> None:
     # repr() should stay safe for logs and assertion failures when details contain secrets.
     """Verify that item result repr excludes sensitive operational fields.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -275,10 +275,10 @@ def test_item_result_repr_excludes_sensitive_operational_fields() -> None:
 def test_run_context_repr_excludes_runtime_dependency_fields() -> None:
     # Runtime collaborators are hidden because they may carry credentials or large objects.
     """Verify that run context repr excludes runtime dependency fields.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -304,10 +304,10 @@ def test_run_context_repr_excludes_runtime_dependency_fields() -> None:
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

@@ -13,27 +13,39 @@ $ErrorActionPreference = "Stop"
 $toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $rootDir = Split-Path -Parent $toolsDir
 $envScript = Join-Path $toolsDir "set_live_env.local.ps1"
+$commonScript = Join-Path $toolsDir "live_demo_common.ps1"
 $sauceScript = Join-Path $toolsDir "debug_saucedemo_playwright_headed.py"
 
-if (-not (Test-Path -LiteralPath $envScript)) {
-    throw "Missing live environment script: $envScript"
+if (-not (Test-Path -LiteralPath $commonScript)) {
+    Write-Host "ERROR: Missing live demo helper script: $commonScript"
+    exit 1
 }
 
-Set-Location -LiteralPath $rootDir
+. $commonScript
 
-Write-Host "Loading live environment from $envScript"
-. $envScript
+try {
+    Set-Location -LiteralPath $rootDir
+}
+catch {
+    Write-LiveDemoProblem `
+        -Title "Could not enter project root" `
+        -Message "PowerShell could not switch to: $rootDir`nReason: $($_.Exception.Message)" `
+        -Suggestions @("Check that the project folder still exists and is accessible.")
+    exit 1
+}
 
-Write-Host ""
-Write-Host "================================================================"
-Write-Host "Sauce Demo Playwright headed"
-Write-Host "================================================================"
+if (-not (Import-LiveDemoEnvironment -EnvScript $envScript)) {
+    exit 1
+}
 
-& python $sauceScript
-$exitCode = $LASTEXITCODE
-if ($exitCode -ne 0) {
-    throw "Sauce Demo Playwright headed failed with exit code $exitCode."
+if (-not (Test-LiveDemoPassword -Name "SAUCEDEMO_PASSWORD" -EnvScript $envScript -PortalLabel "Sauce Demo")) {
+    exit 1
+}
+
+if (-not (Invoke-LiveDemoPythonStep -Title "Sauce Demo Playwright headed" -ScriptPath $sauceScript)) {
+    exit 1
 }
 
 Write-Host ""
 Write-Host "Sauce Demo headed run finished."
+exit 0

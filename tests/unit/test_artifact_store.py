@@ -8,13 +8,13 @@ from portal_automation.core.artifact_store import ArtifactStore
 def test_run_dir_returns_and_creates_run_directory(tmp_path) -> None:
     # The run directory helper should both resolve the path and create it on disk.
     """Verify that run dir returns and creates run directory.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -28,13 +28,13 @@ def test_run_dir_returns_and_creates_run_directory(tmp_path) -> None:
 
 def test_report_and_email_report_paths_are_under_run_directory(tmp_path) -> None:
     """Verify that report and email report paths are under run directory.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -51,13 +51,13 @@ def test_report_and_email_report_paths_are_under_run_directory(tmp_path) -> None
 def test_artifact_subdirectories_are_deterministic_and_created(tmp_path) -> None:
     # Each artifact category should live under a predictable per-run subdirectory.
     """Verify that artifact subdirectories are deterministic and created.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -77,13 +77,13 @@ def test_artifact_subdirectories_are_deterministic_and_created(tmp_path) -> None
 
 def test_salary_document_path_uses_deterministic_filename(tmp_path) -> None:
     """Verify that salary document path uses deterministic filename.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -104,13 +104,13 @@ def test_salary_document_path_uses_deterministic_filename(tmp_path) -> None:
 
 def test_salary_document_path_sanitizes_unsafe_employee_key(tmp_path) -> None:
     """Verify that salary document path sanitizes unsafe employee key.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -123,13 +123,13 @@ def test_salary_document_path_sanitizes_unsafe_employee_key(tmp_path) -> None:
 
 def test_salary_document_path_uses_employee_for_empty_sanitized_key(tmp_path) -> None:
     """Verify that salary document path uses employee for empty sanitized key.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -143,13 +143,13 @@ def test_salary_document_path_uses_employee_for_empty_sanitized_key(tmp_path) ->
 def test_write_text_writes_utf8_content_and_creates_parent_dirs(tmp_path) -> None:
     # The shared text writer should create missing parent folders automatically.
     """Verify that write text writes utf8 content and creates parent dirs.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -164,13 +164,13 @@ def test_write_text_writes_utf8_content_and_creates_parent_dirs(tmp_path) -> Non
 
 def test_write_text_propagates_filesystem_failures(tmp_path) -> None:
     """Verify that write text propagates filesystem failures.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -185,13 +185,13 @@ def test_write_text_propagates_filesystem_failures(tmp_path) -> None:
 def test_failure_diagnostic_paths_are_deterministic_and_sanitized(tmp_path) -> None:
     # Diagnostic filenames should remain stable while sanitizing unsafe item keys.
     """Verify that failure diagnostic paths are deterministic and sanitized.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

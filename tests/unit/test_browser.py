@@ -33,14 +33,14 @@ class FakePage:
         set_content_error: Exception | None = None,
     ) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             screenshot_error: Value supplied by the test or fixture for `screenshot_error`.
             set_content_error: Value supplied by the test or fixture for `set_content_error`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -52,13 +52,13 @@ class FakePage:
 
     def set_default_timeout(self, value: int) -> None:
         """Set default timeout.
-        
+
         Args:
             value: Value supplied by the test or fixture for `value`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -66,14 +66,14 @@ class FakePage:
 
     def set_content(self, html: str, *, wait_until: str | None = None) -> None:
         """Set page content.
-        
+
         Args:
             html: Value supplied by the test or fixture for `html`.
             wait_until: Value supplied by the test or fixture for `wait_until`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -83,14 +83,14 @@ class FakePage:
 
     def screenshot(self, *, path: str, full_page: bool) -> None:
         """Screenshot.
-        
+
         Args:
             path: Value supplied by the test or fixture for `path`.
             full_page: Value supplied by the test or fixture for `full_page`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -105,13 +105,13 @@ class FakeTracing:
     # Tracing stub used to validate start/stop behavior and generated trace files.
     def __init__(self, *, stop_error: Exception | None = None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             stop_error: Value supplied by the test or fixture for `stop_error`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -121,15 +121,15 @@ class FakeTracing:
 
     def start(self, *, screenshots: bool, snapshots: bool, sources: bool) -> None:
         """Start.
-        
+
         Args:
             screenshots: Value supplied by the test or fixture for `screenshots`.
             snapshots: Value supplied by the test or fixture for `snapshots`.
             sources: Value supplied by the test or fixture for `sources`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -143,13 +143,13 @@ class FakeTracing:
 
     def stop(self, *, path: str | None = None) -> None:
         """Stop.
-        
+
         Args:
             path: Value supplied by the test or fixture for `path`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -170,15 +170,15 @@ class FakeContext:
         new_page: FakePage | None = None,
     ) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             page: Value supplied by the test or fixture for `page`.
             tracing: Value supplied by the test or fixture for `tracing`.
             new_page: Value supplied by the test or fixture for `new_page`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -191,10 +191,10 @@ class FakeContext:
 
     def new_page(self) -> FakePage:
         """New page.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -205,10 +205,10 @@ class FakeContext:
 
     def close(self) -> None:
         """Close.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -219,13 +219,13 @@ class FakeBrowser:
     # Fake browser wrapper used to verify context creation and cleanup ordering.
     def __init__(self, context: FakeContext) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -235,10 +235,10 @@ class FakeBrowser:
 
     def new_context(self) -> FakeContext:
         """New context.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -247,10 +247,10 @@ class FakeBrowser:
 
     def close(self) -> None:
         """Close.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -261,14 +261,14 @@ class FakeChromium:
     # Launch stub that can either return a fake browser or simulate a startup failure.
     def __init__(self, browser: FakeBrowser, *, launch_error: Exception | None = None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             browser: Value supplied by the test or fixture for `browser`.
             launch_error: Value supplied by the test or fixture for `launch_error`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -279,13 +279,13 @@ class FakeChromium:
 
     def launch(self, *, headless: bool) -> FakeBrowser:
         """Launch.
-        
+
         Args:
             headless: Value supplied by the test or fixture for `headless`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -296,14 +296,14 @@ class FakeChromium:
 
     def launch_persistent_context(self, *, user_data_dir: str, headless: bool) -> FakeContext:
         """Launch persistent context.
-        
+
         Args:
             user_data_dir: Value supplied by the test or fixture for `user_data_dir`.
             headless: Value supplied by the test or fixture for `headless`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             RuntimeError: If this fake was configured with a launch error.
         """
@@ -319,13 +319,13 @@ class FakePlaywright:
     # Minimal Playwright runtime stub with a Chromium handle and stop flag.
     def __init__(self, chromium: FakeChromium) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             chromium: Value supplied by the test or fixture for `chromium`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -334,10 +334,10 @@ class FakePlaywright:
 
     def stop(self) -> None:
         """Stop.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -348,13 +348,13 @@ class FakeSyncPlaywrightFactory:
     # Emulates sync_playwright() followed by .start().
     def __init__(self, playwright: FakePlaywright) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             playwright: Value supplied by the test or fixture for `playwright`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -363,10 +363,10 @@ class FakeSyncPlaywrightFactory:
 
     def __call__(self) -> "FakeSyncPlaywrightFactory":
         """Call.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -374,10 +374,10 @@ class FakeSyncPlaywrightFactory:
 
     def start(self) -> FakePlaywright:
         """Start.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -388,13 +388,13 @@ class FakeSyncPlaywrightFactory:
 def test_browser_manager_opens_page_and_sets_timeout(monkeypatch) -> None:
     # Opening the manager should launch Chromium, create a context, and set the page timeout.
     """Verify that browser manager opens page and sets timeout.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -425,13 +425,13 @@ def test_browser_manager_opens_page_and_sets_timeout(monkeypatch) -> None:
 
 def test_browser_manager_shows_start_page_in_headed_mode(monkeypatch) -> None:
     """Verify that headed browser opens with a visible diagnostic start page.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -454,13 +454,13 @@ def test_browser_manager_shows_start_page_in_headed_mode(monkeypatch) -> None:
 
 def test_browser_manager_uses_persistent_profile_when_configured(monkeypatch) -> None:
     """Verify that persistent profile mode launches a persistent browser context.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -496,13 +496,13 @@ def test_browser_manager_uses_persistent_profile_when_configured(monkeypatch) ->
 
 def test_browser_manager_reuses_existing_persistent_profile_page(monkeypatch) -> None:
     """Verify that persistent profile mode does not create an extra about:blank tab.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -527,13 +527,13 @@ def test_browser_manager_reuses_existing_persistent_profile_page(monkeypatch) ->
 
 def test_browser_manager_visible_error_page_pauses_in_headed_mode(monkeypatch) -> None:
     """Verify that headed error pause renders diagnostic content and sleeps.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -550,9 +550,7 @@ def test_browser_manager_visible_error_page_pauses_in_headed_mode(monkeypatch) -
         lambda seconds: sleeps.append(seconds),
     )
 
-    manager = BrowserManager(
-        ConfigStub(headless=False, visible_browser_pause_on_error_seconds=7)
-    )
+    manager = BrowserManager(ConfigStub(headless=False, visible_browser_pause_on_error_seconds=7))
     manager.open()
     manager.pause_for_visible_error("Portal failed", "This page cannot be displayed")
 
@@ -577,9 +575,7 @@ def test_browser_manager_visible_result_page_pauses_in_headed_mode(monkeypatch) 
         lambda seconds: sleeps.append(seconds),
     )
 
-    manager = BrowserManager(
-        ConfigStub(headless=False, visible_browser_pause_on_result_seconds=5)
-    )
+    manager = BrowserManager(ConfigStub(headless=False, visible_browser_pause_on_result_seconds=5))
     manager.open()
     manager.pause_for_visible_result("Portal succeeded", "Completed 3 item(s)")
 
@@ -618,9 +614,7 @@ def test_browser_manager_result_page_falls_back_to_new_page_when_current_page_fa
         lambda seconds: sleeps.append(seconds),
     )
 
-    manager = BrowserManager(
-        ConfigStub(headless=False, visible_browser_pause_on_result_seconds=4)
-    )
+    manager = BrowserManager(ConfigStub(headless=False, visible_browser_pause_on_result_seconds=4))
     manager.open()
     manager.pause_for_visible_result("Portal finished", "Completed")
 
@@ -632,13 +626,13 @@ def test_browser_manager_result_page_falls_back_to_new_page_when_current_page_fa
 
 def test_browser_manager_accepts_per_portal_timeout_override(monkeypatch) -> None:
     """Verify that browser manager accepts per portal timeout override.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -658,10 +652,10 @@ def test_browser_manager_accepts_per_portal_timeout_override(monkeypatch) -> Non
 
 def test_browser_manager_rejects_non_positive_timeout_override() -> None:
     """Verify that browser manager rejects non positive timeout override.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -671,13 +665,13 @@ def test_browser_manager_rejects_non_positive_timeout_override() -> None:
 
 def test_browser_manager_closes_resources_on_exception(monkeypatch) -> None:
     """Verify that browser manager closes resources on exception.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -703,13 +697,13 @@ def test_browser_manager_closes_resources_on_exception(monkeypatch) -> None:
 
 def test_browser_manager_wraps_missing_chromium_with_portal_error(monkeypatch) -> None:
     """Verify that browser manager wraps missing chromium with portal error.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -737,22 +731,23 @@ def test_browser_manager_wraps_missing_chromium_with_portal_error(monkeypatch) -
 
 def test_browser_manager_wraps_missing_playwright_runtime(monkeypatch) -> None:
     """Verify that browser manager wraps missing playwright runtime.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
+
     def fail_loader():
         """Fail loader.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -778,14 +773,14 @@ def test_browser_manager_wraps_missing_playwright_runtime(monkeypatch) -> None:
 def test_browser_manager_captures_screenshot_and_trace_on_failure(monkeypatch, tmp_path) -> None:
     # When failure capture is enabled, both screenshot and trace artifacts should be created.
     """Verify that browser manager captures screenshot and trace on failure.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -840,14 +835,14 @@ def test_browser_manager_captures_screenshot_and_trace_on_failure(monkeypatch, t
 
 def test_browser_manager_does_not_capture_success_artifacts(monkeypatch, tmp_path) -> None:
     """Verify that browser manager does not capture success artifacts.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -881,14 +876,14 @@ def test_browser_manager_redacts_config_secrets_from_diagnostic_names(
 ) -> None:
     # Secret values from config must never leak into generated artifact filenames.
     """Verify that browser manager redacts config secrets from diagnostic names.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -922,14 +917,14 @@ def test_browser_manager_redacts_config_secrets_from_diagnostic_names(
 
 def test_browser_manager_propagates_screenshot_capture_failure(monkeypatch, tmp_path) -> None:
     """Verify that browser manager propagates screenshot capture failure.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

@@ -148,8 +148,6 @@ class ReportGenerator:
         if not isinstance(details, dict) or not details:
             return ""
         safe_items = [
-            (key, value)
-            for key, value in sorted(details.items())
-            if key in SAFE_DETAIL_KEYS
+            (key, value) for key, value in sorted(details.items()) if key in SAFE_DETAIL_KEYS
         ]
         return ", ".join(f"{key}={value}" for key, value in safe_items)

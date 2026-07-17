@@ -52,10 +52,10 @@ class FakePersistence:
     # In-memory run/result store used to assert base-runner interactions.
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -66,15 +66,15 @@ class FakePersistence:
 
     def create_run(self, run_id: str, portal_name: str, business_date: date) -> None:
         """Create run.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -82,15 +82,15 @@ class FakePersistence:
 
     def finish_run(self, run_id: str, status: RunStatus, summary: dict[str, int]) -> None:
         """Finish run.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             status: Value supplied by the test or fixture for `status`.
             summary: Value supplied by the test or fixture for `summary`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -98,14 +98,14 @@ class FakePersistence:
 
     def get_committed_items(self, portal_name: str, business_date: date) -> set[str]:
         """Get committed items.
-        
+
         Args:
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -121,17 +121,17 @@ class FakePersistence:
         operation: str,
     ) -> None:
         """Mark item in progress.
-        
+
         Args:
             run_id: Value supplied by the test or fixture for `run_id`.
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
             item_key: Value supplied by the test or fixture for `item_key`.
             operation: Value supplied by the test or fixture for `operation`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -139,13 +139,13 @@ class FakePersistence:
 
     def upsert_item_result(self, *args: object) -> None:
         """Upsert item result.
-        
+
         Args:
             *args: Value supplied by the test or fixture for `args`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -154,14 +154,14 @@ class FakePersistence:
 
     def list_results_by_business_date(self, portal_name: str, business_date: date) -> list[object]:
         """List results by business date.
-        
+
         Args:
             portal_name: Value supplied by the test or fixture for `portal_name`.
             business_date: Value supplied by the test or fixture for `business_date`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -173,10 +173,10 @@ class ReporterStub:
     # Captures reports requested by finalize().
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -184,13 +184,13 @@ class ReporterStub:
 
     def write_report(self, result: RunResult) -> None:
         """Write report.
-        
+
         Args:
             result: Value supplied by the test or fixture for `result`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -198,13 +198,13 @@ class ReporterStub:
 
     def render(self, result: RunResult) -> str:
         """Render.
-        
+
         Args:
             result: Value supplied by the test or fixture for `result`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -215,10 +215,10 @@ class EmailStub:
     # Captures outgoing notification parameters requested by finalize().
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -226,13 +226,13 @@ class EmailStub:
 
     def send_report(self, **kwargs: object) -> None:
         """Send report.
-        
+
         Args:
             **kwargs: Value supplied by the test or fixture for `kwargs`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -243,15 +243,15 @@ class FakeTarget:
     # Lightweight fake element used by FakePage's label/role/locator helpers.
     def __init__(self, page: "FakePage", kind: str, name: str) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             page: Value supplied by the test or fixture for `page`.
             kind: Value supplied by the test or fixture for `kind`.
             name: Value supplied by the test or fixture for `name`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -261,13 +261,13 @@ class FakeTarget:
 
     def fill(self, value: str) -> None:
         """Fill.
-        
+
         Args:
             value: Value supplied by the test or fixture for `value`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -275,10 +275,10 @@ class FakeTarget:
 
     def click(self) -> None:
         """Click.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -286,10 +286,10 @@ class FakeTarget:
 
     def text_content(self) -> str:
         """Text content.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -298,13 +298,13 @@ class FakeTarget:
 
     def set_input_files(self, value: str) -> None:
         """Set input files.
-        
+
         Args:
             value: Value supplied by the test or fixture for `value`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -315,10 +315,10 @@ class FakePage:
     # Fake page object that drives the non-real-page branches of OrangeHrmPages.
     def __init__(self) -> None:
         """Initialize this test helper instance.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -334,13 +334,13 @@ class FakePage:
 
     def goto(self, url: str) -> None:
         """Goto.
-        
+
         Args:
             url: Value supplied by the test or fixture for `url`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -348,13 +348,13 @@ class FakePage:
 
     def get_by_label(self, name: str) -> FakeTarget:
         """Get by label.
-        
+
         Args:
             name: Value supplied by the test or fixture for `name`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -363,14 +363,14 @@ class FakePage:
 
     def get_by_role(self, role: str, *, name: str) -> FakeTarget:
         """Get by role.
-        
+
         Args:
             role: Value supplied by the test or fixture for `role`.
             name: Value supplied by the test or fixture for `name`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -379,13 +379,13 @@ class FakePage:
 
     def locator(self, selector: str) -> FakeTarget:
         """Locator.
-        
+
         Args:
             selector: Value supplied by the test or fixture for `selector`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -397,13 +397,13 @@ class FakeWorkflowPages:
     # Fake workflow page protocol used to test login caching and process_item behavior.
     def __init__(self, *, login_error: PortalError | None = None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             login_error: Value supplied by the test or fixture for `login_error`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -413,14 +413,14 @@ class FakeWorkflowPages:
 
     def login(self, username: str, password: str) -> None:
         """Login.
-        
+
         Args:
             username: Value supplied by the test or fixture for `username`.
             password: Value supplied by the test or fixture for `password`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -431,10 +431,10 @@ class FakeWorkflowPages:
 
     def is_authenticated(self) -> bool:
         """Return whether this fake page still represents a live authenticated session.
-        
+
         Returns:
             ``True`` when the fake session is authenticated.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -443,13 +443,13 @@ class FakeWorkflowPages:
 
     def find_employee_record(self, record: OrangeHrmEmployeeRecord):
         """Find employee record.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -458,13 +458,13 @@ class FakeWorkflowPages:
 
     def add_employee(self, record: OrangeHrmEmployeeRecord) -> None:
         """Add employee.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -472,13 +472,13 @@ class FakeWorkflowPages:
 
     def open_employee_profile(self, record: OrangeHrmEmployeeRecord) -> None:
         """Open employee profile.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -486,13 +486,13 @@ class FakeWorkflowPages:
 
     def update_job(self, record: OrangeHrmEmployeeRecord) -> None:
         """Update job.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -500,13 +500,13 @@ class FakeWorkflowPages:
 
     def read_job(self, record: OrangeHrmEmployeeRecord) -> dict[str, str]:
         """Read job.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -518,13 +518,13 @@ class FakeWorkflowPages:
 
     def list_salary_attachments(self, record: OrangeHrmEmployeeRecord) -> list[str]:
         """List salary attachments.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -533,14 +533,14 @@ class FakeWorkflowPages:
 
     def upload_salary_attachment(self, record: OrangeHrmEmployeeRecord, path: Path) -> None:
         """Upload salary attachment.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             path: Value supplied by the test or fixture for `path`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -548,14 +548,14 @@ class FakeWorkflowPages:
 
     def verify_salary_attachment(self, record: OrangeHrmEmployeeRecord, filename: str) -> bool:
         """Verify salary attachment.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             filename: Value supplied by the test or fixture for `filename`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -592,10 +592,10 @@ class SessionDropOnceWorkflowPages(FakeWorkflowPages):
 
 def employee() -> OrangeHrmEmployeeRecord:
     """Employee.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -615,10 +615,10 @@ def employee() -> OrangeHrmEmployeeRecord:
 
 def employee_two() -> OrangeHrmEmployeeRecord:
     """Employee two.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -638,13 +638,13 @@ def employee_two() -> OrangeHrmEmployeeRecord:
 
 def write_employee_input(tmp_path) -> str:
     """Write employee input.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -671,13 +671,13 @@ def write_employee_input(tmp_path) -> str:
 
 def write_two_employee_input(tmp_path) -> str:
     """Write two employee input.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -716,14 +716,14 @@ def write_two_employee_input(tmp_path) -> str:
 
 def make_run_context(tmp_path, *, reporter: object | None = None) -> RunContext:
     """Make run context.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         reporter: Value supplied by the test or fixture for `reporter`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -744,14 +744,14 @@ def make_run_context(tmp_path, *, reporter: object | None = None) -> RunContext:
 
 def make_process_context(tmp_path, *, reporter: object | None = None) -> ContextStub:
     """Make process context.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         reporter: Value supplied by the test or fixture for `reporter`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -766,10 +766,10 @@ def make_process_context(tmp_path, *, reporter: object | None = None) -> Context
 
 def test_runner_contract_constants_are_correct() -> None:
     """Verify that runner contract constants are correct.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -779,10 +779,10 @@ def test_runner_contract_constants_are_correct() -> None:
 
 def test_runner_inherits_base_and_does_not_override_run() -> None:
     """Verify that runner inherits base and does not override run.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -793,10 +793,10 @@ def test_runner_inherits_base_and_does_not_override_run() -> None:
 
 def test_runner_item_key_uses_employee_key() -> None:
     """Verify that runner item key uses employee key.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -805,13 +805,13 @@ def test_runner_item_key_uses_employee_key() -> None:
 
 def test_dry_run_does_not_call_page_factory_or_process_item(tmp_path) -> None:
     """Verify that dry run does not call page factory or process item.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -819,13 +819,13 @@ def test_dry_run_does_not_call_page_factory_or_process_item(tmp_path) -> None:
 
     def pages_factory(context: RunContext) -> object:
         """Pages factory.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -847,14 +847,14 @@ def test_process_item_uses_injected_page_factory_logs_in_then_calls_workflow(
     monkeypatch,
 ) -> None:
     """Verify that process item uses injected page factory logs in then calls workflow.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -863,13 +863,13 @@ def test_process_item_uses_injected_page_factory_logs_in_then_calls_workflow(
 
     def pages_factory(context: ContextStub) -> object:
         """Pages factory.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -878,15 +878,15 @@ def test_process_item_uses_injected_page_factory_logs_in_then_calls_workflow(
 
     def fake_process_employee(record, page_objects, context):
         """Fake process employee.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             page_objects: Value supplied by the test or fixture for `page_objects`.
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -917,13 +917,13 @@ def test_process_item_uses_injected_page_factory_logs_in_then_calls_workflow(
 
 def test_process_item_without_page_factory_raises_portal_unavailable(tmp_path) -> None:
     """Verify that process item without page factory raises portal unavailable.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -936,13 +936,13 @@ def test_process_item_without_page_factory_raises_portal_unavailable(tmp_path) -
 
 def test_process_item_logs_in_before_first_employee_business_action(tmp_path) -> None:
     """Verify that process item logs in before first employee business action.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -961,13 +961,13 @@ def test_process_item_logs_in_before_first_employee_business_action(tmp_path) ->
 
 def test_runner_logs_in_once_for_multiple_items_in_same_session(tmp_path) -> None:
     """Verify that runner logs in once for multiple items in same session.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -987,13 +987,13 @@ def test_runner_logs_in_once_for_multiple_items_in_same_session(tmp_path) -> Non
 
 def test_runner_relogs_in_when_cached_session_is_no_longer_authenticated(tmp_path) -> None:
     """Verify that runner reuses the page but logs in again after session loss.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1041,13 +1041,13 @@ def test_runner_relogs_in_after_session_drops_inside_workflow_action(tmp_path) -
 
 def test_login_failure_stops_employee_business_actions_and_is_cached(tmp_path) -> None:
     """Verify that login failure stops employee business actions and is cached.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1068,13 +1068,13 @@ def test_login_failure_stops_employee_business_actions_and_is_cached(tmp_path) -
 
 def test_login_failure_in_run_marks_items_failed_without_business_actions(tmp_path) -> None:
     """Verify that login failure in run marks items failed without business actions.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1124,28 +1124,61 @@ def test_initial_login_page_unavailable_stops_remaining_batch_items(tmp_path) ->
     assert "find_employee_record" not in pages.calls
 
 
-def test_one_employee_failure_does_not_abort_remaining_batch_items(tmp_path) -> None:
-    """Verify that one employee failure does not abort remaining batch items.
-    
+def test_initial_login_timeout_stops_remaining_batch_items(tmp_path) -> None:
+    """Verify that startup login timeouts do not repeat for every employee.
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
+    Returns:
+        None. Assertions communicate the test outcome.
+
+    Raises:
+        AssertionError: If a startup timeout continues into the remaining batch items.
+    """
+    login_error = PortalError(
+        ReasonCode.PORTAL_TIMEOUT,
+        "OrangeHRM login page navigation failed.",
+    )
+    pages = FakeWorkflowPages(login_error=login_error)
+    context = make_run_context(tmp_path)
+    context.config.orangehrm_input_path = write_two_employee_input(tmp_path)
+    context.dry_run = False
+
+    result = OrangeHrmRunner(pages_factory=lambda _: pages).run(context)
+
+    assert result.status is RunStatus.FAILED
+    assert [item.item_key for item in result.results] == ["emp-alice-johnson"]
+    assert result.results[0].reason_code is ReasonCode.PORTAL_TIMEOUT
+    assert pages.calls.count(("login", "Admin", "pw")) == 1
+    assert context.persistence.real_run_methods.count("mark_item_in_progress") == 1
+    assert context.persistence.real_run_methods.count("upsert_item_result") == 1
+    assert "find_employee_record" not in pages.calls
+
+
+def test_one_employee_failure_does_not_abort_remaining_batch_items(tmp_path) -> None:
+    """Verify that one employee failure does not abort remaining batch items.
+
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
+
     class AmbiguousFirstEmployeePages(FakeWorkflowPages):
         def find_employee_record(self, record: OrangeHrmEmployeeRecord):
             """Find employee record.
-            
+
             Args:
                 record: Value supplied by the test or fixture for `record`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1179,14 +1212,14 @@ def test_preflight_raises_credential_expired_when_password_missing_or_blank(
     password,
 ) -> None:
     """Verify that preflight raises credential expired when password missing or blank.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         password: Value supplied by the test or fixture for `password`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1202,13 +1235,13 @@ def test_preflight_raises_credential_expired_when_password_missing_or_blank(
 
 def test_preflight_passes_with_required_non_browser_config(tmp_path) -> None:
     """Verify that preflight passes with required non browser config.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1221,13 +1254,13 @@ def test_preflight_passes_with_required_non_browser_config(tmp_path) -> None:
 
 def test_preflight_does_not_create_page_objects(tmp_path) -> None:
     """Verify that preflight does not create page objects.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1244,13 +1277,13 @@ def test_preflight_does_not_create_page_objects(tmp_path) -> None:
 
 def test_load_items_still_reads_validated_input_records(tmp_path) -> None:
     """Verify that load items still reads validated input records.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1264,13 +1297,13 @@ def test_load_items_still_reads_validated_input_records(tmp_path) -> None:
 
 def test_finalize_writes_report_when_reporter_supports_write_report(tmp_path) -> None:
     """Verify that finalize writes report when reporter supports write report.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1292,13 +1325,13 @@ def test_finalize_writes_report_when_reporter_supports_write_report(tmp_path) ->
 
 def test_finalize_calls_email_send_report_with_written_report(tmp_path) -> None:
     """Verify that finalize calls email send report with written report.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1330,13 +1363,13 @@ def test_finalize_calls_email_send_report_with_written_report(tmp_path) -> None:
 
 def test_finalize_returns_without_error_when_reporter_has_no_write_report(tmp_path) -> None:
     """Verify that finalize returns without error when reporter has no write report.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1353,10 +1386,10 @@ def test_finalize_returns_without_error_when_reporter_has_no_write_report(tmp_pa
 
 def test_orangehrm_pages_login_uses_explicit_credentials_and_base_url() -> None:
     """Verify that orangehrm pages login uses explicit credentials and base url.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1378,10 +1411,10 @@ def test_orangehrm_pages_login_uses_explicit_credentials_and_base_url() -> None:
 
 def test_orangehrm_pages_login_failed_attr_raises_login_failed() -> None:
     """Verify that orangehrm pages login failed attr raises login failed.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1397,13 +1430,13 @@ def test_orangehrm_pages_login_failed_attr_raises_login_failed() -> None:
 
 def test_page_methods_operate_against_fake_page_and_record_expected_calls(tmp_path) -> None:
     """Verify that page methods operate against fake page and record expected calls.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1432,10 +1465,10 @@ def test_page_methods_operate_against_fake_page_and_record_expected_calls(tmp_pa
 
 def test_page_objects_do_not_import_persistence_or_sqlite_modules() -> None:
     """Verify that page objects do not import persistence or sqlite modules.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1447,10 +1480,10 @@ def test_page_objects_do_not_import_persistence_or_sqlite_modules() -> None:
 
 def test_page_objects_do_not_contain_demo_credentials() -> None:
     """Verify that page objects do not contain demo credentials.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1462,10 +1495,10 @@ def test_page_objects_do_not_contain_demo_credentials() -> None:
 
 def test_runner_and_page_source_do_not_import_playwright_directly() -> None:
     """Verify that runner and page source do not import playwright directly.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1482,10 +1515,10 @@ def test_runner_and_page_source_do_not_import_playwright_directly() -> None:
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

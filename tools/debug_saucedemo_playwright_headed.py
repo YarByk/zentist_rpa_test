@@ -15,18 +15,23 @@ from portal_automation.__main__ import main
 
 
 def _run_headed_debug() -> int:
-    """Run the headed Sauce Demo debug profile without turning known run failures into VS errors.
+    """Run the headed Sauce Demo debug profile without treating known run failures as crashes.
 
     Returns:
-        ``0`` when Visual Studio should stay out of exception mode, even if the portal run itself
-        produced a failed or partial report. Reports, events, screenshots, and diagnostics still
-        carry the real status for the operator to inspect.
+        ``0`` when a handled run report should not be treated as a script crash,
+        even if the portal run itself produced a failed or partial report. Reports,
+        events, screenshots, and diagnostics still carry the real status for the
+        operator to inspect.
     """
     exit_code = main(["saucedemo", "--headless", "false"])
     if exit_code == 1:
         print(
             "Sauce Demo headed debug finished with a failed or partial run report. "
-            "Visual Studio will not treat this operator-diagnosed portal result as a script crash."
+            "This operator-diagnosed portal result is not treated as a script crash."
+        )
+        print(
+            "If every Sauce Demo account shows LOGIN_FAILED, verify SAUCEDEMO_PASSWORD "
+            "in tools\\set_live_env.local.ps1 and try again."
         )
         return 0
     return exit_code
@@ -34,12 +39,9 @@ def _run_headed_debug() -> int:
 
 if __name__ == "__main__":
     if not os.environ.get("SAUCEDEMO_PASSWORD"):
-        print("SAUCEDEMO_PASSWORD is not visible inside this Visual Studio Python process.")
-        print(
-            "Set it in tools\\set_live_env.local.ps1, "
-            "then start Visual Studio from that same shell."
-        )
-        print("Example: . .\\tools\\set_live_env.local.ps1; devenv .")
+        print("SAUCEDEMO_PASSWORD is not visible inside this Python process.")
+        print("Set it in tools\\set_live_env.local.ps1, then run the headed helper again.")
+        print("Example: . .\\tools\\set_live_env.local.ps1; python <this-script>")
         raise SystemExit(1)
     os.environ.setdefault("VISIBLE_BROWSER_PAUSE_ON_ERROR_SECONDS", "20")
     os.environ.setdefault("VISIBLE_BROWSER_PAUSE_ON_RESULT_SECONDS", "20")

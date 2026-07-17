@@ -41,4 +41,4 @@ foreach ($entry in $liveEnv.GetEnumerator()) {
 
 Write-Host "Live Playwright environment variables were set for this PowerShell session."
 Write-Host "They were also saved globally for the current Windows user."
-Write-Host "Restart Visual Studio and any already-open PowerShell windows so they read the updated User environment."
+Write-Host "Restart any already-open launcher or PowerShell windows so they read the updated User environment."

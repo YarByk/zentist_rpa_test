@@ -51,6 +51,7 @@ class OrangeHrmPages:
     SEARCH_FORM_TIMEOUT_MS = 5000
     SEARCH_RESULTS_TIMEOUT_MS = 5000
     JOB_DROPDOWN_TIMEOUT_MS = 6000
+    LOGIN_FORM_TIMEOUT_MS = 6000
     SPINNER_TIMEOUT_MS = 3000
     TOAST_TIMEOUT_MS = 2500
 
@@ -95,6 +96,20 @@ class OrangeHrmPages:
         # Browser-backed flow: submit credentials and verify that login completed.
         if self._has_real_page() and self.is_authenticated():
             return
+        if self._has_real_page():
+            self._clear_login_session_state()
+        self._login_from_fresh_page(username, password)
+
+    def _login_from_fresh_page(self, username: str, password: str) -> None:
+        """Submit the OrangeHRM login form from a clean login page.
+
+        Args:
+            username: OrangeHRM username.
+            password: OrangeHRM password.
+
+        Raises:
+            PortalError: If login fails or remains on the login page.
+        """
         self._goto_login_page()
         if self._has_real_page() and self.is_authenticated():
             return
@@ -105,6 +120,18 @@ class OrangeHrmPages:
         self._maybe_wait_for_url("dashboard")
         error = self._text_or_none(self.LOGIN_ERROR)
         if error is not None:
+            if self._is_csrf_login_error(error):
+                self._debug("OrangeHRM rejected login with CSRF token validation; retrying once.")
+                self._clear_login_session_state()
+                self._goto_login_page()
+                self._wait_for_login_form()
+                self.page.locator(self.USERNAME_INPUT).fill(username)
+                self.page.locator(self.PASSWORD_INPUT).fill(password)
+                self.page.locator(self.LOGIN_BUTTON).click()
+                self._maybe_wait_for_url("dashboard")
+                error = self._text_or_none(self.LOGIN_ERROR)
+                if error is None and "login" not in self._current_url():
+                    return
             raise PortalError(
                 ReasonCode.LOGIN_FAILED,
                 f"OrangeHRM login failed: {error}",
@@ -114,6 +141,41 @@ class OrangeHrmPages:
                 ReasonCode.LOGIN_FAILED,
                 "OrangeHRM login did not redirect from login page.",
             )
+
+    def _is_csrf_login_error(self, error: str) -> bool:
+        """Return whether a login error is the public-demo stale CSRF failure.
+
+        Args:
+            error: Login error text from the page.
+
+        Returns:
+            ``True`` when the error looks like OrangeHRM's CSRF validation message.
+        """
+        return "csrf token validation failed" in error.strip().lower()
+
+    def _clear_login_session_state(self) -> None:
+        """Clear stale OrangeHRM cookies and storage before submitting a fresh login.
+
+        Persistent browser profiles keep history for operator review, but public OrangeHRM demo
+        sessions can leave stale cookies/storage that make the next login form fail CSRF
+        validation. Clearing session state only when a fresh login is needed preserves browser
+        history while avoiding stale authentication tokens.
+        """
+        context = getattr(self.page, "context", None)
+        clear_cookies = getattr(context, "clear_cookies", None)
+        if callable(clear_cookies):
+            try:
+                clear_cookies()
+            except Exception as exc:
+                self._debug(f"Could not clear OrangeHRM cookies before login: {exc}")
+        evaluate = getattr(self.page, "evaluate", None)
+        if callable(evaluate):
+            try:
+                evaluate("() => { localStorage.clear(); sessionStorage.clear(); }")
+            except Exception as exc:
+                if "securityerror" in str(exc).lower():
+                    return
+                self._debug(f"Could not clear OrangeHRM browser storage before login: {exc}")
 
     def is_authenticated(self) -> bool:
         """Return whether the current page appears to be inside an authenticated session.
@@ -222,7 +284,7 @@ class OrangeHrmPages:
                 ReasonCode.PORTAL_UNAVAILABLE,
                 "OrangeHRM Add Employee button not found.",
             )
-        add_btn.first.click()
+        self._click_without_navigation_wait(add_btn.first)
         self._maybe_wait_for_url("addEmployee")
         self.page.locator('input[name="firstName"]').fill(employee.first_name)
         middle_name = self.page.locator('input[name="middleName"]')
@@ -236,7 +298,7 @@ class OrangeHrmPages:
                 "OrangeHRM Employee Id input not found on Add Employee form.",
             )
         emp_id.fill(employee.portal_employee_id)
-        self.page.locator(self.FORM_SAVE_BUTTON).first.click()
+        self._click_without_navigation_wait(self.page.locator(self.FORM_SAVE_BUTTON).first)
         self._maybe_wait_for_url("viewPersonalDetails")
         self._wait_for_toast_or_stable()
         self._ensure_add_employee_saved(employee)
@@ -333,7 +395,7 @@ class OrangeHrmPages:
         )
 
         if job_changed or status_changed:
-            self.page.locator(self.FORM_SAVE_BUTTON).first.click()
+            self._click_without_navigation_wait(self.page.locator(self.FORM_SAVE_BUTTON).first)
             self._wait_for_toast_or_stable()
 
     def list_salary_attachments(self, employee: OrangeHrmEmployeeRecord) -> list[str]:
@@ -406,7 +468,7 @@ class OrangeHrmPages:
                 ReasonCode.PORTAL_UNAVAILABLE,
                 "OrangeHRM Salary Attachments 'Add' button not found.",
             )
-        add_btn.first.click()
+        self._click_without_navigation_wait(add_btn.first)
 
         file_input = self.page.locator(self.FILE_INPUT)
         if self._locator_count_loc(file_input) == 0:
@@ -420,7 +482,7 @@ class OrangeHrmPages:
         if self._locator_count_loc(comment_input) > 0:
             comment_input.fill(f"Salary document for {employee.employee_key}")
 
-        self.page.locator(self.FORM_SAVE_BUTTON).first.click()
+        self._click_without_navigation_wait(self.page.locator(self.FORM_SAVE_BUTTON).first)
         self._wait_for_toast_or_stable()
 
     def verify_salary_attachment(self, employee: OrangeHrmEmployeeRecord, filename: str) -> bool:
@@ -470,6 +532,59 @@ class OrangeHrmPages:
                 wait(f"**/{fragment}**")
             except Exception:
                 return
+
+    def _goto_or_raise(self, path: str, failure_message: str) -> None:
+        """Navigate directly to an OrangeHRM route and classify browser errors.
+
+        Args:
+            path: Absolute OrangeHRM web path beginning with ``/``.
+            failure_message: Human-readable prefix for timeout/unavailable errors.
+
+        Raises:
+            PortalError: If navigation fails and the browser is not still usable.
+        """
+        target_url = f"{self.config.orangehrm_base_url.rstrip('/')}/{path.lstrip('/')}"
+        try:
+            self.page.goto(target_url, wait_until="commit")
+        except TypeError:
+            try:
+                self.page.goto(target_url)
+            except Exception as exc:
+                self._raise_navigation_error(failure_message, exc)
+        except Exception as exc:
+            self._raise_navigation_error(failure_message, exc)
+
+    def _raise_navigation_error(self, failure_message: str, exc: Exception) -> None:
+        """Raise a portal-domain navigation error unless the target page is usable.
+
+        Args:
+            failure_message: Human-readable error prefix.
+            exc: Browser-driver exception.
+
+        Raises:
+            PortalError: If the browser shows a network error or the page is unusable.
+        """
+        browser_error = self._browser_error_summary()
+        if browser_error:
+            raise PortalError(
+                ReasonCode.PORTAL_UNAVAILABLE,
+                f"{failure_message}. {browser_error}; url={self._current_url()!r}",
+            ) from exc
+        self._debug(f"{failure_message}: {exc}")
+
+    def _click_without_navigation_wait(self, locator: Any) -> None:
+        """Click a locator without letting Playwright wait for OrangeHRM SPA navigation.
+
+        Args:
+            locator: Playwright-like locator to click.
+
+        Raises:
+            Exception: Any click failure from the browser driver.
+        """
+        try:
+            locator.click(no_wait_after=True)
+        except TypeError:
+            locator.click()
 
     def _locator_count_loc(self, locator: Any) -> int:
         """Return a locator count while tolerating simplified fake locators.
@@ -548,10 +663,12 @@ class OrangeHrmPages:
             self._wait_for_employee_search_form()
             self._raise_if_session_dropped("waiting for the employee search form")
             return
-        nav = self.page.locator(self.PIM_NAV)
-        if self._locator_count_loc(nav) > 0:
-            nav.first.click()
+        self._goto_or_raise(
+            "/web/index.php/pim/viewEmployeeList",
+            "OrangeHRM employee list navigation failed",
+        )
         self._maybe_wait_for_url("viewEmployeeList")
+        self._wait_for_page_stable()
         self._wait_for_employee_search_form()
         self._raise_if_session_dropped("navigating to the employee list")
 
@@ -577,7 +694,7 @@ class OrangeHrmPages:
         self._fill_search_group_input(form, 0, employee.full_name)
         # Do not fill Employee Id with the business key: the public demo validates that field
         # as its own generated id and returns "Invalid Parameter" for our text key.
-        search_btn.click()
+        self._click_without_navigation_wait(search_btn)
         self._wait_for_results_or_no_records()
 
     def _fill_search_group_input(self, scope: Any, group_index: int, value: str) -> None:
@@ -664,10 +781,7 @@ class OrangeHrmPages:
                 ),
             ) from exc
         if self._is_login_url():
-            self._debug(
-                "Login navigation raised an exception after reaching the login URL: "
-                f"{exc}"
-            )
+            self._debug(f"Login navigation raised an exception after reaching the login URL: {exc}")
             return
         raise PortalError(
             ReasonCode.PORTAL_TIMEOUT,
@@ -691,25 +805,28 @@ class OrangeHrmPages:
         wait = getattr(self.page, "wait_for_selector", None)
         if callable(wait):
             try:
-                wait(self.USERNAME_INPUT, timeout=20000)
+                wait(self.USERNAME_INPUT, timeout=self.LOGIN_FORM_TIMEOUT_MS)
                 return
             except Exception as exc:
+                if self._locator_count(self.USERNAME_INPUT) > 0:
+                    self._debug(
+                        "OrangeHRM username field exists after wait timeout; continuing login."
+                    )
+                    return
                 browser_error = self._browser_error_summary()
                 if browser_error:
                     raise PortalError(
                         ReasonCode.PORTAL_UNAVAILABLE,
                         (
                             "OrangeHRM login page is not reachable. "
-                            f"{browser_error}; url={self._current_url()!r}; "
-                            f"title={self._page_title()!r}"
+                            f"{browser_error}; url={self._current_url()!r}"
                         ),
                     ) from exc
-                title = self._page_title()
                 raise PortalError(
                     ReasonCode.PORTAL_UNAVAILABLE,
                     (
                         "OrangeHRM login page opened but did not render the username field. "
-                        f"url={self._current_url()!r}; title={title!r}; error={exc}"
+                        f"url={self._current_url()!r}; error={exc}"
                     ),
                 ) from exc
         return
@@ -742,11 +859,7 @@ class OrangeHrmPages:
         if not any(marker in normalized for marker in self.BROWSER_ERROR_MARKERS):
             return ""
         lines = [line.strip() for line in body_text.splitlines() if line.strip()]
-        useful = [
-            line
-            for line in lines
-            if "chrome is being controlled" not in line.lower()
-        ]
+        useful = [line for line in lines if "chrome is being controlled" not in line.lower()]
         return "browser_error=" + " | ".join(useful[:6])
 
     def _page_body_text(self) -> str:
@@ -842,10 +955,7 @@ class OrangeHrmPages:
         detail = "; ".join(validation_errors) if validation_errors else "profile did not open"
         raise PortalError(
             ReasonCode.VALIDATION_FAILED,
-            (
-                "OrangeHRM Add Employee did not save "
-                f"'{employee.full_name}': {detail}."
-            ),
+            (f"OrangeHRM Add Employee did not save '{employee.full_name}': {detail}."),
         )
 
     def _first_input_value(self, selector: str, index: int = 0) -> str:
@@ -1044,9 +1154,7 @@ class OrangeHrmPages:
         """
         label = self.page.locator("label").filter(has_text=label_text)
         if self._locator_count_loc(label) > 0:
-            group = label.first.locator(
-                "xpath=ancestor::*[contains(@class, 'oxd-input-group')][1]"
-            )
+            group = label.first.locator("xpath=ancestor::*[contains(@class, 'oxd-input-group')][1]")
             select = group.locator(self.DROPDOWN_SELECTOR)
             if self._locator_count_loc(select) > 0:
                 return select.first
@@ -1068,9 +1176,7 @@ class OrangeHrmPages:
         """
         label = self.page.locator("label").filter(has_text=label_text)
         if self._locator_count_loc(label) > 0:
-            group = label.first.locator(
-                "xpath=ancestor::*[contains(@class, 'oxd-input-group')][1]"
-            )
+            group = label.first.locator("xpath=ancestor::*[contains(@class, 'oxd-input-group')][1]")
             field = group.locator("input")
             if self._locator_count_loc(field) > 0:
                 return field.first

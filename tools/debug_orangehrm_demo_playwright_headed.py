@@ -45,7 +45,7 @@ def _run_demo_headed() -> int:
     """Generate input and run the headed OrangeHRM demo.
 
     Returns:
-        ``0`` when Visual Studio should stay out of exception mode after a handled run report.
+        ``0`` when a handled run report should not be treated as a script crash.
     """
     generate_code = _generate_demo_input()
     if generate_code != 0:
@@ -62,7 +62,12 @@ def _run_demo_headed() -> int:
     if exit_code == 1:
         print(
             "OrangeHRM demo headed run finished with a failed run report. "
-            "Visual Studio will not treat this operator-diagnosed portal result as a script crash."
+            "This operator-diagnosed portal result is not treated as a script crash."
+        )
+        print(
+            "If the details above show LOGIN_FAILED, invalid credentials, "
+            "or CSRF token validation, "
+            "verify ORANGEHRM_PASSWORD in tools\\set_live_env.local.ps1 and try again."
         )
         return 0
     return exit_code
@@ -70,15 +75,13 @@ def _run_demo_headed() -> int:
 
 if __name__ == "__main__":
     if not os.environ.get("ORANGEHRM_PASSWORD"):
-        print("ORANGEHRM_PASSWORD is not visible inside this Visual Studio Python process.")
-        print(
-            "Set it in tools\\set_live_env.local.ps1, "
-            "then start Visual Studio from that same shell."
-        )
-        print("Example: . .\\tools\\set_live_env.local.ps1; devenv .")
+        print("ORANGEHRM_PASSWORD is not visible inside this Python process.")
+        print("Set it in tools\\set_live_env.local.ps1, then run the headed helper again.")
+        print("Example: . .\\tools\\set_live_env.local.ps1; python <this-script>")
         raise SystemExit(1)
     os.environ.setdefault("VISIBLE_BROWSER_PAUSE_ON_ERROR_SECONDS", "20")
     os.environ.setdefault("VISIBLE_BROWSER_PAUSE_ON_RESULT_SECONDS", "20")
+    os.environ.setdefault("ORANGEHRM_TIMEOUT_SECONDS", "8")
     os.environ.setdefault(
         "PLAYWRIGHT_PERSISTENT_PROFILE_DIR",
         str(ROOT / "artifacts" / "browser_profiles" / "orangehrm"),

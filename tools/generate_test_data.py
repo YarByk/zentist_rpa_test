@@ -93,13 +93,13 @@ DEMO_EMPLOYEE_NAMES = [
 def _resolve_reference_path(reference_path: Path | None) -> Path:
     # Allow callers to override the reference file while keeping a sensible default.
     """Resolve reference path.
-    
+
     Args:
         reference_path: Value supplied by the test or fixture for `reference_path`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -109,13 +109,13 @@ def _resolve_reference_path(reference_path: Path | None) -> Path:
 def load_reference_payload(reference_path: Path | None = None) -> object:
     # Read the reference JSON exactly as-is so we can preserve its outer shape later.
     """Load reference payload.
-    
+
     Args:
         reference_path: Value supplied by the test or fixture for `reference_path`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -126,13 +126,13 @@ def load_reference_payload(reference_path: Path | None = None) -> object:
 def extract_orangehrm_records(payload: object) -> list[dict[str, Any]]:
     # Accept either a top-level list or a wrapper object with a known record key.
     """Extract orangehrm records.
-    
+
     Args:
         payload: Value supplied by the test or fixture for `payload`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -161,14 +161,14 @@ def build_payload_like_reference(
 ) -> object:
     # Rebuild the generated payload using the same top-level structure as the source fixture.
     """Build payload like reference.
-    
+
     Args:
         reference_payload: Value supplied by the test or fixture for `reference_payload`.
         records: Value supplied by the test or fixture for `records`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -186,14 +186,14 @@ def build_payload_like_reference(
 
 def _append_unique(values: list[str], candidate: object) -> None:
     """Append unique.
-    
+
     Args:
         values: Value supplied by the test or fixture for `values`.
         candidate: Value supplied by the test or fixture for `candidate`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -208,13 +208,13 @@ def _extract_reference_values_from_records(
 ) -> tuple[list[str], list[str]]:
     # Collect reusable domain values so generated rows still look realistic.
     """Extract reference values from records.
-    
+
     Args:
         records: Value supplied by the test or fixture for `records`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -234,13 +234,13 @@ def _extract_reference_values_from_records(
 
 def load_reference_values(reference_path: Path | None = None) -> tuple[list[str], list[str]]:
     """Load reference values.
-    
+
     Args:
         reference_path: Value supplied by the test or fixture for `reference_path`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -252,13 +252,13 @@ def load_reference_values(reference_path: Path | None = None) -> tuple[list[str]
 def _validate_count(count: int) -> None:
     # Reject invalid counts early before generating any fixture content.
     """Validate count.
-    
+
     Args:
         count: Value supplied by the test or fixture for `count`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -268,13 +268,13 @@ def _validate_count(count: int) -> None:
 
 def _record_width(count: int) -> int:
     """Record width.
-    
+
     Args:
         count: Value supplied by the test or fixture for `count`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -319,16 +319,16 @@ def _build_orangehrm_records(
     # reference values to keep the output stable and varied at the same time.
     # -------------------------------------------------------------------------
     """Build orangehrm records.
-    
+
     Args:
         count: Value supplied by the test or fixture for `count`.
         seed: Value supplied by the test or fixture for `seed`.
         job_titles: Value supplied by the test or fixture for `job_titles`.
         employment_statuses: Value supplied by the test or fixture for `employment_statuses`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -364,15 +364,15 @@ def generate_orangehrm_records(
     reference_path: Path | None = None,
 ) -> list[dict[str, Any]]:
     """Generate orangehrm records.
-    
+
     Args:
         count: Value supplied by the test or fixture for `count`.
         seed: Value supplied by the test or fixture for `seed`.
         reference_path: Value supplied by the test or fixture for `reference_path`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -391,15 +391,15 @@ def generate_orangehrm_payload(
     reference_path: Path | None = None,
 ) -> object:
     """Generate orangehrm payload.
-    
+
     Args:
         count: Value supplied by the test or fixture for `count`.
         seed: Value supplied by the test or fixture for `seed`.
         reference_path: Value supplied by the test or fixture for `reference_path`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -418,13 +418,13 @@ def generate_orangehrm_payload(
 def validate_orangehrm_payload(payload: object) -> None:
     # Run the same schema validation used by the application itself.
     """Validate orangehrm payload.
-    
+
     Args:
         payload: Value supplied by the test or fixture for `payload`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -439,14 +439,14 @@ def validate_orangehrm_payload(payload: object) -> None:
 def write_json(payload: object, output_path: Path) -> Path:
     # Write human-readable JSON so generated fixtures can be inspected and diffed easily.
     """Write json.
-    
+
     Args:
         payload: Value supplied by the test or fixture for `payload`.
         output_path: Value supplied by the test or fixture for `output_path`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -466,16 +466,16 @@ def build_output_path(
 ) -> Path:
     # Normalize CLI output arguments into one concrete destination path.
     """Build output path.
-    
+
     Args:
         portal: Value supplied by the test or fixture for `portal`.
         count: Value supplied by the test or fixture for `count`.
         output: Value supplied by the test or fixture for `output`.
         output_dir: Value supplied by the test or fixture for `output_dir`.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -495,10 +495,10 @@ def build_output_path(
 def _build_parser() -> argparse.ArgumentParser:
     # Keep the CLI intentionally small because this script serves one focused job.
     """Build parser.
-    
+
     Returns:
         The helper result used by the test-data generation workflow.
-    
+
     Raises:
         Exception: If input validation, JSON handling, or file access fails.
     """
@@ -520,13 +520,13 @@ def main(argv: list[str] | None = None) -> int:
     # 4. Write the JSON file and print a helpful summary.
     # -------------------------------------------------------------
     """Main.
-    
+
     Args:
         argv: Value supplied by the test or fixture for `argv`.
-    
+
     Returns:
         Process exit code for the command-line entry point.
-    
+
     Raises:
         Exception: If argument parsing, validation, or file writing fails unexpectedly.
     """

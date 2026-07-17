@@ -43,13 +43,13 @@ CONFIG_ENV_KEYS = (
 def clear_config_env(monkeypatch: pytest.MonkeyPatch) -> None:
     # Remove all supported config variables so each test controls its own environment surface.
     """Clear config env.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -60,13 +60,13 @@ def clear_config_env(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_app_config_from_env_returns_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     # With no environment overrides, AppConfig should resolve to documented defaults.
     """Verify that app config from env returns defaults.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -109,13 +109,13 @@ def test_app_config_from_env_returns_defaults(monkeypatch: pytest.MonkeyPatch) -
 def test_app_config_from_env_reads_overrides(monkeypatch: pytest.MonkeyPatch) -> None:
     # Every supported override should map into the resulting config object verbatim.
     """Verify that app config from env reads overrides.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -210,13 +210,13 @@ def test_result_pause_env_falls_back_to_legacy_error_pause(
 
 def test_empty_optional_env_values_become_none(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that empty optional env values become none.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -256,14 +256,14 @@ def test_empty_optional_env_values_become_none(monkeypatch: pytest.MonkeyPatch) 
 @pytest.mark.parametrize("value", ["true", "TRUE", "1", "yes", "on"])
 def test_headless_parses_true_values(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
     """Verify that headless parses true values.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         value: Value supplied by the test or fixture for `value`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -276,14 +276,14 @@ def test_headless_parses_true_values(monkeypatch: pytest.MonkeyPatch, value: str
 @pytest.mark.parametrize("value", ["false", "FALSE", "0", "no", "off"])
 def test_headless_parses_false_values(monkeypatch: pytest.MonkeyPatch, value: str) -> None:
     """Verify that headless parses false values.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         value: Value supplied by the test or fixture for `value`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -295,13 +295,13 @@ def test_headless_parses_false_values(monkeypatch: pytest.MonkeyPatch, value: st
 
 def test_invalid_boolean_raises_value_error_with_key(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that invalid boolean raises value error with key.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -314,13 +314,13 @@ def test_invalid_boolean_raises_value_error_with_key(monkeypatch: pytest.MonkeyP
 
 def test_invalid_integer_raises_value_error_with_key(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that invalid integer raises value error with key.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -333,13 +333,13 @@ def test_invalid_integer_raises_value_error_with_key(monkeypatch: pytest.MonkeyP
 
 def test_portal_timeout_seconds_uses_portal_overrides(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that portal timeout seconds uses portal overrides.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -357,13 +357,13 @@ def test_portal_timeout_seconds_uses_portal_overrides(monkeypatch: pytest.Monkey
 
 def test_portal_timeout_seconds_normalizes_portal_name(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that portal timeout seconds normalizes portal name.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -380,13 +380,13 @@ def test_portal_timeout_seconds_normalizes_portal_name(monkeypatch: pytest.Monke
 
 def test_portal_timeout_seconds_falls_back_to_default(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that portal timeout seconds falls back to default.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -413,15 +413,15 @@ def test_timeout_values_must_be_positive(
     value: str,
 ) -> None:
     """Verify that timeout values must be positive.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         env_key: Value supplied by the test or fixture for `env_key`.
         value: Value supplied by the test or fixture for `value`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -434,13 +434,13 @@ def test_timeout_values_must_be_positive(
 
 def test_default_input_path_returns_configured_paths(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that default input path returns configured paths.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -455,13 +455,13 @@ def test_default_input_path_returns_configured_paths(monkeypatch: pytest.MonkeyP
 
 def test_default_input_path_rejects_unknown_portal(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that default input path rejects unknown portal.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -474,13 +474,13 @@ def test_default_input_path_rejects_unknown_portal(monkeypatch: pytest.MonkeyPat
 
 def test_secrets_loader_returns_supported_secrets(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that secrets loader returns supported secrets.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -497,13 +497,13 @@ def test_secrets_loader_returns_supported_secrets(monkeypatch: pytest.MonkeyPatc
 
 def test_secrets_loader_returns_none_for_unknown_keys(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that secrets loader returns none for unknown keys.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -517,13 +517,13 @@ def test_secrets_loader_require_raises_clear_error_for_missing_secret(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that secrets loader require raises clear error for missing secret.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -538,13 +538,13 @@ def test_config_and_secrets_repr_do_not_expose_secret_values(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that config and secrets repr do not expose secret values.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -568,10 +568,10 @@ def test_config_and_secrets_repr_do_not_expose_secret_values(
 
 def test_demo_credentials_do_not_appear_in_src() -> None:
     """Verify that demo credentials do not appear in src.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -587,10 +587,10 @@ def test_demo_credentials_do_not_appear_in_src() -> None:
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

@@ -10,13 +10,13 @@ SRC = ROOT / "src"
 
 def read_text(relative_path: str) -> str:
     """Read text.
-    
+
     Args:
         relative_path: Value supplied by the test or fixture for `relative_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -25,10 +25,10 @@ def read_text(relative_path: str) -> str:
 
 def source_files() -> list[Path]:
     """Source files.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -37,10 +37,10 @@ def source_files() -> list[Path]:
 
 def source_text_by_file() -> dict[Path, str]:
     """Source text by file.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -49,10 +49,10 @@ def source_text_by_file() -> dict[Path, str]:
 
 def test_readme_first_line_is_schema_marker() -> None:
     """Verify that readme first line is schema marker.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -63,10 +63,10 @@ def test_readme_first_line_is_schema_marker() -> None:
 
 def test_design_contains_required_figure_title() -> None:
     """Verify that design contains required figure title.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -75,10 +75,10 @@ def test_design_contains_required_figure_title() -> None:
 
 def test_forbidden_logging_module_does_not_exist() -> None:
     """Verify that forbidden logging module does not exist.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -87,10 +87,10 @@ def test_forbidden_logging_module_does_not_exist() -> None:
 
 def test_insert_or_replace_does_not_appear_in_src() -> None:
     """Verify that insert or replace does not appear in src.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -105,10 +105,10 @@ def test_insert_or_replace_does_not_appear_in_src() -> None:
 
 def test_demo_credentials_do_not_appear_in_src() -> None:
     """Verify that demo credentials do not appear in src.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -125,10 +125,10 @@ def test_demo_credentials_do_not_appear_in_src() -> None:
 
 def test_readme_does_not_contain_stale_self_damaging_phrases() -> None:
     """Verify that readme does not contain stale self damaging phrases.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -151,10 +151,10 @@ def test_readme_does_not_contain_stale_self_damaging_phrases() -> None:
 
 def test_readme_documents_playwright_install() -> None:
     """Verify that readme documents playwright install.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -165,10 +165,10 @@ def test_readme_documents_playwright_install() -> None:
 
 def test_readme_documents_live_e2e_as_opt_in() -> None:
     """Verify that readme documents live e2e as opt in.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -181,10 +181,10 @@ def test_readme_documents_live_e2e_as_opt_in() -> None:
 
 def test_production_placeholders_do_not_appear_in_src() -> None:
     """Verify that production placeholders do not appear in src.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -208,10 +208,10 @@ def test_production_placeholders_do_not_appear_in_src() -> None:
 
 def test_readme_links_sanitized_sample_report() -> None:
     """Verify that readme links sanitized sample report.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -222,10 +222,10 @@ def test_readme_links_sanitized_sample_report() -> None:
 
 def test_sample_report_is_static_and_sanitized() -> None:
     """Verify that sample report is static and sanitized.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -241,10 +241,10 @@ def test_sample_report_is_static_and_sanitized() -> None:
 
 def test_saucedemo_live_e2e_does_not_skip_real_portal_assertion_failures() -> None:
     """Verify that saucedemo live e2e does not skip real portal assertion failures.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -257,10 +257,10 @@ def test_saucedemo_live_e2e_does_not_skip_real_portal_assertion_failures() -> No
 
 def test_design_does_not_contain_stale_self_damaging_phrases() -> None:
     """Verify that design does not contain stale self damaging phrases.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -284,10 +284,10 @@ def test_design_does_not_contain_stale_self_damaging_phrases() -> None:
 
 def test_design_covers_scale_and_operational_topics() -> None:
     """Verify that design covers scale and operational topics.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -310,10 +310,10 @@ def test_design_covers_scale_and_operational_topics() -> None:
 
 def test_readme_documents_concrete_new_portal_steps() -> None:
     """Verify that readme documents concrete new portal steps.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -335,10 +335,10 @@ def test_readme_documents_concrete_new_portal_steps() -> None:
 
 def test_ci_runs_lint_format_and_pytest_without_live_e2e() -> None:
     """Verify that ci runs lint format and pytest without live e2e.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -356,10 +356,10 @@ def test_ci_runs_lint_format_and_pytest_without_live_e2e() -> None:
 
 def test_docs_describe_storage_state_as_production_enhancement() -> None:
     """Verify that docs describe storage state as production enhancement.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -384,10 +384,10 @@ def test_docs_describe_storage_state_as_production_enhancement() -> None:
 
 def test_readme_documents_per_portal_timeout_overrides() -> None:
     """Verify that readme documents per portal timeout overrides.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -401,10 +401,10 @@ def test_readme_documents_per_portal_timeout_overrides() -> None:
 
 def test_design_documents_timeout_scaling_strategy() -> None:
     """Verify that design documents timeout scaling strategy.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -420,10 +420,10 @@ def test_design_documents_timeout_scaling_strategy() -> None:
 
 def _load_edge_case_payload():
     """Load edge case payload.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -433,13 +433,13 @@ def _load_edge_case_payload():
 
 def _extract_edge_case_records(payload):
     """Extract edge case records.
-    
+
     Args:
         payload: Value supplied by the test or fixture for `payload`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -455,10 +455,10 @@ def _extract_edge_case_records(payload):
 
 def test_orangehrm_edge_case_fixture_exists() -> None:
     """Verify that orangehrm edge case fixture exists.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -467,10 +467,10 @@ def test_orangehrm_edge_case_fixture_exists() -> None:
 
 def test_orangehrm_edge_case_fixture_loads_without_error() -> None:
     """Verify that orangehrm edge case fixture loads without error.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -481,10 +481,10 @@ def test_orangehrm_edge_case_fixture_loads_without_error() -> None:
 
 def test_orangehrm_edge_case_fixture_contains_unicode_case() -> None:
     """Verify that orangehrm edge case fixture contains unicode case.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -498,10 +498,10 @@ def test_orangehrm_edge_case_fixture_contains_unicode_case() -> None:
 
 def test_orangehrm_edge_case_fixture_has_no_secret_like_values() -> None:
     """Verify that orangehrm edge case fixture has no secret like values.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -514,10 +514,10 @@ def test_orangehrm_edge_case_fixture_has_no_secret_like_values() -> None:
 
 def test_readme_documents_generate_test_data() -> None:
     """Verify that readme documents generate test data.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -526,10 +526,10 @@ def test_readme_documents_generate_test_data() -> None:
 
 def test_design_mentions_synthetic_input_generation() -> None:
     """Verify that design mentions synthetic input generation.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

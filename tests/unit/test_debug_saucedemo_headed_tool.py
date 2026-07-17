@@ -16,7 +16,7 @@ def test_saucedemo_headed_tool_requires_visible_password(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Verify that the VS headed helper stops before live work when the password is missing.
+    """Verify that the headed helper stops before live work when the password is missing.
 
     Args:
         monkeypatch: Pytest fixture used to isolate environment and patched functions.
@@ -44,11 +44,11 @@ def test_saucedemo_headed_tool_requires_visible_password(
     assert "tools\\set_live_env.local.ps1" in captured.out
 
 
-def test_saucedemo_headed_tool_sets_profile_and_makes_handled_failure_vs_friendly(
+def test_saucedemo_headed_tool_sets_profile_and_keeps_handled_failure_controlled(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Verify that the VS headed helper applies Sauce Demo debug defaults.
+    """Verify that the headed helper applies Sauce Demo debug defaults.
 
     Args:
         monkeypatch: Pytest fixture used to isolate environment and patched functions.
@@ -58,7 +58,7 @@ def test_saucedemo_headed_tool_sets_profile_and_makes_handled_failure_vs_friendl
         None. Assertions communicate the test outcome.
 
     Raises:
-        AssertionError: If env defaults, arguments, or VS-friendly exit behavior regress.
+        AssertionError: If env defaults, arguments, or controlled exit behavior regress.
     """
     calls = []
 
@@ -79,10 +79,9 @@ def test_saucedemo_headed_tool_sets_profile_and_makes_handled_failure_vs_friendl
     assert exc_info.value.code == 0
     assert calls == [["saucedemo", "--headless", "false"]]
     assert "failed or partial run report" in captured.out
-    assert "Visual Studio will not treat" in captured.out
-    assert (
-        os.environ["PLAYWRIGHT_PERSISTENT_PROFILE_DIR"]
-        == str(ROOT / "artifacts" / "browser_profiles" / "saucedemo")
+    assert "not treated as a script crash" in captured.out
+    assert os.environ["PLAYWRIGHT_PERSISTENT_PROFILE_DIR"] == str(
+        ROOT / "artifacts" / "browser_profiles" / "saucedemo"
     )
     assert os.environ["VISIBLE_BROWSER_PAUSE_ON_ERROR_SECONDS"] == "20"
     assert os.environ["VISIBLE_BROWSER_PAUSE_ON_RESULT_SECONDS"] == "20"

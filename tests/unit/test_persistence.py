@@ -13,13 +13,13 @@ ROOT = Path(__file__).resolve().parents[2]
 def connector(tmp_path: Path) -> PersistenceConnector:
     # Create a fresh database in a nested path to verify parent directory creation too.
     """Connector.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -29,15 +29,15 @@ def connector(tmp_path: Path) -> PersistenceConnector:
 def fetch_one(db: PersistenceConnector, sql: str, params: tuple[object, ...] = ()) -> sqlite3.Row:
     # Convenience helper for assertions that expect exactly one row to exist.
     """Fetch one.
-    
+
     Args:
         db: Value supplied by the test or fixture for `db`.
         sql: Value supplied by the test or fixture for `sql`.
         params: Value supplied by the test or fixture for `params`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -52,14 +52,14 @@ def successful_item(
 ) -> ItemResult:
     # Reusable successful item fixture with non-sorted details for JSON ordering checks.
     """Successful item.
-    
+
     Args:
         item_key: Value supplied by the test or fixture for `item_key`.
         details: Value supplied by the test or fixture for `details`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -78,13 +78,13 @@ def successful_item(
 def utc_stamp(seconds_delta: int) -> str:
     # Build relative UTC timestamps for stale-state tests.
     """Utc stamp.
-    
+
     Args:
         seconds_delta: Value supplied by the test or fixture for `seconds_delta`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -93,15 +93,15 @@ def utc_stamp(seconds_delta: int) -> str:
 
 def set_item_updated_at(db: PersistenceConnector, item_key: str, updated_at: str) -> None:
     """Set item updated at.
-    
+
     Args:
         db: Value supplied by the test or fixture for `db`.
         item_key: Value supplied by the test or fixture for `item_key`.
         updated_at: Value supplied by the test or fixture for `updated_at`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -114,15 +114,15 @@ def set_item_updated_at(db: PersistenceConnector, item_key: str, updated_at: str
 
 def set_run_updated_at(db: PersistenceConnector, run_id: str, updated_at: str) -> None:
     """Set run updated at.
-    
+
     Args:
         db: Value supplied by the test or fixture for `db`.
         run_id: Value supplied by the test or fixture for `run_id`.
         updated_at: Value supplied by the test or fixture for `updated_at`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -136,13 +136,13 @@ def set_run_updated_at(db: PersistenceConnector, run_id: str, updated_at: str) -
 def test_schema_initializes_required_tables_and_columns(tmp_path: Path) -> None:
     # Connecting to a new path should initialize the database schema automatically.
     """Verify that schema initializes required tables and columns.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -163,13 +163,13 @@ def test_schema_initializes_required_tables_and_columns(tmp_path: Path) -> None:
 def test_item_results_has_required_unique_constraint(tmp_path: Path) -> None:
     # The business idempotency key is enforced by a unique index on item_results.
     """Verify that item results has required unique constraint.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -192,13 +192,13 @@ def test_item_results_has_required_unique_constraint(tmp_path: Path) -> None:
 
 def test_create_run_creates_running_run_row(tmp_path: Path) -> None:
     """Verify that create run creates running run row.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -218,13 +218,13 @@ def test_create_run_creates_running_run_row(tmp_path: Path) -> None:
 
 def test_finish_run_sets_final_status_and_sorted_summary_json(tmp_path: Path) -> None:
     """Verify that finish run sets final status and sorted summary json.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -244,13 +244,13 @@ def test_finish_run_sets_final_status_and_sorted_summary_json(tmp_path: Path) ->
 
 def test_mark_item_in_progress_creates_in_progress_row(tmp_path: Path) -> None:
     """Verify that mark item in progress creates in progress row.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -281,13 +281,13 @@ def test_mark_item_in_progress_creates_in_progress_row(tmp_path: Path) -> None:
 
 def test_upsert_item_result_inserts_and_lists_item_result(tmp_path: Path) -> None:
     """Verify that upsert item result inserts and lists item result.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -303,13 +303,13 @@ def test_upsert_item_result_inserts_and_lists_item_result(tmp_path: Path) -> Non
 def test_upserting_same_item_updates_one_row_and_preserves_created_at(tmp_path: Path) -> None:
     # Upsert should replace the business result while preserving the original creation timestamp.
     """Verify that upserting same item updates one row and preserves created at.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -348,13 +348,13 @@ def test_upserting_same_item_updates_one_row_and_preserves_created_at(tmp_path: 
 
 def test_details_json_is_stored_with_sorted_keys(tmp_path: Path) -> None:
     """Verify that details json is stored with sorted keys.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -378,13 +378,13 @@ def test_details_json_is_stored_with_sorted_keys(tmp_path: Path) -> None:
 def test_mark_item_in_progress_conflict_resets_transient_fields(tmp_path: Path) -> None:
     # Reclaiming an item for a rerun should clear the previous failure/result fields.
     """Verify that mark item in progress conflict resets transient fields.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -429,13 +429,13 @@ def test_mark_item_in_progress_conflict_resets_transient_fields(tmp_path: Path) 
 
 def test_reason_code_item_not_found_round_trips_through_sqlite(tmp_path: Path) -> None:
     """Verify that reason code item not found round trips through sqlite.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -458,13 +458,13 @@ def test_reason_code_item_not_found_round_trips_through_sqlite(tmp_path: Path) -
 
 def test_get_committed_items_returns_only_same_day_success_keys(tmp_path: Path) -> None:
     """Verify that get committed items returns only same day success keys.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -559,13 +559,13 @@ def test_list_results_by_business_date_filters_and_round_trips_results(
     tmp_path: Path,
 ) -> None:
     """Verify that list results by business date filters and round trips results.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -606,13 +606,13 @@ def test_same_day_success_remains_visible_after_another_result_is_written(
     tmp_path: Path,
 ) -> None:
     """Verify that same day success remains visible after another result is written.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -631,13 +631,13 @@ def test_same_day_success_remains_visible_after_another_result_is_written(
 
 def test_same_day_upsert_still_keeps_one_row_per_idempotency_key(tmp_path: Path) -> None:
     """Verify that same day upsert still keeps one row per idempotency key.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -658,13 +658,13 @@ def test_find_stale_items_returns_only_old_in_progress_for_portal_and_date(
     tmp_path: Path,
 ) -> None:
     """Verify that find stale items returns only old in progress for portal and date.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -728,13 +728,13 @@ def test_find_stale_items_returns_only_old_in_progress_for_portal_and_date(
 
 def test_find_stale_runs_returns_only_old_unfinished_runs(tmp_path: Path) -> None:
     """Verify that find stale runs returns only old unfinished runs.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -762,13 +762,13 @@ def test_find_stale_runs_returns_only_old_unfinished_runs(tmp_path: Path) -> Non
 
 def test_mark_run_stale_marks_only_eligible_old_unfinished_run(tmp_path: Path) -> None:
     """Verify that mark run stale marks only eligible old unfinished run.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -789,13 +789,13 @@ def test_mark_run_stale_returns_false_for_fresh_finished_or_missing_runs(
     tmp_path: Path,
 ) -> None:
     """Verify that mark run stale returns false for fresh finished or missing runs.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -820,13 +820,13 @@ def test_mark_run_stale_returns_false_for_fresh_finished_or_missing_runs(
 
 def test_mark_stale_item_failed_marks_only_old_in_progress_item(tmp_path: Path) -> None:
     """Verify that mark stale item failed marks only old in progress item.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -918,10 +918,10 @@ def test_mark_stale_item_failed_marks_only_old_in_progress_item(tmp_path: Path) 
 
 def test_insert_or_replace_does_not_appear_in_src() -> None:
     """Verify that insert or replace does not appear in src.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -936,10 +936,10 @@ def test_insert_or_replace_does_not_appear_in_src() -> None:
 
 def test_forbidden_modules_were_not_created() -> None:
     """Verify that forbidden modules were not created.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """

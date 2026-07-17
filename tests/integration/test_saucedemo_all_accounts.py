@@ -36,13 +36,13 @@ class ConfigStub:
 
 def write_all_accounts_input(tmp_path: Path) -> Path:
     """Write all accounts input.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -71,14 +71,14 @@ def write_all_accounts_input(tmp_path: Path) -> Path:
 
 def make_context(tmp_path: Path, *, run_id: str = "saucedemo-all-accounts") -> RunContext:
     """Make context.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         run_id: Value supplied by the test or fixture for `run_id`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -116,15 +116,15 @@ def make_context(tmp_path: Path, *, run_id: str = "saucedemo-all-accounts") -> R
 
 def fetch_rows(db_path: Path, query: str, params: tuple[Any, ...] = ()) -> list[sqlite3.Row]:
     """Fetch rows.
-    
+
     Args:
         db_path: Value supplied by the test or fixture for `db_path`.
         query: Value supplied by the test or fixture for `query`.
         params: Value supplied by the test or fixture for `params`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -138,13 +138,13 @@ def fetch_rows(db_path: Path, query: str, params: tuple[Any, ...] = ()) -> list[
 
 def pre_finish_result(item_key: str) -> ItemResult:
     """Pre finish result.
-    
+
     Args:
         item_key: Value supplied by the test or fixture for `item_key`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -165,13 +165,13 @@ def pre_finish_result(item_key: str) -> ItemResult:
 
 def success_result(item_key: str) -> ItemResult:
     """Success result.
-    
+
     Args:
         item_key: Value supplied by the test or fixture for `item_key`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -191,14 +191,14 @@ def test_saucedemo_all_accounts_continue_after_locked_out_and_downstream_failure
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify that saucedemo all accounts continue after locked out and downstream failure.
-    
+
     Args:
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -208,17 +208,17 @@ def test_saucedemo_all_accounts_continue_after_locked_out_and_downstream_failure
 
     def fake_process_account(record, page_objects, run_context, *, persist_before_finish=None):
         """Fake process account.
-        
+
         Args:
             record: Value supplied by the test or fixture for `record`.
             page_objects: Value supplied by the test or fixture for `page_objects`.
             run_context: Value supplied by the test or fixture for `run_context`.
             persist_before_finish: Value supplied by the test or fixture for
                 `persist_before_finish`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """

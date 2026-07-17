@@ -47,13 +47,13 @@ class ConfigStub:
 
     def portal_timeout_seconds(self, portal_name: str) -> int:
         """Portal timeout seconds.
-        
+
         Args:
             portal_name: Value supplied by the test or fixture for `portal_name`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -71,13 +71,13 @@ class RunnerStub:
 
     def __init__(self, pages_factory=None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             pages_factory: Value supplied by the test or fixture for `pages_factory`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -85,13 +85,13 @@ class RunnerStub:
 
     def run(self, context):
         """Run.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -123,14 +123,14 @@ class BrowserManagerStub:
 
     def __init__(self, config, *, timeout_seconds=None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             config: Value supplied by the test or fixture for `config`.
             timeout_seconds: Value supplied by the test or fixture for `timeout_seconds`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -145,10 +145,10 @@ class BrowserManagerStub:
 
     def __enter__(self):
         """Enter.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -157,15 +157,15 @@ class BrowserManagerStub:
 
     def __exit__(self, exc_type, exc, tb) -> None:
         """Exit.
-        
+
         Args:
             exc_type: Value supplied by the test or fixture for `exc_type`.
             exc: Value supplied by the test or fixture for `exc`.
             tb: Value supplied by the test or fixture for `tb`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -182,14 +182,14 @@ class SaucePagesStub:
 
     def __init__(self, page, config) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             page: Value supplied by the test or fixture for `page`.
             config: Value supplied by the test or fixture for `config`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -204,14 +204,14 @@ class OrangePagesStub:
 
     def __init__(self, page, config) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             page: Value supplied by the test or fixture for `page`.
             config: Value supplied by the test or fixture for `config`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -223,14 +223,14 @@ class OrangePagesStub:
 def configure_cli(monkeypatch, tmp_path):
     # Centralized test wiring so each CLI test starts from a clean stubbed environment.
     """Configure cli.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -257,13 +257,13 @@ def configure_cli(monkeypatch, tmp_path):
 
 def test_top_level_help_exits_zero(capsys) -> None:
     """Verify that top level help exits zero.
-    
+
     Args:
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -277,14 +277,14 @@ def test_top_level_help_exits_zero(capsys) -> None:
 @pytest.mark.parametrize("portal_name", ["orangehrm", "saucedemo", "all", "recover"])
 def test_subcommand_help_exits_zero(portal_name, capsys) -> None:
     """Verify that subcommand help exits zero.
-    
+
     Args:
         portal_name: Value supplied by the test or fixture for `portal_name`.
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -297,13 +297,13 @@ def test_subcommand_help_exits_zero(portal_name, capsys) -> None:
 
 def test_unknown_portal_exits_nonzero_and_lists_available_portals(capsys) -> None:
     """Verify that unknown portal exits nonzero and lists available portals.
-    
+
     Args:
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -318,14 +318,14 @@ def test_unknown_portal_exits_nonzero_and_lists_available_portals(capsys) -> Non
 
 def test_business_date_argument_is_parsed_into_date(monkeypatch, tmp_path) -> None:
     """Verify that business date argument is parsed into date.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -339,13 +339,13 @@ def test_business_date_argument_is_parsed_into_date(monkeypatch, tmp_path) -> No
 
 def test_invalid_business_date_exits_nonzero(capsys) -> None:
     """Verify that invalid business date exits nonzero.
-    
+
     Args:
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -358,14 +358,14 @@ def test_invalid_business_date_exits_nonzero(capsys) -> None:
 
 def test_headless_argument_overrides_config(monkeypatch, tmp_path) -> None:
     """Verify that headless argument overrides config.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -380,14 +380,14 @@ def test_headless_argument_overrides_config(monkeypatch, tmp_path) -> None:
 
 def test_email_backend_argument_overrides_config(monkeypatch, tmp_path) -> None:
     """Verify that email backend argument overrides config.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -404,15 +404,15 @@ def test_email_backend_argument_overrides_config(monkeypatch, tmp_path) -> None:
 
 def test_smtp_backend_missing_required_config_fails_fast(monkeypatch, tmp_path, capsys) -> None:
     """Verify that smtp backend missing required config fails fast.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -428,14 +428,14 @@ def test_smtp_backend_missing_required_config_fails_fast(monkeypatch, tmp_path, 
 
 def test_single_portal_run_uses_only_selected_registry_runner(monkeypatch, tmp_path) -> None:
     """Verify that single portal run uses only selected registry runner.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -451,14 +451,14 @@ def test_single_portal_run_uses_only_selected_registry_runner(monkeypatch, tmp_p
 def test_runtime_path_uses_secrets_loader_for_selected_portal(monkeypatch, tmp_path) -> None:
     # Real runs must pull portal secrets through the dedicated loader instead of hardcoding them.
     """Verify that runtime path uses secrets loader for selected portal.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -470,14 +470,14 @@ def test_runtime_path_uses_secrets_loader_for_selected_portal(monkeypatch, tmp_p
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -485,13 +485,13 @@ def test_runtime_path_uses_secrets_loader_for_selected_portal(monkeypatch, tmp_p
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -502,13 +502,13 @@ def test_runtime_path_uses_secrets_loader_for_selected_portal(monkeypatch, tmp_p
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -529,14 +529,14 @@ def test_runtime_path_uses_secrets_loader_for_selected_portal(monkeypatch, tmp_p
 
 def test_dry_run_path_does_not_start_browser_manager(monkeypatch, tmp_path) -> None:
     """Verify that dry run path does not start browser manager.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -545,14 +545,14 @@ def test_dry_run_path_does_not_start_browser_manager(monkeypatch, tmp_path) -> N
     class FailingBrowserManager:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -570,14 +570,14 @@ def test_non_dry_run_saucedemo_creates_browser_and_injects_pages_factory(
     tmp_path,
 ) -> None:
     """Verify that non dry run saucedemo creates browser and injects pages factory.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -588,14 +588,14 @@ def test_non_dry_run_saucedemo_creates_browser_and_injects_pages_factory(
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -603,13 +603,13 @@ def test_non_dry_run_saucedemo_creates_browser_and_injects_pages_factory(
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -617,13 +617,13 @@ def test_non_dry_run_saucedemo_creates_browser_and_injects_pages_factory(
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -649,14 +649,14 @@ def test_non_dry_run_orangehrm_creates_browser_and_injects_pages_factory(
     tmp_path,
 ) -> None:
     """Verify that non dry run orangehrm creates browser and injects pages factory.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -667,14 +667,14 @@ def test_non_dry_run_orangehrm_creates_browser_and_injects_pages_factory(
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -682,13 +682,13 @@ def test_non_dry_run_orangehrm_creates_browser_and_injects_pages_factory(
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -696,13 +696,13 @@ def test_non_dry_run_orangehrm_creates_browser_and_injects_pages_factory(
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -725,14 +725,14 @@ def test_non_dry_run_orangehrm_creates_browser_and_injects_pages_factory(
 
 def test_all_non_dry_run_uses_separate_browser_sessions_per_portal(monkeypatch, tmp_path) -> None:
     """Verify that all non dry run uses separate browser sessions per portal.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -744,14 +744,14 @@ def test_all_non_dry_run_uses_separate_browser_sessions_per_portal(monkeypatch, 
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -759,13 +759,13 @@ def test_all_non_dry_run_uses_separate_browser_sessions_per_portal(monkeypatch, 
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -777,13 +777,13 @@ def test_all_non_dry_run_uses_separate_browser_sessions_per_portal(monkeypatch, 
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -810,14 +810,14 @@ def test_non_dry_run_passes_resolved_orangehrm_timeout_to_browser_manager(
     tmp_path,
 ) -> None:
     """Verify that non dry run passes resolved orangehrm timeout to browser manager.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -829,14 +829,14 @@ def test_non_dry_run_passes_resolved_orangehrm_timeout_to_browser_manager(
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -844,13 +844,13 @@ def test_non_dry_run_passes_resolved_orangehrm_timeout_to_browser_manager(
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -858,13 +858,13 @@ def test_non_dry_run_passes_resolved_orangehrm_timeout_to_browser_manager(
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -887,14 +887,14 @@ def test_non_dry_run_passes_resolved_saucedemo_timeout_to_browser_manager(
     tmp_path,
 ) -> None:
     """Verify that non dry run passes resolved saucedemo timeout to browser manager.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -906,14 +906,14 @@ def test_non_dry_run_passes_resolved_saucedemo_timeout_to_browser_manager(
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -921,13 +921,13 @@ def test_non_dry_run_passes_resolved_saucedemo_timeout_to_browser_manager(
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -935,13 +935,13 @@ def test_non_dry_run_passes_resolved_saucedemo_timeout_to_browser_manager(
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -961,14 +961,14 @@ def test_non_dry_run_passes_resolved_saucedemo_timeout_to_browser_manager(
 
 def test_all_non_dry_run_resolves_timeout_per_portal(monkeypatch, tmp_path) -> None:
     """Verify that all non dry run resolves timeout per portal.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -982,14 +982,14 @@ def test_all_non_dry_run_resolves_timeout_per_portal(monkeypatch, tmp_path) -> N
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -997,13 +997,13 @@ def test_all_non_dry_run_resolves_timeout_per_portal(monkeypatch, tmp_path) -> N
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1015,13 +1015,13 @@ def test_all_non_dry_run_resolves_timeout_per_portal(monkeypatch, tmp_path) -> N
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1040,15 +1040,15 @@ def test_all_non_dry_run_resolves_timeout_per_portal(monkeypatch, tmp_path) -> N
 
 def test_browser_session_closes_after_runner_failure(monkeypatch, tmp_path, capsys) -> None:
     """Verify that browser session closes after runner failure.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1059,14 +1059,14 @@ def test_browser_session_closes_after_runner_failure(monkeypatch, tmp_path, caps
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1074,13 +1074,13 @@ def test_browser_session_closes_after_runner_failure(monkeypatch, tmp_path, caps
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1088,13 +1088,13 @@ def test_browser_session_closes_after_runner_failure(monkeypatch, tmp_path, caps
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1105,13 +1105,13 @@ def test_browser_session_closes_after_runner_failure(monkeypatch, tmp_path, caps
     class FailingRunner:
         def __init__(self, pages_factory=None) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 pages_factory: Value supplied by the test or fixture for `pages_factory`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1119,13 +1119,13 @@ def test_browser_session_closes_after_runner_failure(monkeypatch, tmp_path, caps
 
         def run(self, context):
             """Run.
-            
+
             Args:
                 context: Value supplied by the test or fixture for `context`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1151,15 +1151,15 @@ def test_browser_session_closes_after_runner_failure(monkeypatch, tmp_path, caps
 
 def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_path, capsys) -> None:
     """Verify that missing chromium hint is printed without traceback.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1169,14 +1169,14 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1184,13 +1184,13 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1198,13 +1198,13 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1215,14 +1215,14 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
     class FailingBrowserManager:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1230,10 +1230,10 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
 
         def __enter__(self):
             """Enter.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1245,15 +1245,15 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
 
         def __exit__(self, exc_type, exc, tb) -> None:
             """Exit.
-            
+
             Args:
                 exc_type: Value supplied by the test or fixture for `exc_type`.
                 exc: Value supplied by the test or fixture for `exc`.
                 tb: Value supplied by the test or fixture for `tb`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1272,14 +1272,14 @@ def test_missing_chromium_hint_is_printed_without_traceback(monkeypatch, tmp_pat
 
 def test_recover_command_does_not_start_browser(monkeypatch, tmp_path) -> None:
     """Verify that recover command does not start browser.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1288,14 +1288,14 @@ def test_recover_command_does_not_start_browser(monkeypatch, tmp_path) -> None:
     class FailingBrowserManager:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1320,15 +1320,15 @@ def test_non_dry_run_missing_selected_portal_secret_fails_fast(
     capsys,
 ) -> None:
     """Verify that non dry run missing selected portal secret fails fast.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1343,14 +1343,14 @@ def test_non_dry_run_missing_selected_portal_secret_fails_fast(
 
 def test_all_executes_both_portals_in_sorted_order(monkeypatch, tmp_path) -> None:
     """Verify that all executes both portals in sorted order.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1360,13 +1360,13 @@ def test_all_executes_both_portals_in_sorted_order(monkeypatch, tmp_path) -> Non
     class OrangeRecorder(OrangeRunnerStub):
         def run(self, context):
             """Run.
-            
+
             Args:
                 context: Value supplied by the test or fixture for `context`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1376,13 +1376,13 @@ def test_all_executes_both_portals_in_sorted_order(monkeypatch, tmp_path) -> Non
     class SauceRecorder(SauceRunnerStub):
         def run(self, context):
             """Run.
-            
+
             Args:
                 context: Value supplied by the test or fixture for `context`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1404,15 +1404,15 @@ def test_all_executes_both_portals_in_sorted_order(monkeypatch, tmp_path) -> Non
 
 def test_all_with_input_path_is_rejected(monkeypatch, tmp_path, capsys) -> None:
     """Verify that all with input path is rejected.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1427,10 +1427,10 @@ def test_all_with_input_path_is_rejected(monkeypatch, tmp_path, capsys) -> None:
 
 def test_cli_source_uses_shared_browser_manager_without_raw_playwright_imports() -> None:
     """Verify that cli source uses shared browser manager without raw playwright imports.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1443,10 +1443,10 @@ def test_cli_source_uses_shared_browser_manager_without_raw_playwright_imports()
 
 def test_cli_source_does_not_import_smtplib() -> None:
     """Verify that cli source does not import smtplib.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1457,10 +1457,10 @@ def test_cli_source_does_not_import_smtplib() -> None:
 
 def test_cli_source_does_not_contain_demo_credentials() -> None:
     """Verify that cli source does not contain demo credentials.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1476,13 +1476,13 @@ class CliArtifactRunner(BasePortalRunnerZX):
 
     def __init__(self, pages_factory=None) -> None:
         """Initialize this test helper instance.
-        
+
         Args:
             pages_factory: Value supplied by the test or fixture for `pages_factory`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -1490,13 +1490,13 @@ class CliArtifactRunner(BasePortalRunnerZX):
 
     def preflight_check(self, context):
         """Preflight check.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -1504,13 +1504,13 @@ class CliArtifactRunner(BasePortalRunnerZX):
 
     def load_items(self, context):
         """Load items.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -1518,14 +1518,14 @@ class CliArtifactRunner(BasePortalRunnerZX):
 
     def process_item(self, context, item):
         """Process item.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
             item: Value supplied by the test or fixture for `item`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -1543,14 +1543,14 @@ class CliArtifactRunner(BasePortalRunnerZX):
 
     def finalize(self, context, result):
         """Finalize.
-        
+
         Args:
             context: Value supplied by the test or fixture for `context`.
             result: Value supplied by the test or fixture for `result`.
-        
+
         Returns:
             None. The test communicates success through assertions.
-        
+
         Raises:
             AssertionError: If the behavior under test does not match the expected outcome.
         """
@@ -1570,15 +1570,15 @@ def test_non_dry_run_cli_prints_summary_and_creates_artifact_shape_without_real_
     capsys,
 ) -> None:
     """Verify that non dry run cli prints summary and creates artifact shape without real browser.
-    
+
     Args:
         monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
         tmp_path: Value supplied by the test or fixture for `tmp_path`.
         capsys: Value supplied by the test or fixture for `capsys`.
-    
+
     Returns:
         None. The test communicates success through assertions.
-    
+
     Raises:
         AssertionError: If the behavior under test does not match the expected outcome.
     """
@@ -1589,14 +1589,14 @@ def test_non_dry_run_cli_prints_summary_and_creates_artifact_shape_without_real_
     class LoaderStub:
         def __init__(self, config, **_kwargs) -> None:
             """Initialize this test helper instance.
-            
+
             Args:
                 config: Value supplied by the test or fixture for `config`.
                 **_kwargs: Value supplied by the test or fixture for `_kwargs`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1604,13 +1604,13 @@ def test_non_dry_run_cli_prints_summary_and_creates_artifact_shape_without_real_
 
         def get(self, key: str):
             """Get.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1618,13 +1618,13 @@ def test_non_dry_run_cli_prints_summary_and_creates_artifact_shape_without_real_
 
         def require(self, key: str):
             """Require.
-            
+
             Args:
                 key: Value supplied by the test or fixture for `key`.
-            
+
             Returns:
                 None. The test communicates success through assertions.
-            
+
             Raises:
                 AssertionError: If the behavior under test does not match the expected outcome.
             """
@@ -1775,7 +1775,6 @@ def test_visible_result_detail_includes_saucedemo_products(tmp_path: Path) -> No
     assert "1. standard_user - success" in detail
     assert "Checkout: 3 product(s), Total: $60.45" in detail
     assert (
-        "Products: Sauce Labs Backpack, Sauce Labs Bike Light, "
-        "Sauce Labs Bolt T-Shirt"
+        "Products: Sauce Labs Backpack, Sauce Labs Bike Light, Sauce Labs Bolt T-Shirt"
     ) in detail
     assert "must-not-leak" not in detail
