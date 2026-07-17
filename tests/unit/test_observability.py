@@ -9,6 +9,18 @@ from portal_automation.core.observability import RunMetricsCollector, Structured
 def test_structured_event_logger_creates_jsonl_with_required_fields_and_redacts_secrets(
     tmp_path,
 ) -> None:
+    # Structured logs should preserve useful context while redacting secret-looking payload values.
+    """Verify that structured event logger creates jsonl with required fields and redacts secrets.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
     metrics = RunMetricsCollector(
         artifacts,
@@ -63,7 +75,60 @@ def test_structured_event_logger_creates_jsonl_with_required_fields_and_redacts_
     assert '"abc"' not in text
 
 
+def test_structured_event_logger_logs_skipped_items_with_specific_event(tmp_path) -> None:
+    # Skipped items are operationally different from finished items and need their own event name.
+    """Verify that structured event logger logs skipped items with specific event.
+
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+
+    Returns:
+        None. The test communicates success through assertions.
+
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
+    artifacts = ArtifactStore(str(tmp_path / "artifacts"))
+    logger = StructuredEventLogger(
+        artifacts,
+        run_id="run-1",
+        portal="demo",
+        business_date=date(2026, 6, 29),
+    )
+
+    logger.log_item_result(
+        ItemResult(
+            item_key="already-done",
+            operation="op",
+            status=ItemStatus.SKIPPED,
+            reason_code=None,
+            error_detail=None,
+            artifact_path=None,
+            attempts=0,
+            details={},
+        )
+    )
+
+    path = tmp_path / "artifacts" / "runs" / "run-1" / "events.jsonl"
+    row = json.loads(path.read_text(encoding="utf-8"))
+    assert row["event"] == "item_skipped"
+    assert row["status"] == "skipped"
+    assert row["item_key"] == "already-done"
+
+
 def test_metrics_collector_writes_expected_json(tmp_path) -> None:
+    # Metrics output should summarize item outcomes and retry count in one JSON payload.
+    """Verify that metrics collector writes expected json.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
     metrics = RunMetricsCollector(
         artifacts,

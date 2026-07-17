@@ -8,7 +8,8 @@ venv/
 
 .env
 .env.*
-!.env.example
+!/.env.example
+tools/set_live_env.local.ps1
 
 playwright-report/
 test-results/

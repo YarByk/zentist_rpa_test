@@ -6,15 +6,44 @@ FALSE_VALUES = {"false", "0", "no", "off"}
 
 
 def _env_value(key: str, default: str) -> str:
+    """Read an environment value with a string default.
+
+    Args:
+        key: Environment variable name.
+        default: Value to use when the variable is unset.
+
+    Returns:
+        Environment value or the provided default.
+    """
     return os.environ.get(key, default)
 
 
 def _optional_env_value(key: str, default: str = "") -> str | None:
+    """Read an environment value and normalize empty strings to ``None``.
+
+    Args:
+        key: Environment variable name.
+        default: Value to use when the variable is unset.
+
+    Returns:
+        Non-empty string value, otherwise ``None``.
+    """
     value = _env_value(key, default)
     return value or None
 
 
 def _optional_int_env_value(key: str) -> int | None:
+    """Read an optional integer environment value.
+
+    Args:
+        key: Environment variable name.
+
+    Returns:
+        Parsed integer, or ``None`` when unset or blank.
+
+    Raises:
+        ValueError: If the value is present but not an integer.
+    """
     value = _optional_env_value(key)
     if value is None:
         return None
@@ -25,6 +54,18 @@ def _optional_int_env_value(key: str) -> int | None:
 
 
 def _bool_env_value(key: str, default: str) -> bool:
+    """Read a boolean environment value.
+
+    Args:
+        key: Environment variable name.
+        default: String default used when the variable is unset.
+
+    Returns:
+        Parsed boolean value.
+
+    Raises:
+        ValueError: If the value is not a supported boolean spelling.
+    """
     value = _env_value(key, default).strip().lower()
     if value in TRUE_VALUES:
         return True
@@ -34,6 +75,18 @@ def _bool_env_value(key: str, default: str) -> bool:
 
 
 def _int_env_value(key: str, default: str) -> int:
+    """Read a required integer-like environment value.
+
+    Args:
+        key: Environment variable name.
+        default: String default used when the variable is unset.
+
+    Returns:
+        Parsed integer value.
+
+    Raises:
+        ValueError: If the value is not an integer.
+    """
     value = _env_value(key, default)
     try:
         return int(value)
@@ -70,9 +123,21 @@ class AppConfig:
     smtp_use_tls: bool
     playwright_trace_on_failure: bool
     playwright_screenshot_on_failure: bool
+    visible_browser_pause_on_error_seconds: int
+    visible_browser_pause_on_result_seconds: int
+    playwright_persistent_profile_dir: str | None
 
     @classmethod
     def from_env(cls) -> "AppConfig":
+        """Build application configuration from environment variables.
+
+        Returns:
+            Fully populated ``AppConfig`` with defaults applied.
+
+        Raises:
+            ValueError: If any typed environment value cannot be parsed or validated.
+        """
+        # Keep all runtime defaults in one place so CLI and tests resolve config the same way.
         return cls(
             db_path=_env_value("DB_PATH", "artifacts/portal_automation.sqlite"),
             artifacts_dir=_env_value("ARTIFACTS_DIR", "artifacts"),
@@ -113,9 +178,25 @@ class AppConfig:
                 "PLAYWRIGHT_SCREENSHOT_ON_FAILURE",
                 "true",
             ),
+            visible_browser_pause_on_error_seconds=_int_env_value(
+                "VISIBLE_BROWSER_PAUSE_ON_ERROR_SECONDS",
+                "0",
+            ),
+            visible_browser_pause_on_result_seconds=_int_env_value(
+                "VISIBLE_BROWSER_PAUSE_ON_RESULT_SECONDS",
+                _env_value("VISIBLE_BROWSER_PAUSE_ON_ERROR_SECONDS", "10"),
+            ),
+            playwright_persistent_profile_dir=_optional_env_value(
+                "PLAYWRIGHT_PERSISTENT_PROFILE_DIR"
+            ),
         )
 
     def __post_init__(self) -> None:
+        """Validate timeout values after dataclass initialization.
+
+        Raises:
+            ValueError: If any configured timeout is less than or equal to zero.
+        """
         _validate_positive_timeout("DEFAULT_TIMEOUT_SECONDS", self.default_timeout_seconds)
         _validate_optional_positive_timeout(
             "ORANGEHRM_TIMEOUT_SECONDS",
@@ -125,9 +206,26 @@ class AppConfig:
             "SAUCEDEMO_TIMEOUT_SECONDS",
             self.saucedemo_timeout_seconds,
         )
+        _validate_non_negative_timeout(
+            "VISIBLE_BROWSER_PAUSE_ON_ERROR_SECONDS",
+            self.visible_browser_pause_on_error_seconds,
+        )
+        _validate_non_negative_timeout(
+            "VISIBLE_BROWSER_PAUSE_ON_RESULT_SECONDS",
+            self.visible_browser_pause_on_result_seconds,
+        )
 
     def portal_timeout_seconds(self, portal_name: str) -> int:
+        """Return the timeout configured for a portal.
+
+        Args:
+            portal_name: Portal key, case-insensitive and whitespace-tolerant.
+
+        Returns:
+            Portal-specific timeout when configured, otherwise the global default.
+        """
         normalized = portal_name.strip().lower()
+        # Portal-specific overrides let slower sites wait longer without penalizing faster ones.
         if normalized == "orangehrm" and self.orangehrm_timeout_seconds is not None:
             return self.orangehrm_timeout_seconds
         if normalized == "saucedemo" and self.saucedemo_timeout_seconds is not None:
@@ -135,6 +233,17 @@ class AppConfig:
         return self.default_timeout_seconds
 
     def default_input_path(self, portal_name: str) -> str:
+        """Return the default input path for a registered portal key.
+
+        Args:
+            portal_name: Portal key.
+
+        Returns:
+            Configured input path for that portal.
+
+        Raises:
+            ValueError: If the portal key is unknown.
+        """
         if portal_name == "orangehrm":
             return self.orangehrm_input_path
         if portal_name == "saucedemo":
@@ -143,10 +252,42 @@ class AppConfig:
 
 
 def _validate_positive_timeout(name: str, value: int) -> None:
+    """Validate that a timeout is positive.
+
+    Args:
+        name: Configuration key used in the error message.
+        value: Timeout value in seconds.
+
+    Raises:
+        ValueError: If ``value`` is less than or equal to zero.
+    """
     if value <= 0:
         raise ValueError(f"{name} must be greater than 0")
 
 
 def _validate_optional_positive_timeout(name: str, value: int | None) -> None:
+    """Validate an optional timeout when present.
+
+    Args:
+        name: Configuration key used in the error message.
+        value: Optional timeout value in seconds.
+
+    Raises:
+        ValueError: If ``value`` is present and not positive.
+    """
     if value is not None:
         _validate_positive_timeout(name, value)
+
+
+def _validate_non_negative_timeout(name: str, value: int) -> None:
+    """Validate that a timeout-like value is zero or positive.
+
+    Args:
+        name: Configuration key used in the error message.
+        value: Timeout-like value in seconds.
+
+    Raises:
+        ValueError: If ``value`` is negative.
+    """
+    if value < 0:
+        raise ValueError(f"{name} must be greater than or equal to 0")

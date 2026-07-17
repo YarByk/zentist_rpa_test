@@ -5,6 +5,10 @@ from typing import Any
 
 
 class ReasonCode(str, Enum):  # noqa: UP042
+    # -------------------------------------------------------------------------
+    # Canonical machine-readable reasons used across workflows, reports, and
+    # recovery logic. These values are stable identifiers, not UI copy.
+    # -------------------------------------------------------------------------
     LOGIN_FAILED = "LOGIN_FAILED"
     LOCKED_OUT = "LOCKED_OUT"
     CREDENTIAL_EXPIRED = "CREDENTIAL_EXPIRED"
@@ -25,6 +29,7 @@ class ReasonCode(str, Enum):  # noqa: UP042
 
 
 class ItemStatus(str, Enum):  # noqa: UP042
+    # Per-item execution state recorded in reports and stored results.
     SUCCESS = "success"
     FAILED = "failed"
     SKIPPED = "skipped"
@@ -32,6 +37,7 @@ class ItemStatus(str, Enum):  # noqa: UP042
 
 
 class RunStatus(str, Enum):  # noqa: UP042
+    # Top-level run state used for summaries, CLI exit decisions, and recovery.
     RUNNING = "running"
     SUCCESS = "success"
     PARTIAL_SUCCESS = "partial_success"
@@ -41,6 +47,11 @@ class RunStatus(str, Enum):  # noqa: UP042
 
 @dataclass
 class RunContext:
+    # -------------------------------------------------------------------------
+    # Shared runtime bundle passed through the orchestration and workflow layers.
+    # The context keeps all cross-cutting services together so hooks can stay
+    # focused on business logic instead of constructor plumbing.
+    # -------------------------------------------------------------------------
     run_id: str
     business_date: date
     dry_run: bool
@@ -56,6 +67,7 @@ class RunContext:
 
 @dataclass
 class ItemResult:
+    # One finalized or in-progress business item outcome.
     item_key: str
     operation: str
     status: ItemStatus
@@ -68,6 +80,7 @@ class ItemResult:
 
 @dataclass
 class RunResult:
+    # Final summary object returned by a portal run.
     run_id: str
     portal_name: str
     business_date: date

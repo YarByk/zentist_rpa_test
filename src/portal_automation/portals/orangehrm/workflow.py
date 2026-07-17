@@ -32,47 +32,160 @@ class FindResult:
 
     @classmethod
     def found(cls) -> "FindResult":
+        """Return a successful employee lookup result.
+
+        Returns:
+            ``FindResult`` with status ``FOUND``.
+        """
         return cls(FindStatus.FOUND)
 
     @classmethod
     def not_found(cls) -> "FindResult":
+        """Return a not-found employee lookup result.
+
+        Returns:
+            ``FindResult`` with status ``NOT_FOUND``.
+        """
         return cls(FindStatus.NOT_FOUND)
 
     @classmethod
     def ambiguous(cls, detail: str = "") -> "FindResult":
+        """Return an ambiguous employee lookup result.
+
+        Args:
+            detail: Optional human-readable ambiguity detail.
+
+        Returns:
+            ``FindResult`` with status ``AMBIGUOUS``.
+        """
         return cls(FindStatus.AMBIGUOUS, detail)
 
     @classmethod
     def error(cls, detail: str = "") -> "FindResult":
+        """Return a failed employee lookup result.
+
+        Args:
+            detail: Optional human-readable failure detail.
+
+        Returns:
+            ``FindResult`` with status ``ERROR``.
+        """
         return cls(FindStatus.ERROR, detail)
 
 
 class OrangeHrmWorkflowPages(Protocol):
     def login(self, username: str, password: str) -> None:
+        """Authenticate to OrangeHRM.
+
+        Args:
+            username: OrangeHRM username.
+            password: OrangeHRM password.
+
+        Raises:
+            PortalError: If authentication fails.
+        """
         return
 
     def find_employee_record(self, employee: OrangeHrmEmployeeRecord) -> FindResult:
+        """Search for an employee record.
+
+        Args:
+            employee: Employee input record.
+
+        Returns:
+            Structured lookup result.
+
+        Raises:
+            PortalError: If the portal interaction fails before a lookup result can be returned.
+        """
         return FindResult.error("workflow interface method was called directly")
 
     def add_employee(self, employee: OrangeHrmEmployeeRecord) -> None:
+        """Create an employee record.
+
+        Args:
+            employee: Employee input record.
+
+        Raises:
+            PortalError: If creation fails.
+        """
         return
 
     def open_employee_profile(self, employee: OrangeHrmEmployeeRecord) -> None:
+        """Open an employee profile after lookup.
+
+        Args:
+            employee: Employee input record.
+
+        Raises:
+            PortalError: If the profile cannot be opened.
+        """
         return
 
     def update_job(self, employee: OrangeHrmEmployeeRecord) -> None:
+        """Write target job values for an employee.
+
+        Args:
+            employee: Employee input record.
+
+        Raises:
+            PortalError: If the update fails.
+        """
         return
 
     def read_job(self, employee: OrangeHrmEmployeeRecord) -> dict[str, str]:
+        """Read current job values for an employee.
+
+        Args:
+            employee: Employee input record.
+
+        Returns:
+            Dictionary containing current job fields.
+
+        Raises:
+            PortalError: If job values cannot be read.
+        """
         return {}
 
     def list_salary_attachments(self, employee: OrangeHrmEmployeeRecord) -> list[str]:
+        """List salary attachment filenames for an employee.
+
+        Args:
+            employee: Employee input record.
+
+        Returns:
+            Attachment filenames visible for the employee.
+
+        Raises:
+            PortalError: If attachments cannot be listed.
+        """
         return []
 
     def upload_salary_attachment(self, employee: OrangeHrmEmployeeRecord, path: Path) -> None:
+        """Upload a salary document attachment.
+
+        Args:
+            employee: Employee input record.
+            path: Local document path to upload.
+
+        Raises:
+            PortalError: If upload fails.
+        """
         return
 
     def verify_salary_attachment(self, employee: OrangeHrmEmployeeRecord, filename: str) -> bool:
+        """Verify that a salary attachment is visible.
+
+        Args:
+            employee: Employee input record.
+            filename: Expected attachment filename.
+
+        Returns:
+            ``True`` when the attachment is visible.
+
+        Raises:
+            PortalError: If verification cannot be completed.
+        """
         return False
 
 
@@ -81,7 +194,21 @@ def process_employee(
     pages: OrangeHrmWorkflowPages,
     context: Any,
 ) -> ItemResult:
+    """Synchronize one OrangeHRM employee record.
+
+    Args:
+        employee: Employee input record.
+        pages: Workflow page adapter.
+        context: Runtime context with retry settings, artifact store, and business date.
+
+    Returns:
+        Successful item result for the employee.
+
+    Raises:
+        PortalError: If lookup, creation, job validation, document generation, or upload fails.
+    """
     attempts = 1
+    # The employee flow is intentionally split into locate/create, update, and attachment phases.
     created_employee, locate_attempts = _locate_or_create_employee(employee, pages, context)
     attempts = max(attempts, locate_attempts)
     job_updated, job_attempts = _update_job_and_validate(employee, pages, context)
@@ -109,7 +236,22 @@ def _locate_or_create_employee(
     pages: OrangeHrmWorkflowPages,
     context: Any,
 ) -> tuple[bool, int]:
+    """Find an employee or create it when missing.
+
+    Args:
+        employee: Employee input record.
+        pages: Workflow page adapter.
+        context: Runtime context used for retries.
+
+    Returns:
+        Tuple of ``created_employee`` and max attempts used.
+
+    Raises:
+        PortalError: If lookup is ambiguous, lookup fails, creation fails, or the employee is still
+            missing after creation.
+    """
     attempts = 1
+    # Search first so reruns can converge on the same employee instead of creating duplicates.
     first_find, first_find_attempts = execute_with_context_retry(
         context,
         lambda: pages.find_employee_record(employee),
@@ -129,6 +271,7 @@ def _locate_or_create_employee(
         if not is_retryable_error(error):
             raise
         attempts = max(attempts, error.attempts)
+        # A retryable create failure may still have created the employee server-side, so re-check.
         second_find, second_find_attempts = execute_with_context_retry(
             context,
             lambda: pages.find_employee_record(employee),
@@ -144,25 +287,22 @@ def _locate_or_create_employee(
         )
         return True, max(attempts, open_attempts)
 
-    second_find, second_find_attempts = execute_with_context_retry(
-        context,
-        lambda: pages.find_employee_record(employee),
-    )
-    attempts = max(attempts, second_find_attempts)
-    _raise_for_find_failure(second_find)
-    if second_find.status is FindStatus.NOT_FOUND:
-        raise PortalError(
-            ReasonCode.EMPLOYEE_NOT_FOUND,
-            f"Employee '{employee.full_name}' was not found after creation.",
-        )
-    _, open_attempts = execute_with_context_retry(
-        context,
-        lambda: pages.open_employee_profile(employee),
-    )
-    return True, max(attempts, open_attempts)
+    # OrangeHRM redirects to the newly created profile after a successful Add Employee save.
+    # Staying on that profile is more reliable than immediately returning to Employee List and
+    # searching by name, because the public demo can lag its search index and report
+    # "No Records Found" even though the profile was just created and is already open.
+    return True, attempts
 
 
 def _raise_for_find_failure(find_result: FindResult) -> None:
+    """Raise mapped portal errors for non-terminal lookup failures.
+
+    Args:
+        find_result: Employee lookup result.
+
+    Raises:
+        PortalError: If the lookup result is ambiguous or errored.
+    """
     if find_result.status is FindStatus.AMBIGUOUS:
         detail = find_result.detail or "Employee search returned multiple matches."
         raise PortalError(ReasonCode.EMPLOYEE_MATCH_AMBIGUOUS, detail)
@@ -172,6 +312,15 @@ def _raise_for_find_failure(find_result: FindResult) -> None:
 
 
 def _validate_job(employee: OrangeHrmEmployeeRecord, actual: dict[str, str]) -> None:
+    """Validate actual job values against the target employee record.
+
+    Args:
+        employee: Employee input record with target values.
+        actual: Current values read from the portal.
+
+    Raises:
+        PortalError: If job title or employment status does not match.
+    """
     actual_job_title = actual.get("job_title")
     actual_employment_status = actual.get("employment_status")
     if actual_job_title != employee.job_title:
@@ -187,6 +336,15 @@ def _validate_job(employee: OrangeHrmEmployeeRecord, actual: dict[str, str]) -> 
 
 
 def _job_matches(employee: OrangeHrmEmployeeRecord, actual: dict[str, str]) -> bool:
+    """Return whether current job values already match the target.
+
+    Args:
+        employee: Employee input record with target values.
+        actual: Current values read from the portal.
+
+    Returns:
+        ``True`` when job title and employment status both match.
+    """
     return (
         actual.get("job_title") == employee.job_title
         and actual.get("employment_status") == employee.employment_status
@@ -198,7 +356,21 @@ def _update_job_and_validate(
     pages: OrangeHrmWorkflowPages,
     context: Any,
 ) -> tuple[bool, int]:
+    """Update job values when needed and validate the final state.
+
+    Args:
+        employee: Employee input record.
+        pages: Workflow page adapter.
+        context: Runtime context used for retries.
+
+    Returns:
+        Tuple of ``job_updated`` and max attempts used.
+
+    Raises:
+        PortalError: If update or final validation fails.
+    """
     attempts = 1
+    # Read-before-write keeps reruns idempotent when the target state is already correct.
     actual, read_attempts = execute_with_context_retry(
         context,
         lambda: pages.read_job(employee),
@@ -239,8 +411,23 @@ def _ensure_salary_attachment(
     pages: OrangeHrmWorkflowPages,
     context: Any,
 ) -> tuple[Path | None, int]:
+    """Ensure the expected salary document attachment exists.
+
+    Args:
+        employee: Employee input record.
+        pages: Workflow page adapter.
+        context: Runtime context with artifact store and business date.
+
+    Returns:
+        Tuple of uploaded document path, or ``None`` when already present, and max attempts used.
+
+    Raises:
+        PortalError: If document generation, upload, or verification fails.
+        OSError: If the generated salary document cannot be written.
+    """
     attempts = 1
     filename = salary_document_filename(employee.employee_key, context.business_date)
+    # Skip upload when the expected attachment is already visible for this employee/date.
     attachments, list_attempts = execute_with_context_retry(
         context,
         lambda: pages.list_salary_attachments(employee),

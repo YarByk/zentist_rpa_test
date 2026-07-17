@@ -35,6 +35,17 @@ class ConfigStub:
 
 
 def write_all_accounts_input(tmp_path: Path) -> Path:
+    """Write all accounts input.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     path = tmp_path / "saucedemo_accounts.json"
     path.write_text(
         json.dumps(
@@ -59,6 +70,18 @@ def write_all_accounts_input(tmp_path: Path) -> Path:
 
 
 def make_context(tmp_path: Path, *, run_id: str = "saucedemo-all-accounts") -> RunContext:
+    """Make context.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+        run_id: Value supplied by the test or fixture for `run_id`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
     metrics = RunMetricsCollector(
         artifacts,
@@ -92,6 +115,19 @@ def make_context(tmp_path: Path, *, run_id: str = "saucedemo-all-accounts") -> R
 
 
 def fetch_rows(db_path: Path, query: str, params: tuple[Any, ...] = ()) -> list[sqlite3.Row]:
+    """Fetch rows.
+    
+    Args:
+        db_path: Value supplied by the test or fixture for `db_path`.
+        query: Value supplied by the test or fixture for `query`.
+        params: Value supplied by the test or fixture for `params`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     connection = sqlite3.connect(db_path)
     connection.row_factory = sqlite3.Row
     try:
@@ -101,6 +137,17 @@ def fetch_rows(db_path: Path, query: str, params: tuple[Any, ...] = ()) -> list[
 
 
 def pre_finish_result(item_key: str) -> ItemResult:
+    """Pre finish result.
+    
+    Args:
+        item_key: Value supplied by the test or fixture for `item_key`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     return ItemResult(
         item_key=item_key,
         operation=SauceDemoRunner.operation_name,
@@ -117,6 +164,17 @@ def pre_finish_result(item_key: str) -> ItemResult:
 
 
 def success_result(item_key: str) -> ItemResult:
+    """Success result.
+    
+    Args:
+        item_key: Value supplied by the test or fixture for `item_key`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     return ItemResult(
         item_key=item_key,
         operation=SauceDemoRunner.operation_name,
@@ -132,11 +190,38 @@ def test_saucedemo_all_accounts_continue_after_locked_out_and_downstream_failure
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that saucedemo all accounts continue after locked out and downstream failure.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+        monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     context = make_context(tmp_path)
     processed: list[str] = []
     non_locked_login_successes: list[str] = []
 
     def fake_process_account(record, page_objects, run_context, *, persist_before_finish=None):
+        """Fake process account.
+        
+        Args:
+            record: Value supplied by the test or fixture for `record`.
+            page_objects: Value supplied by the test or fixture for `page_objects`.
+            run_context: Value supplied by the test or fixture for `run_context`.
+            persist_before_finish: Value supplied by the test or fixture for
+                `persist_before_finish`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         processed.append(record.account_key)
         if record.account_key == "locked_out_user":
             raise PortalError(ReasonCode.LOCKED_OUT, "user is locked out")
@@ -170,8 +255,9 @@ def test_saucedemo_all_accounts_continue_after_locked_out_and_downstream_failure
     assert results_by_key["problem_user"].status is ItemStatus.SUCCESS
     assert results_by_key["performance_glitch_user"].status is ItemStatus.SUCCESS
     assert results_by_key["visual_user"].status is ItemStatus.SUCCESS
-    assert results_by_key["locked_out_user"].status is ItemStatus.FAILED
+    assert results_by_key["locked_out_user"].status is ItemStatus.SKIPPED
     assert results_by_key["locked_out_user"].reason_code is ReasonCode.LOCKED_OUT
+    assert results_by_key["locked_out_user"].details["expected_demo_failure"] is True
     assert results_by_key["error_user"].status is ItemStatus.FAILED
     assert results_by_key["error_user"].reason_code is ReasonCode.CHECKOUT_FAILED
 
@@ -187,7 +273,8 @@ def test_saucedemo_all_accounts_continue_after_locked_out_and_downstream_failure
     )
     assert [row["item_key"] for row in db_rows] == expected_keys
     assert [row["status"] for row in db_rows].count(ItemStatus.SUCCESS.value) == 4
-    assert [row["status"] for row in db_rows].count(ItemStatus.FAILED.value) == 2
+    assert [row["status"] for row in db_rows].count(ItemStatus.FAILED.value) == 1
+    assert [row["status"] for row in db_rows].count(ItemStatus.SKIPPED.value) == 1
 
     report_path = tmp_path / "artifacts" / "runs" / context.run_id / "report.txt"
     report = report_path.read_text(encoding="utf-8")
@@ -202,6 +289,8 @@ def test_saucedemo_all_accounts_continue_after_locked_out_and_downstream_failure
     item_started = [event for event in events if event["event"] == "item_started"]
     item_finished = [event for event in events if event["event"] == "item_finished"]
     item_failed = [event for event in events if event["event"] == "item_failed"]
+    item_skipped = [event for event in events if event["event"] == "item_skipped"]
+    operator_notices = [event for event in events if event["event"] == "operator_notice"]
     assert [event["item_key"] for event in item_started] == expected_keys
     assert {event["item_key"] for event in item_finished} == {
         "standard_user",
@@ -209,14 +298,16 @@ def test_saucedemo_all_accounts_continue_after_locked_out_and_downstream_failure
         "performance_glitch_user",
         "visual_user",
     }
-    assert {event["item_key"] for event in item_failed} == {"locked_out_user", "error_user"}
+    assert {event["item_key"] for event in item_failed} == {"error_user"}
+    assert {event["item_key"] for event in item_skipped} == {"locked_out_user"}
+    assert {event["item_key"] for event in operator_notices} == {"locked_out_user"}
 
     metrics_path = tmp_path / "artifacts" / "runs" / context.run_id / "metrics.json"
     metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
     assert metrics["items_total"] == 6
     assert metrics["items_success"] == 4
-    assert metrics["items_failed"] == 2
-    assert metrics["items_skipped"] == 0
+    assert metrics["items_failed"] == 1
+    assert metrics["items_skipped"] == 1
 
     artifact_text = "\n".join(
         [

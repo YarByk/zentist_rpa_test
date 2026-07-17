@@ -33,17 +33,63 @@ class FakeRunner(BasePortalRunnerZX):
     operation_name = FAKE_OPERATION
 
     def __init__(self, items: list[dict[str, Any]], *, send_email: bool = False) -> None:
+        """Initialize this test helper instance.
+        
+        Args:
+            items: Value supplied by the test or fixture for `items`.
+            send_email: Value supplied by the test or fixture for `send_email`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self._items = items
         self._send_email = send_email
         self.processed_keys: list[str] = []
 
     def preflight_check(self, context: RunContext) -> None:
+        """Preflight check.
+        
+        Args:
+            context: Value supplied by the test or fixture for `context`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         return
 
     def load_items(self, context: RunContext) -> list[dict[str, Any]]:
+        """Load items.
+        
+        Args:
+            context: Value supplied by the test or fixture for `context`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         return list(self._items)
 
     def process_item(self, context: RunContext, item: dict[str, Any]) -> ItemResult:
+        """Process item.
+        
+        Args:
+            context: Value supplied by the test or fixture for `context`.
+            item: Value supplied by the test or fixture for `item`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         item_key = str(item["item_key"])
         self.processed_keys.append(item_key)
         if item.get("fail"):
@@ -62,6 +108,18 @@ class FakeRunner(BasePortalRunnerZX):
         )
 
     def finalize(self, context: RunContext, result: RunResult) -> None:
+        """Finalize.
+        
+        Args:
+            context: Value supplied by the test or fixture for `context`.
+            result: Value supplied by the test or fixture for `result`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         if hasattr(context.reporter, "write_report"):
             context.reporter.write_report(result)
         if self._send_email and hasattr(context.email, "send_report"):
@@ -84,6 +142,21 @@ def make_context(
     dry_run: bool = False,
     persistence: PersistenceConnector | None = None,
 ) -> RunContext:
+    # Build a full integration context backed by the real artifact, report, email, and DB helpers.
+    """Make context.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+        run_id: Value supplied by the test or fixture for `run_id`.
+        dry_run: Value supplied by the test or fixture for `dry_run`.
+        persistence: Value supplied by the test or fixture for `persistence`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     run_id = run_id or f"run-{uuid.uuid4().hex[:8]}"
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
     metrics = RunMetricsCollector(
@@ -115,6 +188,20 @@ def make_context(
 
 
 def fetch_rows(db_path: Path, query: str, params: tuple[Any, ...] = ()) -> list[sqlite3.Row]:
+    # Small sqlite helper used to assert persisted state after the pipeline run completes.
+    """Fetch rows.
+    
+    Args:
+        db_path: Value supplied by the test or fixture for `db_path`.
+        query: Value supplied by the test or fixture for `query`.
+        params: Value supplied by the test or fixture for `params`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     connection = sqlite3.connect(db_path)
     connection.row_factory = sqlite3.Row
     try:
@@ -124,6 +211,23 @@ def fetch_rows(db_path: Path, query: str, params: tuple[Any, ...] = ()) -> list[
 
 
 def test_runner_pipeline_persists_run_results_report_and_dry_run_email(tmp_path: Path) -> None:
+    # -------------------------------------------------------------------------
+    # End-to-end integration check for the shared pipeline:
+    # 1. Run the fake runner against real connectors.
+    # 2. Verify DB writes for the run and item results.
+    # 3. Verify generated report, email artifact, events, and metrics.
+    # -------------------------------------------------------------------------
+    """Verify that runner pipeline persists run results report and dry run email.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     run_id = "pipeline-run"
     context = make_context(tmp_path, run_id=run_id, dry_run=False)
     runner = FakeRunner(
@@ -240,6 +344,17 @@ def test_runner_pipeline_persists_run_results_report_and_dry_run_email(tmp_path:
 def test_runner_pipeline_records_partial_success_for_mixed_item_results(
     tmp_path: Path,
 ) -> None:
+    """Verify that runner pipeline records partial success for mixed item results.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     run_id = "partial-run"
     context = make_context(tmp_path, run_id=run_id, dry_run=False)
     runner = FakeRunner(

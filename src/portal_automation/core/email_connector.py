@@ -31,6 +31,24 @@ class EmailConnector:
         smtp_use_tls: bool = True,
         logger: Any | None = None,
     ) -> None:
+        """Create an email connector for dry-run or SMTP delivery.
+
+        Args:
+            backend: Delivery backend, either ``dry_run`` or ``smtp``.
+            artifacts: Artifact store used by dry-run delivery.
+            default_to: Default recipient when ``send_report`` does not pass one.
+            smtp_host: SMTP server host for SMTP delivery.
+            smtp_port: SMTP server port.
+            smtp_username: Optional SMTP username.
+            smtp_password: Optional SMTP password.
+            smtp_from: Sender address for SMTP delivery.
+            smtp_use_tls: Whether to call ``starttls`` before authentication.
+            logger: Optional structured logger for delivery events.
+
+        Raises:
+            ValueError: If ``backend`` is unsupported.
+            EmailConfigurationError: If SMTP is selected but required settings are missing.
+        """
         if backend not in SUPPORTED_BACKENDS:
             supported = ", ".join(sorted(SUPPORTED_BACKENDS))
             raise ValueError(
@@ -57,7 +75,24 @@ class EmailConnector:
         body: str,
         report_path: Path | None = None,
     ) -> Path | None:
+        """Send or record a run report email.
+
+        Args:
+            run_id: Run identifier used for dry-run artifact placement.
+            to: Optional recipient override.
+            subject: Email subject.
+            body: Email body text.
+            report_path: Optional text report to attach.
+
+        Returns:
+            Dry-run artifact path when ``backend`` is ``dry_run``; otherwise ``None``.
+
+        Raises:
+            EmailDeliveryError: If SMTP delivery fails.
+            OSError: If dry-run artifact writing or attachment reading fails.
+        """
         recipient = (to or self.default_to or "").strip()
+        # Emit an event before delivery so failed email attempts still leave an audit trail.
         self._log_email_event(
             "email_send_attempt",
             backend=self.backend,
@@ -66,6 +101,7 @@ class EmailConnector:
         )
         if self.backend == "dry_run":
             path = self.artifacts.email_report_path(run_id)
+            # Dry-run mode writes the would-be email to disk instead of touching SMTP.
             content = self._render_dry_run_content(
                 to=recipient,
                 subject=subject,
@@ -92,6 +128,7 @@ class EmailConnector:
                 if self.smtp_use_tls:
                     client.starttls()
                 if self.smtp_username is not None:
+                    # Authentication is optional so local relay setups can stay credential-free.
                     client.login(self.smtp_username, self.smtp_password or "")
                 client.send_message(message)
         except Exception as exc:  # pragma: no cover - covered via mocks in tests
@@ -105,11 +142,22 @@ class EmailConnector:
         return None
 
     def _log_email_event(self, event: str, **kwargs: Any) -> None:
+        """Write a best-effort email event to the structured logger.
+
+        Args:
+            event: Event name.
+            **kwargs: Event fields to pass through to the logger.
+        """
         if self.logger is None or not hasattr(self.logger, "info"):
             return
         self.logger.info(event, **kwargs)
 
     def _validate_backend_configuration(self) -> None:
+        """Validate backend-specific configuration.
+
+        Raises:
+            EmailConfigurationError: If SMTP settings are incomplete or inconsistent.
+        """
         if self.backend != "smtp":
             return
         missing = []
@@ -137,6 +185,17 @@ class EmailConnector:
         body: str,
         report_path: Path | None,
     ) -> str:
+        """Render the text artifact written by dry-run delivery.
+
+        Args:
+            to: Recipient text, possibly blank.
+            subject: Email subject.
+            body: Email body.
+            report_path: Optional report path to include in headers.
+
+        Returns:
+            Plain text representing the email that would have been sent.
+        """
         lines = [f"To: {to}", f"Subject: {subject}"]
         if report_path is not None:
             lines.append(f"Report-Path: {report_path}")
@@ -152,6 +211,20 @@ class EmailConnector:
         body: str,
         report_path: Path | None,
     ) -> EmailMessage:
+        """Build an ``EmailMessage`` for SMTP delivery.
+
+        Args:
+            to: Recipient address.
+            subject: Email subject.
+            body: Email body.
+            report_path: Optional text report to attach.
+
+        Returns:
+            Fully populated ``EmailMessage``.
+
+        Raises:
+            OSError: If ``report_path`` is provided but cannot be read.
+        """
         message = EmailMessage()
         message["To"] = to
         message["From"] = self.smtp_from or ""

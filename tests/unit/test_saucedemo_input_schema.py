@@ -27,6 +27,15 @@ REQUIRED_USERNAMES = {
 
 
 def valid_record() -> dict:
+    # Raw fixture intentionally includes whitespace so parser stripping is covered.
+    """Valid record.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     return {
         "account_key": " standard_user ",
         "username": " standard_user ",
@@ -40,11 +49,32 @@ def valid_record() -> dict:
 
 
 def write_json(path: Path, value) -> Path:
+    # Small helper for building temporary input files with production-like JSON shape.
+    """Write json.
+    
+    Args:
+        path: Value supplied by the test or fixture for `path`.
+        value: Value supplied by the test or fixture for `value`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     path.write_text(json.dumps(value), encoding="utf-8")
     return path
 
 
 def test_valid_record_parses_into_sauce_demo_account() -> None:
+    """Verify that valid record parses into sauce demo account.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     account = parse_account_record(valid_record())
 
     assert isinstance(account, SauceDemoAccount)
@@ -53,6 +83,14 @@ def test_valid_record_parses_into_sauce_demo_account() -> None:
 
 
 def test_parsed_string_values_are_stripped() -> None:
+    """Verify that parsed string values are stripped.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     account = parse_account_record(valid_record())
 
     assert account.account_key == "standard_user"
@@ -61,6 +99,14 @@ def test_parsed_string_values_are_stripped() -> None:
 
 
 def test_items_to_add_defaults_to_three() -> None:
+    """Verify that items to add defaults to three.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw = valid_record()
     raw.pop("items_to_add")
 
@@ -69,6 +115,17 @@ def test_items_to_add_defaults_to_three() -> None:
 
 @pytest.mark.parametrize("field_name", ["account_key", "username"])
 def test_missing_required_account_field_fails_validation(field_name) -> None:
+    """Verify that missing required account field fails validation.
+    
+    Args:
+        field_name: Value supplied by the test or fixture for `field_name`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw = valid_record()
     raw.pop(field_name)
 
@@ -77,6 +134,14 @@ def test_missing_required_account_field_fails_validation(field_name) -> None:
 
 
 def test_missing_checkout_profile_fails_validation() -> None:
+    """Verify that missing checkout profile fails validation.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw = valid_record()
     raw.pop("checkout_profile")
 
@@ -85,6 +150,14 @@ def test_missing_checkout_profile_fails_validation() -> None:
 
 
 def test_missing_checkout_profile_field_fails_validation() -> None:
+    """Verify that missing checkout profile field fails validation.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw = valid_record()
     raw["checkout_profile"].pop("postal_code")
 
@@ -93,6 +166,14 @@ def test_missing_checkout_profile_field_fails_validation() -> None:
 
 
 def test_blank_required_string_fails_validation() -> None:
+    """Verify that blank required string fails validation.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw = valid_record()
     raw["checkout_profile"]["first_name"] = "   "
 
@@ -102,6 +183,17 @@ def test_blank_required_string_fails_validation() -> None:
 
 @pytest.mark.parametrize("value", [0, -1, True, "3"])
 def test_invalid_items_to_add_fails_validation(value) -> None:
+    """Verify that invalid items to add fails validation.
+    
+    Args:
+        value: Value supplied by the test or fixture for `value`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw = valid_record()
     raw["items_to_add"] = value
 
@@ -110,6 +202,17 @@ def test_invalid_items_to_add_fails_validation(value) -> None:
 
 
 def test_top_level_non_list_json_fails_validation(tmp_path) -> None:
+    """Verify that top level non list json fails validation.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     path = write_json(tmp_path / "accounts.json", {"account_key": "standard_user"})
 
     with pytest.raises(InputValidationError, match="top-level input must be a list"):
@@ -117,6 +220,17 @@ def test_top_level_non_list_json_fails_validation(tmp_path) -> None:
 
 
 def test_non_object_record_fails_validation(tmp_path) -> None:
+    """Verify that non object record fails validation.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     path = write_json(tmp_path / "accounts.json", ["not-object"])
 
     with pytest.raises(InputValidationError, match=r"record\[0\].*object"):
@@ -124,6 +238,17 @@ def test_non_object_record_fails_validation(tmp_path) -> None:
 
 
 def test_invalid_json_fails_validation(tmp_path) -> None:
+    """Verify that invalid json fails validation.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     path = tmp_path / "accounts.json"
     path.write_text("{invalid", encoding="utf-8")
 
@@ -132,12 +257,35 @@ def test_invalid_json_fails_validation(tmp_path) -> None:
 
 
 def test_missing_input_file_maps_to_input_validation_error(tmp_path) -> None:
+    """Verify that missing input file maps to input validation error.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     with pytest.raises(InputValidationError, match="unable to read input file"):
         load_account_records(tmp_path / "missing.json")
 
 
 @pytest.mark.parametrize("field_name", ["password", "secret", "sauce_password"])
 def test_password_like_fields_are_rejected(field_name) -> None:
+    # Credentials must come from runtime config, never from account fixtures.
+    """Verify that password like fields are rejected.
+    
+    Args:
+        field_name: Value supplied by the test or fixture for `field_name`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw = valid_record()
     raw[field_name] = "value"
 
@@ -147,6 +295,17 @@ def test_password_like_fields_are_rejected(field_name) -> None:
 
 @pytest.mark.parametrize("field_name", ["password", "secret", "sauce_password"])
 def test_nested_password_like_fields_are_rejected(field_name) -> None:
+    """Verify that nested password like fields are rejected.
+    
+    Args:
+        field_name: Value supplied by the test or fixture for `field_name`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw = valid_record()
     raw["checkout_profile"][field_name] = "value"
 
@@ -155,24 +314,56 @@ def test_nested_password_like_fields_are_rejected(field_name) -> None:
 
 
 def test_all_sample_records_are_valid() -> None:
+    """Verify that all sample records are valid.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     accounts = load_account_records(ROOT / "data/saucedemo_accounts.json")
 
     assert all(isinstance(account, SauceDemoAccount) for account in accounts)
 
 
 def test_sample_data_contains_exactly_required_usernames() -> None:
+    """Verify that sample data contains exactly required usernames.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     accounts = load_account_records(ROOT / "data/saucedemo_accounts.json")
 
     assert {account.username for account in accounts} == REQUIRED_USERNAMES
 
 
 def test_sample_data_contains_exactly_six_records() -> None:
+    """Verify that sample data contains exactly six records.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     accounts = load_account_records(ROOT / "data/saucedemo_accounts.json")
 
     assert len(accounts) == 6
 
 
 def test_sample_data_does_not_contain_passwords_or_workflow_control_flags() -> None:
+    """Verify that sample data does not contain passwords or workflow control flags.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     raw_records = json.loads((ROOT / "data/saucedemo_accounts.json").read_text(encoding="utf-8"))
     forbidden = {
         "password",
@@ -190,15 +381,28 @@ def test_sample_data_does_not_contain_passwords_or_workflow_control_flags() -> N
 
 @dataclass
 class ConfigStub:
+    # Runner.load_items only needs the configured input path.
     saucedemo_input_path: str
 
 
 @dataclass
 class ContextStub:
+    # Minimal context wrapper matching the runner's load_items signature.
     config: ConfigStub
 
 
 def test_saucedemo_runner_load_items_reads_config_input_path(tmp_path) -> None:
+    """Verify that saucedemo runner load items reads config input path.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     path = write_json(tmp_path / "accounts.json", [valid_record()])
     context = ContextStub(config=ConfigStub(saucedemo_input_path=str(path)))
 
@@ -209,6 +413,18 @@ def test_saucedemo_runner_load_items_reads_config_input_path(tmp_path) -> None:
 
 
 def test_invalid_input_maps_to_input_validation_failed_portal_error(tmp_path) -> None:
+    # Runner boundary should translate schema errors into PortalError reason codes.
+    """Verify that invalid input maps to input validation failed portal error.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     path = write_json(tmp_path / "accounts.json", [{"username": "standard_user"}])
     context = ContextStub(config=ConfigStub(saucedemo_input_path=str(path)))
 
@@ -220,6 +436,14 @@ def test_invalid_input_maps_to_input_validation_failed_portal_error(tmp_path) ->
 
 
 def test_schema_does_not_import_playwright_browser_or_page_modules() -> None:
+    """Verify that schema does not import playwright browser or page modules.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     source = (
         (ROOT / "src/portal_automation/portals/saucedemo/input_schema.py")
         .read_text(encoding="utf-8")
@@ -232,6 +456,14 @@ def test_schema_does_not_import_playwright_browser_or_page_modules() -> None:
 
 
 def test_runner_does_not_import_playwright_directly() -> None:
+    """Verify that runner does not import playwright directly.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     source = (
         (ROOT / "src/portal_automation/portals/saucedemo/runner.py")
         .read_text(encoding="utf-8")
@@ -251,6 +483,14 @@ def test_runner_does_not_import_playwright_directly() -> None:
 
 
 def test_schema_source_does_not_import_persistence_or_sqlite_modules() -> None:
+    """Verify that schema source does not import persistence or sqlite modules.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     source = (ROOT / "src/portal_automation/portals/saucedemo/input_schema.py").read_text(
         encoding="utf-8"
     )
@@ -260,6 +500,14 @@ def test_schema_source_does_not_import_persistence_or_sqlite_modules() -> None:
 
 
 def test_source_and_sample_data_do_not_contain_demo_credentials() -> None:
+    """Verify that source and sample data do not contain demo credentials.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     paths = [
         ROOT / "src/portal_automation/portals/saucedemo/input_schema.py",
         ROOT / "src/portal_automation/portals/saucedemo/runner.py",
@@ -273,6 +521,14 @@ def test_source_and_sample_data_do_not_contain_demo_credentials() -> None:
 
 
 def test_forbidden_modules_were_not_created() -> None:
+    """Verify that forbidden modules were not created.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     forbidden_paths = [
         "src/portal_automation/core/logging.py",
     ]

@@ -1,6 +1,7 @@
 [
   {
     "employee_key": "emp-alice-johnson",
+    "employee_id": "alice001",
     "first_name": "Alice",
     "last_name": "Johnson",
     "job_title": "QA Engineer",
@@ -13,6 +14,7 @@
   },
   {
     "employee_key": "emp-bob-smith",
+    "employee_id": "bob001",
     "first_name": "Bob",
     "last_name": "Smith",
     "job_title": "Support Specialist",
@@ -25,9 +27,10 @@
   },
   {
     "employee_key": "emp-zara-novak",
+    "employee_id": "zara001",
     "first_name": "Zara",
     "last_name": "Novak",
-    "job_title": "Automation Analyst",
+    "job_title": "QA Lead",
     "employment_status": "Part-Time Contract",
     "salary": {
       "amount": "55 USD",

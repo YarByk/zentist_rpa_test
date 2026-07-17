@@ -20,6 +20,14 @@ class ConfigStub:
 
 
 def _require_live_run() -> None:
+    """Require live run.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     if os.environ.get("RUN_LIVE_E2E") != "1":
         pytest.skip("Set RUN_LIVE_E2E=1 to run live SauceDemo e2e tests.")
 
@@ -39,6 +47,18 @@ def test_saucedemo_live_login_all_demo_accounts(
     username: str,
     expected_status: LoginStatus,
 ) -> None:
+    """Verify that saucedemo live login all demo accounts.
+    
+    Args:
+        username: Value supplied by the test or fixture for `username`.
+        expected_status: Value supplied by the test or fixture for `expected_status`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     _require_live_run()
     config = ConfigStub()
     try:

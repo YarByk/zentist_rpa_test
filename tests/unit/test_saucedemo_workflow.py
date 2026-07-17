@@ -18,6 +18,11 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class FakePages:
+    # -------------------------------------------------------------------------
+    # Stateful fake implementation of the SauceDemo page protocol.
+    # Tests can control cart counts, summaries, confirmations, captured details,
+    # and queued method failures while still asserting the exact call order.
+    # -------------------------------------------------------------------------
     def __init__(
         self,
         login_result: LoginResult | None = None,
@@ -29,6 +34,24 @@ class FakePages:
         raise_on: str | None = None,
         failures: dict[str, list[Exception]] | None = None,
     ) -> None:
+        """Initialize this test helper instance.
+        
+        Args:
+            login_result: Value supplied by the test or fixture for `login_result`.
+            cart_count: Value supplied by the test or fixture for `cart_count`.
+            cart_counts: Value supplied by the test or fixture for `cart_counts`.
+            order_summary: Value supplied by the test or fixture for `order_summary`.
+            confirmation: Value supplied by the test or fixture for `confirmation`.
+            captured_details: Value supplied by the test or fixture for `captured_details`.
+            raise_on: Value supplied by the test or fixture for `raise_on`.
+            failures: Value supplied by the test or fixture for `failures`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.login_result = login_result or LoginResult.success()
         self.cart_count = 0 if cart_count is None else cart_count
         self.cart_counts = list(cart_counts) if cart_counts is not None else None
@@ -44,17 +67,48 @@ class FakePages:
         self.login_password: str | None = None
 
     def login(self, username: str, password: str) -> LoginResult:
+        """Login.
+        
+        Args:
+            username: Value supplied by the test or fixture for `username`.
+            password: Value supplied by the test or fixture for `password`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("login", username))
         self.login_password = password
         self._raise_if_configured("login")
         return self.login_result
 
     def add_inventory_items(self, count: int) -> None:
+        """Add inventory items.
+        
+        Args:
+            count: Value supplied by the test or fixture for `count`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("add_inventory_items", count))
         self._raise_if_configured("add_inventory_items")
         self.cart_count += count
 
     def read_cart_count(self) -> int:
+        """Read cart count.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("read_cart_count", None))
         self._raise_if_configured("read_cart_count")
         if self.cart_counts:
@@ -62,14 +116,41 @@ class FakePages:
         return self.cart_count
 
     def open_cart(self) -> None:
+        """Open cart.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("open_cart", None))
         self._raise_if_configured("open_cart")
 
     def checkout(self, profile: CheckoutProfile) -> None:
+        """Checkout.
+        
+        Args:
+            profile: Value supplied by the test or fixture for `profile`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("checkout", profile))
         self._raise_if_configured("checkout")
 
     def read_order_summary(self) -> OrderSummary:
+        """Read order summary.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("read_order_summary", None))
         self._raise_if_configured("read_order_summary")
         return self.order_summary or OrderSummary(
@@ -78,10 +159,26 @@ class FakePages:
         )
 
     def finish_order(self) -> None:
+        """Finish order.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("finish_order", None))
         self._raise_if_configured("finish_order")
 
     def read_confirmation(self) -> OrderSummary:
+        """Read confirmation.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("read_confirmation", None))
         self._raise_if_configured("read_confirmation")
         return self.confirmation or OrderSummary(
@@ -92,11 +189,30 @@ class FakePages:
         )
 
     def capture_order_details(self) -> dict[str, Any]:
+        """Capture order details.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         self.calls.append(("capture_order_details", None))
         self._raise_if_configured("capture_order_details")
         return self.captured_details
 
     def _raise_if_configured(self, method_name: str) -> None:
+        """Raise if configured.
+        
+        Args:
+            method_name: Value supplied by the test or fixture for `method_name`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         queued = self.failures.get(method_name)
         if queued:
             error = queued.pop(0)
@@ -106,6 +222,18 @@ class FakePages:
 
 
 def account(items_to_add: int = 3) -> SauceDemoAccount:
+    # Canonical account fixture used by the workflow tests.
+    """Account.
+    
+    Args:
+        items_to_add: Value supplied by the test or fixture for `items_to_add`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     return SauceDemoAccount(
         account_key="standard_user",
         username="standard_user",
@@ -119,10 +247,35 @@ def account(items_to_add: int = 3) -> SauceDemoAccount:
 
 
 def make_context(password: str | None = "test_pw") -> SimpleNamespace:
+    # Workflow only needs password and retry count from config for these unit tests.
+    """Make context.
+    
+    Args:
+        password: Value supplied by the test or fixture for `password`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     return SimpleNamespace(config=SimpleNamespace(saucedemo_password=password, max_retries=2))
 
 
 def assert_portal_error(reason: ReasonCode, func) -> PortalError:
+    # Helper for tests that assert business reason mapping.
+    """Assert portal error.
+    
+    Args:
+        reason: Value supplied by the test or fixture for `reason`.
+        func: Value supplied by the test or fixture for `func`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     with pytest.raises(PortalError) as error:
         func()
     assert error.value.reason is reason
@@ -130,6 +283,14 @@ def assert_portal_error(reason: ReasonCode, func) -> PortalError:
 
 
 def test_login_result_constructors_produce_expected_statuses_and_details() -> None:
+    """Verify that login result constructors produce expected statuses and details.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     assert LoginResult.success() == LoginResult(LoginStatus.SUCCESS)
     assert LoginResult.locked_out("locked").status is LoginStatus.LOCKED_OUT
     assert LoginResult.locked_out("locked").detail == "locked"
@@ -138,9 +299,29 @@ def test_login_result_constructors_produce_expected_statuses_and_details() -> No
 
 
 def test_successful_account_workflow_calls_page_methods_in_required_order() -> None:
+    # This is the happy-path contract: login, fill cart, checkout, persist, finish, confirm.
+    """Verify that successful account workflow calls page methods in required order.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages()
 
     def persist_before_finish(result) -> None:
+        """Persist before finish.
+        
+        Args:
+            result: Value supplied by the test or fixture for `result`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         pages.calls.append(("persist_before_finish", result.status.value))
 
     process_account(
@@ -166,6 +347,15 @@ def test_successful_account_workflow_calls_page_methods_in_required_order() -> N
 
 
 def test_persist_before_finish_receives_sanitized_order_details_before_finish() -> None:
+    # Order details are saved before the final click, but credential-like keys must be filtered out.
+    """Verify that persist before finish receives sanitized order details before finish.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(
         captured_details={
             "order_id": "captured-order",
@@ -177,6 +367,17 @@ def test_persist_before_finish_receives_sanitized_order_details_before_finish() 
     persisted = []
 
     def persist_before_finish(result) -> None:
+        """Persist before finish.
+        
+        Args:
+            result: Value supplied by the test or fixture for `result`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         persisted.append(result)
         pages.calls.append(("persist_before_finish", result.details.copy()))
 
@@ -206,9 +407,29 @@ def test_persist_before_finish_receives_sanitized_order_details_before_finish() 
 
 
 def test_finish_order_is_not_clicked_when_pre_finish_persistence_fails() -> None:
+    # If the pre-finish save fails, the workflow must not click the irreversible final button.
+    """Verify that finish order is not clicked when pre finish persistence fails.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages()
 
     def persist_before_finish(result) -> None:
+        """Persist before finish.
+        
+        Args:
+            result: Value supplied by the test or fixture for `result`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         pages.calls.append(("persist_before_finish", result.status.value))
         raise RuntimeError("database unavailable")
 
@@ -226,6 +447,14 @@ def test_finish_order_is_not_clicked_when_pre_finish_persistence_fails() -> None
 
 
 def test_successful_workflow_adds_account_items_to_add() -> None:
+    """Verify that successful workflow adds account items to add.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     test_account = account(items_to_add=2)
     pages = FakePages(
         cart_count=0,
@@ -240,6 +469,14 @@ def test_successful_workflow_adds_account_items_to_add() -> None:
 
 
 def test_successful_workflow_validates_cart_count() -> None:
+    """Verify that successful workflow validates cart count.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     error = assert_portal_error(
         ReasonCode.VALIDATION_FAILED,
         lambda: process_account(account(), FakePages(cart_count=4), make_context()),
@@ -249,6 +486,14 @@ def test_successful_workflow_validates_cart_count() -> None:
 
 
 def test_successful_workflow_validates_order_summary_item_count() -> None:
+    """Verify that successful workflow validates order summary item count.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(order_summary=OrderSummary(item_count=2, confirmation_text="Ready"))
 
     error = assert_portal_error(
@@ -260,6 +505,14 @@ def test_successful_workflow_validates_order_summary_item_count() -> None:
 
 
 def test_successful_workflow_validates_confirmation() -> None:
+    """Verify that successful workflow validates confirmation.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(confirmation=OrderSummary(item_count=3, confirmation_text=" "))
 
     error = assert_portal_error(
@@ -271,6 +524,14 @@ def test_successful_workflow_validates_confirmation() -> None:
 
 
 def test_successful_workflow_returns_success_item_result_with_non_secret_details() -> None:
+    """Verify that successful workflow returns success item result with non secret details.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(
         captured_details={
             "order_id": "captured-order",
@@ -306,6 +567,17 @@ def test_successful_workflow_returns_success_item_result_with_non_secret_details
 
 @pytest.mark.parametrize("password", [None, "   "])
 def test_missing_or_blank_password_maps_to_credential_expired(password) -> None:
+    """Verify that missing or blank password maps to credential expired.
+    
+    Args:
+        password: Value supplied by the test or fixture for `password`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     assert_portal_error(
         ReasonCode.CREDENTIAL_EXPIRED,
         lambda: process_account(account(), FakePages(), make_context(password)),
@@ -313,6 +585,14 @@ def test_missing_or_blank_password_maps_to_credential_expired(password) -> None:
 
 
 def test_locked_out_login_maps_to_locked_out() -> None:
+    """Verify that locked out login maps to locked out.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(login_result=LoginResult.locked_out("user locked"))
 
     error = assert_portal_error(
@@ -325,6 +605,14 @@ def test_locked_out_login_maps_to_locked_out() -> None:
 
 
 def test_failed_login_maps_to_login_failed() -> None:
+    """Verify that failed login maps to login failed.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(login_result=LoginResult.failed("bad credentials"))
 
     error = assert_portal_error(
@@ -337,6 +625,14 @@ def test_failed_login_maps_to_login_failed() -> None:
 
 
 def test_cart_mismatch_maps_to_validation_failed() -> None:
+    """Verify that cart mismatch maps to validation failed.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     assert_portal_error(
         ReasonCode.VALIDATION_FAILED,
         lambda: process_account(account(), FakePages(cart_count=4), make_context()),
@@ -344,6 +640,14 @@ def test_cart_mismatch_maps_to_validation_failed() -> None:
 
 
 def test_order_summary_mismatch_maps_to_validation_failed() -> None:
+    """Verify that order summary mismatch maps to validation failed.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(order_summary=OrderSummary(item_count=1, confirmation_text="Ready"))
 
     assert_portal_error(
@@ -353,6 +657,14 @@ def test_order_summary_mismatch_maps_to_validation_failed() -> None:
 
 
 def test_blank_confirmation_text_maps_to_checkout_failed() -> None:
+    """Verify that blank confirmation text maps to checkout failed.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(confirmation=OrderSummary(item_count=3, confirmation_text=""))
 
     assert_portal_error(
@@ -362,6 +674,14 @@ def test_blank_confirmation_text_maps_to_checkout_failed() -> None:
 
 
 def test_confirmation_count_mismatch_maps_to_checkout_failed() -> None:
+    """Verify that confirmation count mismatch maps to checkout failed.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(confirmation=OrderSummary(item_count=2, confirmation_text="Complete"))
 
     assert_portal_error(
@@ -371,6 +691,14 @@ def test_confirmation_count_mismatch_maps_to_checkout_failed() -> None:
 
 
 def test_portal_error_raised_by_page_method_propagates_unchanged() -> None:
+    """Verify that portal error raised by page method propagates unchanged.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(raise_on="add_inventory_items")
 
     error = assert_portal_error(
@@ -382,6 +710,14 @@ def test_portal_error_raised_by_page_method_propagates_unchanged() -> None:
 
 
 def test_retryable_login_failure_is_retried_and_eventually_succeeds() -> None:
+    """Verify that retryable login failure is retried and eventually succeeds.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(
         failures={"login": [PortalError(ReasonCode.PORTAL_TIMEOUT, "temporary login timeout")]}
     )
@@ -397,6 +733,14 @@ def test_retryable_login_failure_is_retried_and_eventually_succeeds() -> None:
 
 
 def test_exhausted_retryable_read_step_raises_final_portal_error_with_attempts() -> None:
+    """Verify that exhausted retryable read step raises final portal error with attempts.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(
         failures={
             "open_cart": [
@@ -418,6 +762,14 @@ def test_exhausted_retryable_read_step_raises_final_portal_error_with_attempts()
 
 
 def test_finish_order_retryable_failure_is_not_retried_blindly_when_confirmation_missing() -> None:
+    """Verify that finish order retryable failure is not retried blindly when confirmation missing.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages(
         confirmation=OrderSummary(item_count=0, confirmation_text=""),
         failures={"finish_order": [PortalError(ReasonCode.PORTAL_TIMEOUT, "finish timed out")]},
@@ -436,6 +788,14 @@ def test_finish_order_retryable_failure_is_not_retried_blindly_when_confirmation
 
 
 def test_runtime_workflow_uses_retry_policy_execute() -> None:
+    """Verify that runtime workflow uses retry policy execute.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     pages = FakePages()
     execute_calls = []
 
@@ -444,6 +804,18 @@ def test_runtime_workflow_uses_retry_policy_execute() -> None:
     original_execute = RetryPolicy.execute
 
     def tracked_execute(self, operation, logger=None):
+        """Tracked execute.
+        
+        Args:
+            operation: Value supplied by the test or fixture for `operation`.
+            logger: Value supplied by the test or fixture for `logger`.
+        
+        Returns:
+            None. The test communicates success through assertions.
+        
+        Raises:
+            AssertionError: If the behavior under test does not match the expected outcome.
+        """
         execute_calls.append(self.max_retries)
         return original_execute(self, operation, logger=logger)
 
@@ -458,6 +830,14 @@ def test_runtime_workflow_uses_retry_policy_execute() -> None:
 
 
 def test_sample_account_created_from_p16_shape_works_with_workflow() -> None:
+    """Verify that sample account created from p16 shape works with workflow.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     sample_account = account()
     pages = FakePages()
 
@@ -468,6 +848,14 @@ def test_sample_account_created_from_p16_shape_works_with_workflow() -> None:
 
 
 def test_workflow_source_does_not_import_playwright_browser_or_page_modules() -> None:
+    """Verify that workflow source does not import playwright browser or page modules.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     source = workflow_source().lower()
 
     for forbidden in (
@@ -481,6 +869,14 @@ def test_workflow_source_does_not_import_playwright_browser_or_page_modules() ->
 
 
 def test_workflow_source_does_not_import_persistence_or_sqlite_modules() -> None:
+    """Verify that workflow source does not import persistence or sqlite modules.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     source = workflow_source()
 
     assert "persistence" not in source
@@ -488,6 +884,14 @@ def test_workflow_source_does_not_import_persistence_or_sqlite_modules() -> None
 
 
 def test_workflow_source_does_not_contain_demo_credentials() -> None:
+    """Verify that workflow source does not contain demo credentials.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     source = workflow_source()
 
     assert "secret_sauce" not in source
@@ -495,6 +899,14 @@ def test_workflow_source_does_not_contain_demo_credentials() -> None:
 
 
 def test_tests_mention_demo_credentials_only_as_forbidden_scan_targets() -> None:
+    """Verify that tests mention demo credentials only as forbidden scan targets.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     source = Path(__file__).read_text(encoding="utf-8")
     forbidden_literals = ("secret_" + "sauce", "admin" + "123")
 
@@ -509,6 +921,14 @@ def test_tests_mention_demo_credentials_only_as_forbidden_scan_targets() -> None
 
 
 def test_forbidden_modules_were_not_created() -> None:
+    """Verify that forbidden modules were not created.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     forbidden_paths = [
         "src/portal_automation/core/logging.py",
     ]
@@ -517,6 +937,14 @@ def test_forbidden_modules_were_not_created() -> None:
 
 
 def workflow_source() -> str:
+    """Workflow source.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     return (ROOT / "src/portal_automation/portals/saucedemo/workflow.py").read_text(
         encoding="utf-8"
     )
@@ -532,6 +960,17 @@ def workflow_source() -> str:
     ],
 )
 def test_non_locked_demo_accounts_are_not_treated_as_login_failures(username: str) -> None:
+    """Verify that non locked demo accounts are not treated as login failures.
+    
+    Args:
+        username: Value supplied by the test or fixture for `username`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     test_account = SauceDemoAccount(
         account_key=username,
         username=username,

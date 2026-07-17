@@ -5,22 +5,57 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def read_text(relative_path: str) -> str:
+    """Read text.
+    
+    Args:
+        relative_path: Value supplied by the test or fixture for `relative_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     return (ROOT / relative_path).read_text(encoding="utf-8")
 
 
 def test_readme_first_line_contains_schema_marker() -> None:
+    """Verify that readme first line contains schema marker.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     first_line = read_text("README.md").splitlines()[0]
 
     assert first_line == "<!-- schema-ref:zentist-r7 -->"
 
 
 def test_design_contains_required_first_diagram_title() -> None:
+    """Verify that design contains required first diagram title.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     design = read_text("DESIGN.md")
 
     assert "### Figure ZQ9" in design
 
 
 def test_input_json_files_are_valid() -> None:
+    """Verify that input json files are valid.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     for relative_path in ("data/orangehrm_employees.json", "data/saucedemo_accounts.json"):
         parsed = json.loads(read_text(relative_path))
 
@@ -28,21 +63,94 @@ def test_input_json_files_are_valid() -> None:
 
 
 def test_forbidden_logging_module_does_not_exist() -> None:
+    """Verify that forbidden logging module does not exist.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     assert not (ROOT / "src/portal_automation/core/logging.py").exists()
 
 
 def test_env_example_does_not_contain_demo_passwords() -> None:
+    """Verify that env example does not contain demo passwords.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     env_example = read_text(".env.example")
 
     assert "secret_sauce" not in env_example
     assert "admin123" not in env_example
 
 
+def test_live_demo_headed_script_runs_expected_helpers_in_order() -> None:
+    """Verify that the PowerShell live demo orchestrator runs the expected headed helpers.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the script stops loading env first or changes helper order.
+    """
+    script = read_text("tools/run_live_demo_headed.ps1")
+
+    env_load = script.index(". $envScript")
+    orange_helper = script.index("debug_orangehrm_demo_playwright_headed.py")
+    sauce_helper = script.index("debug_saucedemo_playwright_headed.py")
+    orange_call = script.index('-Title "OrangeHRM demo Playwright headed"')
+    sauce_call = script.index('-Title "Sauce Demo Playwright headed"')
+
+    assert env_load < orange_call < sauce_call
+    assert orange_helper < sauce_helper
+
+
+def test_saucedemo_headed_script_runs_only_saucedemo_helper() -> None:
+    """Verify that the Sauce Demo-only PowerShell wrapper loads env and runs one helper.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the wrapper stops loading env or starts OrangeHRM work.
+    """
+    script = read_text("tools/run_saucedemo_headed.ps1")
+
+    env_load = script.index(". $envScript")
+    sauce_helper = script.index("debug_saucedemo_playwright_headed.py")
+    sauce_call = script.index("& python $sauceScript")
+
+    assert env_load < sauce_call
+    assert sauce_helper < sauce_call
+    assert "debug_orangehrm" not in script
+
+
 def test_main_entrypoint_exists() -> None:
+    """Verify that main entrypoint exists.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     assert (ROOT / "src/portal_automation/__main__.py").is_file()
 
 
 def test_only_package_init_files_exist_under_runtime_packages() -> None:
+    """Verify that only package init files exist under runtime packages.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     allowed_files = {
         "src/portal_automation/__main__.py",
         "src/portal_automation/core/__init__.py",

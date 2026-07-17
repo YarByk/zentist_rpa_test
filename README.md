@@ -34,6 +34,41 @@ e2e tests belong under `tests/e2e` and are excluded from the default test path.
 opt-in live e2e tests. Dry-run and the default test suite do not start a browser and do not
 require the Chromium binary.
 
+## One-Click Live Demo On Windows
+
+For the visible browser demo, use the PowerShell orchestrator from the repository root:
+
+```powershell
+.\tools\run_live_demo_headed.ps1
+```
+
+To run only the faster Sauce Demo headed flow:
+
+```powershell
+.\tools\run_saucedemo_headed.ps1
+```
+
+The script loads `tools\set_live_env.local.ps1` first, then runs the two headed Playwright
+helpers in order:
+
+1. OrangeHRM demo Playwright headed: generates a fresh three-employee input file, opens
+   Chromium, and runs the OrangeHRM workflow.
+2. Sauce Demo Playwright headed: opens Chromium and runs all Sauce Demo accounts from
+   `data\saucedemo_accounts.json`.
+
+Typical local timing: `OrangeHRM demo Playwright headed` can take about 10 minutes, while
+`Sauce Demo Playwright headed` usually takes about 1 minute.
+
+Before using it, copy `tools\set_live_env.example.ps1` to `tools\set_live_env.local.ps1` and
+fill the live demo credentials. The local env file is intentionally ignored by git. The headed
+helpers keep final browser result screens visible and store persistent browser profiles under
+`artifacts\browser_profiles\orangehrm` and `artifacts\browser_profiles\saucedemo`.
+
+Visual Studio users can also run the individual helper configurations from the green launch
+dropdown, such as `tool: orangehrm demo Playwright headed` and
+`tool: saucedemo Playwright headed`. The PowerShell orchestrator is the shortest path when
+you want to show both demos back-to-back.
+
 ## Configuration
 
 `.env.example` documents the supported environment variables. The code reads environment

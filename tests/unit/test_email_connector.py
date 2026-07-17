@@ -14,6 +14,18 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_dry_run_backend_writes_email_report_under_run_artifacts(tmp_path) -> None:
+    # Dry-run delivery should materialize an email artifact instead of sending anything externally.
+    """Verify that dry run backend writes email report under run artifacts.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
 
     path = EmailConnector("dry_run", artifacts).send_report(
@@ -28,6 +40,17 @@ def test_dry_run_backend_writes_email_report_under_run_artifacts(tmp_path) -> No
 
 
 def test_dry_run_email_artifact_includes_headers_blank_line_and_body(tmp_path) -> None:
+    """Verify that dry run email artifact includes headers blank line and body.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
 
     path = EmailConnector("dry_run", artifacts).send_report(
@@ -43,6 +66,17 @@ def test_dry_run_email_artifact_includes_headers_blank_line_and_body(tmp_path) -
 
 
 def test_dry_run_backend_returns_written_path(tmp_path) -> None:
+    """Verify that dry run backend returns written path.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
 
     path = EmailConnector("dry_run", artifacts).send_report(
@@ -56,6 +90,17 @@ def test_dry_run_backend_returns_written_path(tmp_path) -> None:
 
 
 def test_dry_run_backend_handles_missing_recipient_without_none_text(tmp_path) -> None:
+    """Verify that dry run backend handles missing recipient without none text.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
 
     path = EmailConnector("dry_run", artifacts).send_report(
@@ -70,6 +115,17 @@ def test_dry_run_backend_handles_missing_recipient_without_none_text(tmp_path) -
 
 
 def test_dry_run_backend_includes_report_path_when_provided(tmp_path) -> None:
+    """Verify that dry run backend includes report path when provided.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
     report_path = artifacts.write_text(artifacts.report_path("run-1"), "report body")
 
@@ -88,6 +144,19 @@ def test_smtp_backend_sends_message_with_expected_server_auth_and_attachment(
     tmp_path,
     monkeypatch,
 ) -> None:
+    # SMTP mode should construct one message and drive the expected auth/send sequence.
+    """Verify that smtp backend sends message with expected server auth and attachment.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+        monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
     report_path = artifacts.write_text(artifacts.report_path("run-1"), "report body")
     smtp_instance = MagicMock()
@@ -126,6 +195,18 @@ def test_smtp_backend_sends_message_with_expected_server_auth_and_attachment(
 
 
 def test_smtp_backend_can_skip_tls_and_login_when_not_configured(tmp_path, monkeypatch) -> None:
+    """Verify that smtp backend can skip tls and login when not configured.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+        monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
     smtp_instance = MagicMock()
     smtp_factory = MagicMock()
@@ -155,6 +236,17 @@ def test_smtp_backend_can_skip_tls_and_login_when_not_configured(tmp_path, monke
 def test_smtp_backend_raises_clear_configuration_error_when_required_values_missing(
     tmp_path,
 ) -> None:
+    """Verify that smtp backend raises clear configuration error when required values missing.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
 
     with pytest.raises(EmailConfigurationError, match="SMTP backend is selected"):
@@ -162,6 +254,17 @@ def test_smtp_backend_raises_clear_configuration_error_when_required_values_miss
 
 
 def test_smtp_backend_requires_password_when_username_is_provided(tmp_path) -> None:
+    """Verify that smtp backend requires password when username is provided.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
 
     with pytest.raises(EmailConfigurationError, match="SMTP_PASSWORD"):
@@ -179,6 +282,19 @@ def test_smtp_backend_wraps_delivery_failures_without_exposing_password(
     tmp_path,
     monkeypatch,
 ) -> None:
+    # Delivery failures should stay readable while never leaking SMTP credentials.
+    """Verify that smtp backend wraps delivery failures without exposing password.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+        monkeypatch: Value supplied by the test or fixture for `monkeypatch`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
     smtp_instance = MagicMock()
     smtp_instance.send_message.side_effect = OSError("mail server unavailable")
@@ -209,6 +325,17 @@ def test_smtp_backend_wraps_delivery_failures_without_exposing_password(
 
 
 def test_unknown_backend_raises_value_error(tmp_path) -> None:
+    """Verify that unknown backend raises value error.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     artifacts = ArtifactStore(str(tmp_path / "artifacts"))
 
     with pytest.raises(ValueError, match="Supported backends: dry_run, smtp"):
@@ -216,6 +343,14 @@ def test_unknown_backend_raises_value_error(tmp_path) -> None:
 
 
 def test_email_connector_source_uses_stdlib_smtplib_without_demo_credentials() -> None:
+    """Verify that email connector source uses stdlib smtplib without demo credentials.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     source = (ROOT / "src/portal_automation/core/email_connector.py").read_text(encoding="utf-8")
 
     assert "import smtplib" in source
@@ -224,6 +359,14 @@ def test_email_connector_source_uses_stdlib_smtplib_without_demo_credentials() -
 
 
 def test_forbidden_modules_were_not_created() -> None:
+    """Verify that forbidden modules were not created.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     forbidden_paths = [
         "src/portal_automation/core/logging.py",
     ]

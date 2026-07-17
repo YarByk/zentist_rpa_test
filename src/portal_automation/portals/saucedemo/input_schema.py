@@ -27,6 +27,19 @@ class SauceDemoAccount:
 
 
 def parse_account_record(raw: dict[str, Any]) -> SauceDemoAccount:
+    """Parse one raw Sauce Demo account input record.
+
+    Args:
+        raw: Raw dictionary loaded from JSON input.
+
+    Returns:
+        Validated account record with stripped string fields.
+
+    Raises:
+        InputValidationError: If required fields are missing, invalid, or contain password-like
+            fixture fields.
+    """
+    # Parse one account record and reject any credential-like fields in fixture data.
     _reject_password_like_fields(raw, "record")
     account_key = _required_string(raw, "account_key", "record")
     username = _required_string(raw, "username", "record")
@@ -46,6 +59,18 @@ def parse_account_record(raw: dict[str, Any]) -> SauceDemoAccount:
 
 
 def load_account_records(path: str | Path) -> list[SauceDemoAccount]:
+    """Load and validate Sauce Demo account records from JSON.
+
+    Args:
+        path: JSON file path.
+
+    Returns:
+        List of validated Sauce Demo account records.
+
+    Raises:
+        InputValidationError: If the file cannot be read, JSON is invalid, or records fail schema
+            validation.
+    """
     input_path = Path(path)
     try:
         parsed = json.loads(input_path.read_text(encoding="utf-8"))
@@ -58,6 +83,7 @@ def load_account_records(path: str | Path) -> list[SauceDemoAccount]:
         raise InputValidationError("top-level input must be a list")
 
     accounts = []
+    # Preserve the record index in validation failures for faster debugging.
     for index, raw_record in enumerate(parsed):
         if not isinstance(raw_record, dict):
             raise InputValidationError(f"record[{index}]: must be an object")
@@ -69,6 +95,19 @@ def load_account_records(path: str | Path) -> list[SauceDemoAccount]:
 
 
 def _required_string(raw: dict[str, Any], field_name: str, context: str) -> str:
+    """Read a required non-blank string field.
+
+    Args:
+        raw: Source dictionary.
+        field_name: Required field name.
+        context: Human-readable context used in validation errors.
+
+    Returns:
+        Stripped string value.
+
+    Raises:
+        InputValidationError: If the field is missing, not a string, or blank.
+    """
     if field_name not in raw:
         raise InputValidationError(f"{context}: missing field '{field_name}'")
     value = raw[field_name]
@@ -81,6 +120,19 @@ def _required_string(raw: dict[str, Any], field_name: str, context: str) -> str:
 
 
 def _required_object(raw: dict[str, Any], field_name: str, context: str) -> dict[str, Any]:
+    """Read a required object field.
+
+    Args:
+        raw: Source dictionary.
+        field_name: Required field name.
+        context: Human-readable context used in validation errors.
+
+    Returns:
+        Nested dictionary value.
+
+    Raises:
+        InputValidationError: If the field is missing or not a dictionary.
+    """
     if field_name not in raw:
         raise InputValidationError(f"{context}: missing field '{field_name}'")
     value = raw[field_name]
@@ -90,6 +142,18 @@ def _required_object(raw: dict[str, Any], field_name: str, context: str) -> dict
 
 
 def _items_to_add(raw: dict[str, Any]) -> int:
+    """Read and validate the requested cart item count.
+
+    Args:
+        raw: Source account dictionary.
+
+    Returns:
+        Positive integer item count, defaulting to ``3``.
+
+    Raises:
+        InputValidationError: If the value is not a positive integer.
+    """
+    # Default to three items when the fixture omits an explicit item count.
     value = raw.get("items_to_add", 3)
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise InputValidationError("record.items_to_add: must be a positive integer")
@@ -97,6 +161,16 @@ def _items_to_add(raw: dict[str, Any]) -> int:
 
 
 def _reject_password_like_fields(raw: dict[str, Any], context: str) -> None:
+    """Reject fields that look like credentials.
+
+    Args:
+        raw: Source dictionary.
+        context: Human-readable context used in validation errors.
+
+    Raises:
+        InputValidationError: If a forbidden password-like field is present.
+    """
+    # Test data must stay secret-free because credentials are provided via environment config.
     forbidden = sorted(PASSWORD_LIKE_FIELDS.intersection(raw))
     if forbidden:
         raise InputValidationError(

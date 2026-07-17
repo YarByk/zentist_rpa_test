@@ -6,6 +6,19 @@ import sys
 
 
 def run_cli(args, tmp_path):
+    # Run the installed module in a subprocess with isolated DB/artifact paths.
+    """Run cli.
+    
+    Args:
+        args: Value supplied by the test or fixture for `args`.
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     env = {
         **os.environ,
         "DB_PATH": str(tmp_path / "portal.sqlite"),
@@ -22,6 +35,17 @@ def run_cli(args, tmp_path):
 
 
 def test_module_help_exits_zero(tmp_path) -> None:
+    """Verify that module help exits zero.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["--help"], tmp_path)
 
     assert result.returncode == 0
@@ -29,6 +53,17 @@ def test_module_help_exits_zero(tmp_path) -> None:
 
 
 def test_orangehrm_help_exits_zero(tmp_path) -> None:
+    """Verify that orangehrm help exits zero.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["orangehrm", "--help"], tmp_path)
 
     assert result.returncode == 0
@@ -36,6 +71,17 @@ def test_orangehrm_help_exits_zero(tmp_path) -> None:
 
 
 def test_saucedemo_help_exits_zero(tmp_path) -> None:
+    """Verify that saucedemo help exits zero.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["saucedemo", "--help"], tmp_path)
 
     assert result.returncode == 0
@@ -43,6 +89,17 @@ def test_saucedemo_help_exits_zero(tmp_path) -> None:
 
 
 def test_all_help_exits_zero(tmp_path) -> None:
+    """Verify that all help exits zero.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["all", "--help"], tmp_path)
 
     assert result.returncode == 0
@@ -50,6 +107,17 @@ def test_all_help_exits_zero(tmp_path) -> None:
 
 
 def test_recover_help_exits_zero(tmp_path) -> None:
+    """Verify that recover help exits zero.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["recover", "--help"], tmp_path)
 
     assert result.returncode == 0
@@ -57,6 +125,17 @@ def test_recover_help_exits_zero(tmp_path) -> None:
 
 
 def test_all_dry_run_exits_zero_with_temporary_artifacts(tmp_path) -> None:
+    """Verify that all dry run exits zero with temporary artifacts.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["all", "--dry-run"], tmp_path)
 
     assert result.returncode == 0
@@ -65,6 +144,18 @@ def test_all_dry_run_exits_zero_with_temporary_artifacts(tmp_path) -> None:
 
 
 def test_all_dry_run_creates_reviewer_artifact_shape(tmp_path) -> None:
+    # Dry-run should leave enough evidence for reviewers without doing item-level portal work.
+    """Verify that all dry run creates reviewer artifact shape.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["all", "--dry-run"], tmp_path)
 
     assert result.returncode == 0
@@ -123,6 +214,18 @@ def test_all_dry_run_creates_reviewer_artifact_shape(tmp_path) -> None:
 
 
 def test_all_dry_run_does_not_require_network_or_external_objects(tmp_path) -> None:
+    # The safe smoke path should avoid external dependencies and live automation setup.
+    """Verify that all dry run does not require network or external objects.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["all", "--dry-run"], tmp_path)
     combined_output = f"{result.stdout}\n{result.stderr}".lower()
 
@@ -132,6 +235,17 @@ def test_all_dry_run_does_not_require_network_or_external_objects(tmp_path) -> N
 
 
 def test_all_dry_run_does_not_create_browser_or_page_objects(tmp_path) -> None:
+    """Verify that all dry run does not create browser or page objects.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["all", "--dry-run"], tmp_path)
     combined_output = f"{result.stdout}\n{result.stderr}".lower()
 
@@ -141,6 +255,17 @@ def test_all_dry_run_does_not_create_browser_or_page_objects(tmp_path) -> None:
 
 
 def test_unknown_portal_gives_clear_cli_error(tmp_path) -> None:
+    """Verify that unknown portal gives clear cli error.
+    
+    Args:
+        tmp_path: Value supplied by the test or fixture for `tmp_path`.
+    
+    Returns:
+        None. The test communicates success through assertions.
+    
+    Raises:
+        AssertionError: If the behavior under test does not match the expected outcome.
+    """
     result = run_cli(["not_a_portal"], tmp_path)
 
     assert result.returncode != 0
