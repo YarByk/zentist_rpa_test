@@ -1,0 +1,41 @@
+[
+  {
+    "employee_key": "emp-alice-johnson",
+    "employee_id": "alice001",
+    "first_name": "Alice",
+    "last_name": "Johnson",
+    "job_title": "QA Engineer",
+    "employment_status": "Full-Time Permanent",
+    "salary": {
+      "amount": "90000 USD",
+      "frequency": "Annual",
+      "details": "Base salary for 2026"
+    }
+  },
+  {
+    "employee_key": "emp-bob-smith",
+    "employee_id": "bob001",
+    "first_name": "Bob",
+    "last_name": "Smith",
+    "job_title": "Support Specialist",
+    "employment_status": "Full-Time Permanent",
+    "salary": {
+      "amount": "78000 USD",
+      "frequency": "Annual",
+      "details": "Base salary for 2026"
+    }
+  },
+  {
+    "employee_key": "emp-zara-novak",
+    "employee_id": "zara001",
+    "first_name": "Zara",
+    "last_name": "Novak",
+    "job_title": "QA Lead",
+    "employment_status": "Part-Time Contract",
+    "salary": {
+      "amount": "55 USD",
+      "frequency": "Hourly",
+      "details": "Contract rate for 2026"
+    }
+  }
+]

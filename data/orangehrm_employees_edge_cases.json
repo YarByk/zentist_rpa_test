@@ -1,0 +1,50 @@
+[
+  {
+    "employee_key": "emp-unicode",
+    "first_name": "María",
+    "last_name": "García-López",
+    "job_title": "QA Engineer",
+    "employment_status": "Full-Time Permanent",
+    "salary": {
+      "amount": "72000 USD",
+      "frequency": "Annual",
+      "details": "Edge case: unicode name employee"
+    }
+  },
+  {
+    "employee_key": "emp-long-name",
+    "first_name": "Bartholomew",
+    "last_name": "Vandenbergh-Petersen",
+    "job_title": "Support Specialist",
+    "employment_status": "Full-Time Permanent",
+    "salary": {
+      "amount": "85000 USD",
+      "frequency": "Annual",
+      "details": "Edge case: long name employee"
+    }
+  },
+  {
+    "employee_key": "emp-high-salary",
+    "first_name": "Alexandra",
+    "last_name": "Steinberg",
+    "job_title": "Automation Analyst",
+    "employment_status": "Part-Time Contract",
+    "salary": {
+      "amount": "250000 USD",
+      "frequency": "Annual",
+      "details": "Edge case: high salary amount"
+    }
+  },
+  {
+    "employee_key": "emp-control",
+    "first_name": "Jordan",
+    "last_name": "Smith",
+    "job_title": "QA Engineer",
+    "employment_status": "Full-Time Permanent",
+    "salary": {
+      "amount": "60000 USD",
+      "frequency": "Annual",
+      "details": "Control: standard synthetic employee"
+    }
+  }
+]
